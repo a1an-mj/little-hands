@@ -1,7 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Theme } from '@shared/ipc-contract'
+import { SnackbarProvider } from '../components/Snackbar'
 import { ThemeSwitch } from '../components/ThemeSwitch'
-import { NavRail, type Page } from './NavRail'
+import { AdmissionForm } from '../screens/students/AdmissionForm'
+import { StudentProfile } from '../screens/students/StudentProfile'
+import { StudentsList } from '../screens/students/StudentsList'
+import { NavRail } from './NavRail'
+import { pageOf, type ListState, type Route } from './routes'
 
 interface Props {
   theme: Theme
@@ -10,28 +15,11 @@ interface Props {
 }
 
 // Placeholders until each module is built (see "Way of working" in CLAUDE.md).
-const PAGES: Record<Page, { title: string; step: number; text: string }> = {
-  home: {
-    step: 5,
-    title: 'Good day',
-    text: "Today's arrivals and the fees to follow up will appear here."
-  },
-  students: {
-    step: 2,
-    title: 'Students',
-    text: 'The list of children, their parents and guardians, and the admission form will appear here.'
-  },
-  fees: {
-    step: 4,
-    title: 'Fees',
-    text: 'Recording payments, partial payments and balances for each month will appear here.'
-  },
-  attendance: {
-    step: 5,
-    title: 'Attendance',
-    text: 'Marking arrivals, departures and absences will appear here.'
-  }
-}
+const SOON = {
+  home: { step: 5, title: 'Dashboard', text: "Today's arrivals and the fees to follow up will appear here." },
+  fees: { step: 4, title: 'Fees', text: 'Recording payments, partial payments and balances for each month will appear here.' },
+  attendance: { step: 5, title: 'Attendance', text: 'Marking arrivals, departures and absences will appear here.' }
+} as const
 
 function greeting(d: Date): string {
   const h = d.getHours()
@@ -39,30 +27,58 @@ function greeting(d: Date): string {
 }
 
 export function Shell({ theme, onToggleTheme, onLock }: Props) {
-  const [page, setPage] = useState<Page>('home')
-  const now = new Date()
-  const info = PAGES[page]
-  const title = page === 'home' ? greeting(now) : info.title
+  const [route, setRoute] = useState<Route>({ name: 'home' })
+  const [listState, setListState] = useState<ListState>({ search: '', status: 'active', page: 0 })
+  const common = { theme, onToggleTheme }
+
+  // New screen → start at the top.
+  useEffect(() => {
+    window.scrollTo({ top: 0 })
+  }, [route])
 
   return (
-    <div className="shell">
-      <NavRail page={page} onNavigate={setPage} onRecordPayment={() => setPage('fees')} onLock={onLock} />
-      <main className="main">
-        <header className="topbar in" key={`h-${page}`}>
-          <div style={{ flex: '1 1 240px', minWidth: 0 }}>
-            <div className="muted">
-              {now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-            </div>
-            <h1 className="h-lg">{title}</h1>
+    <SnackbarProvider>
+      <div className="shell">
+        <NavRail
+          page={pageOf(route)}
+          onNavigate={(page) => setRoute({ name: page } as Route)}
+          onRecordPayment={() => setRoute({ name: 'fees' })}
+          onLock={onLock}
+        />
+        <main className="main" key={route.name === 'student' ? `student-${route.id}` : route.name}>
+          {route.name === 'students' && (
+            <StudentsList {...common} state={listState} setState={setListState} navigate={setRoute} />
+          )}
+          {route.name === 'admit' && <AdmissionForm {...common} navigate={setRoute} />}
+          {route.name === 'student' && <StudentProfile {...common} id={route.id} navigate={setRoute} />}
+          {(route.name === 'home' || route.name === 'fees' || route.name === 'attendance') && (
+            <Placeholder {...common} page={route.name} />
+          )}
+        </main>
+      </div>
+    </SnackbarProvider>
+  )
+}
+
+function Placeholder({ theme, onToggleTheme, page }: { theme: Theme; onToggleTheme: () => void; page: keyof typeof SOON }) {
+  const now = new Date()
+  const info = SOON[page]
+  return (
+    <>
+      <header className="topbar in">
+        <div style={{ flex: '1 1 240px', minWidth: 0 }}>
+          <div className="muted">
+            {now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </div>
-          <ThemeSwitch theme={theme} onToggle={onToggleTheme} />
-        </header>
-        <section className="card soon-card in" key={`c-${page}`} style={{ animationDelay: '60ms' }}>
-          <span className="step-chip">Coming in step {info.step}</span>
-          <h2 className="h-md">{page === 'home' ? 'Dashboard' : info.title}</h2>
-          <p className="muted" style={{ margin: 0 }}>{info.text}</p>
-        </section>
-      </main>
-    </div>
+          <h1 className="h-lg">{page === 'home' ? greeting(now) : info.title}</h1>
+        </div>
+        <ThemeSwitch theme={theme} onToggle={onToggleTheme} />
+      </header>
+      <section className="card soon-card in" style={{ animationDelay: '60ms' }}>
+        <span className="step-chip">Coming in step {info.step}</span>
+        <h2 className="h-md">{info.title}</h2>
+        <p className="muted" style={{ margin: 0 }}>{info.text}</p>
+      </section>
+    </>
   )
 }

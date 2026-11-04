@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "paths": { "@shared/*": ["./src/shared/*"] }
+  },
+  "include": ["tests/e2e/**/*", "src/preload/api.d.ts", "playwright.config.ts"]
+}

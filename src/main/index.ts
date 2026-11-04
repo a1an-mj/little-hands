@@ -8,10 +8,16 @@ import { IDLE_LOCK_MS } from './lock/idle-timer'
 import { PinAuth } from './lock/pin-auth'
 import { LockSession } from './lock/session'
 import { registerIpc } from './ipc/register'
+import { registerStudentsIpc } from './ipc/students'
+import { Writer } from './db/writer'
+import { StudentsRepo } from './students/repo'
 
 // Test hooks: only honoured in development / test runs, never in the installed app.
 if (!app.isPackaged && process.env.LH_USER_DATA) app.setPath('userData', process.env.LH_USER_DATA)
 const idleMs = !app.isPackaged && process.env.LH_IDLE_MS ? Number(process.env.LH_IDLE_MS) : IDLE_LOCK_MS
+
+// English (India) everywhere, whatever the laptop's language setting: dates read day/month/year.
+app.commandLine.appendSwitch('lang', 'en-IN')
 
 // Only one copy of the app may run, so two windows never write the database at once.
 if (!app.requestSingleInstanceLock()) app.quit()
@@ -71,6 +77,8 @@ app.whenReady().then(() => {
       mainWindow?.webContents.send(IPC.themeChanged, theme)
     }
   })
+
+  registerStudentsIpc(new StudentsRepo(new Writer(db, settings.deviceId)), session)
 
   // Lock when the laptop sleeps or Windows locks the screen.
   powerMonitor.on('suspend', () => session.lock())

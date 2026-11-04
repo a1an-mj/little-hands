@@ -67,7 +67,7 @@ test('first run: choose a PIN, see the recovery code once, then the app opens', 
 test('navigation rail: modules open placeholders, Reports and Settings are greyed out', async () => {
   await mainMenu().getByRole('button', { name: 'Students' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Students' })).toBeVisible()
-  await expect(page.getByText('Coming in step 2')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'New admission' })).toBeVisible()
 
   await page.getByRole('button', { name: 'Record a payment' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Fees' })).toBeVisible()

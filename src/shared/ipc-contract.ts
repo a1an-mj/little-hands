@@ -1,7 +1,35 @@
 // The typed API the preload script exposes to the UI as `window.lh`.
 // All data access lives in the main process; the UI only talks through this.
 
+import type { AdmissionInput, GuardianInput, NoteInput, StudentDetailsInput } from './schemas'
+import type { Result, StudentListQuery, StudentListResult, StudentProfile } from './students'
+
 export type Theme = 'light' | 'dark'
+
+/** Every call needs the app to be unlocked. Problems the owner can fix come back as `{ ok: false, message }`. */
+export interface StudentsApi {
+  list(query: StudentListQuery): Promise<Result<StudentListResult>>
+  nextCode(joiningDate: string): Promise<Result<string>>
+  profile(id: string): Promise<Result<StudentProfile | null>>
+  admit(input: AdmissionInput): Promise<Result<string>>
+  updateDetails(id: string, input: StudentDetailsInput): Promise<Result>
+  remove(id: string): Promise<Result>
+  /** Opens the file picker; returns a JPEG data URL to preview, or null if cancelled. */
+  pickPhoto(): Promise<Result<string | null>>
+  setPhoto(id: string, photo: string | null): Promise<Result>
+  addGuardian(studentId: string, input: GuardianInput): Promise<Result<string>>
+  updateGuardian(linkId: string, input: GuardianInput): Promise<Result>
+  setFeeContact(linkId: string): Promise<Result>
+  removeGuardian(linkId: string): Promise<Result>
+  addNote(studentId: string, input: NoteInput): Promise<Result<string>>
+  updateNote(noteId: string, input: NoteInput): Promise<Result>
+  removeNote(noteId: string): Promise<Result>
+}
+
+export const STUDENTS_METHODS = [
+  'list', 'nextCode', 'profile', 'admit', 'updateDetails', 'remove', 'pickPhoto', 'setPhoto',
+  'addGuardian', 'updateGuardian', 'setFeeContact', 'removeGuardian', 'addNote', 'updateNote', 'removeNote'
+] as const satisfies readonly (keyof StudentsApi)[]
 
 export type LockStatus =
   | { state: 'needs-setup' }
@@ -38,6 +66,7 @@ export interface LhApi {
     /** Fires when the system setting changes (before a choice is made) or after `set`. */
     onChange(listener: (theme: Theme) => void): () => void
   }
+  students: StudentsApi
 }
 
 export const IPC = {

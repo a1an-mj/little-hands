@@ -1,5 +1,9 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
-import { IPC, type LhApi, type LockStatus, type Theme } from '@shared/ipc-contract'
+import { IPC, STUDENTS_METHODS, type LhApi, type LockStatus, type StudentsApi, type Theme } from '@shared/ipc-contract'
+
+const students = Object.fromEntries(
+  STUDENTS_METHODS.map((m) => [m, (...args: unknown[]) => ipcRenderer.invoke(`students:${m}`, ...args)])
+) as unknown as StudentsApi
 
 const api: LhApi = {
   lock: {
@@ -25,7 +29,8 @@ const api: LhApi = {
       ipcRenderer.on(IPC.themeChanged, handler)
       return () => ipcRenderer.removeListener(IPC.themeChanged, handler)
     }
-  }
+  },
+  students
 }
 
 contextBridge.exposeInMainWorld('lh', api)
