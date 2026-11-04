@@ -1,0 +1,123 @@
+/* Component styles rebuilt from design/Main.html, Lock.html and AddStudent.html. */
+
+html,body,#root{margin:0;height:100%}
+body{background:var(--s)}
+a{color:inherit}a:hover{color:inherit}
+button{font-family:inherit}
+
+.lh{min-height:100%}
+.lh,.lh *{transition:background-color .45s var(--ease),color .45s var(--ease),border-color .45s var(--ease),box-shadow .25s var(--ease),transform .25s var(--ease),opacity .25s var(--ease)}
+
+/* ---------- App shell ---------- */
+.shell{display:flex;align-items:stretch;min-height:100vh}
+.rail{flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 0;box-sizing:border-box;position:sticky;top:0;height:100vh}
+.logo{width:48px;height:48px;border-radius:16px;background:var(--p);color:var(--op);display:flex;align-items:center;justify-content:center}
+.fab{position:relative;overflow:hidden;width:56px;height:56px;border-radius:16px;border:none;background:var(--pc);color:var(--opc);display:flex;align-items:center;justify-content:center;box-shadow:var(--sh3);text-decoration:none;margin:8px 0 12px;cursor:pointer}
+.dest{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:56px;width:80px;padding:0;border:none;background:transparent;cursor:pointer;text-decoration:none;color:var(--osv);font:500 12px/16px Roboto,sans-serif;letter-spacing:.5px}
+.pill{position:relative;overflow:hidden;width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.dest[aria-current="page"]{color:var(--os);font-weight:700}
+.dest[aria-current="page"] .pill{background:var(--sc);color:var(--osc);animation:lh-pill .5s var(--dec) both}
+.rail-end{margin-top:auto}
+.dest.soon{opacity:.45;cursor:default}.dest.soon .pill::after{display:none}
+.pill::after,.btn::after,.fab::after,.key::after,.sw::after{content:"";position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .2s var(--ease);pointer-events:none}
+.dest:hover .pill::after,.btn:hover::after,.fab:hover::after,.key:hover::after{opacity:.08}
+.dest:active .pill::after,.btn:active::after,.fab:active::after,.key:active::after{opacity:.12}
+.main{flex:1 1 auto;min-width:0;box-sizing:border-box;padding:16px 32px 48px 8px;display:flex;flex-direction:column;gap:24px}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:16px;min-height:72px}
+
+/* ---------- Type ---------- */
+.h-lg{margin:0;font-size:32px;line-height:40px;font-weight:400;letter-spacing:0}
+.h-md{margin:0;font-size:22px;line-height:28px;font-weight:400;letter-spacing:0}
+.t-lg{font-size:16px;line-height:24px;font-weight:500;letter-spacing:.15px}
+.muted{color:var(--osv)}
+.small{font-size:12px;line-height:16px;letter-spacing:.4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Buttons ---------- */
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 24px;border-radius:22px;border:none;font:500 14px/20px Roboto,sans-serif;letter-spacing:.1px;text-decoration:none;cursor:pointer;white-space:nowrap;box-sizing:border-box}
+.btn.lg{min-height:48px;border-radius:24px;font-size:15px}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn:focus-visible,.dest:focus-visible,.sw:focus-visible,.fab:focus-visible,.key:focus-visible,.check:focus-within{outline:3px solid var(--p);outline-offset:2px}
+.filled{background:var(--p);color:var(--op)}.filled:hover{box-shadow:var(--sh1)}
+.tonal{background:var(--sc);color:var(--osc)}
+.textb{background:transparent;color:var(--p);padding:0 12px}
+.btn:disabled{background:color-mix(in srgb,var(--os) 12%,transparent);color:color-mix(in srgb,var(--os) 38%,transparent);cursor:default;box-shadow:none}
+.btn:disabled::after{display:none}
+.btn.textb:disabled{background:transparent}
+
+/* ---------- Cards ---------- */
+.card{background:var(--c1);border-radius:24px;padding:24px;box-sizing:border-box}
+
+/* ---------- Theme switch ---------- */
+.sw{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:0 4px 0 12px;border:none;border-radius:22px;background:transparent;color:var(--osv);font:500 14px Roboto,sans-serif;cursor:pointer}
+.sw::after{display:none}
+.track{position:relative;width:52px;height:32px;border-radius:16px;box-sizing:border-box;border:2px solid var(--ol);background:var(--c4)}
+.thumb{position:absolute;top:50%;left:2px;width:24px;height:24px;margin-top:-12px;border-radius:50%;background:var(--ol);color:var(--c4);display:flex;align-items:center;justify-content:center;transition:all .4s var(--dec)}
+.sw[aria-checked="true"] .track{background:var(--p);border-color:var(--p)}
+.sw[aria-checked="true"] .thumb{left:22px;background:var(--op);color:var(--p)}
+
+/* ---------- Lock screen ---------- */
+.lock-page{min-height:100vh;display:flex;flex-direction:column;box-sizing:border-box;padding:16px 24px 48px}
+.lock-center{flex:1;display:flex;align-items:center;justify-content:center}
+.lock-card{width:100%;max-width:400px;background:var(--c1);border-radius:28px;padding:40px 32px 28px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:24px}
+.lock-card.wide{max-width:480px}
+.lock-logo{width:72px;height:72px;border-radius:24px;background:var(--p);color:var(--op);display:flex;align-items:center;justify-content:center}
+.lock-title{text-align:center}
+.lock-title h1{margin:0;font-size:28px;line-height:36px;font-weight:400}
+.lock-title p{margin:4px 0 0;color:var(--osv);font-size:16px;line-height:24px}
+.dots{display:flex;gap:20px;height:16px}
+.dots.shake{animation:lh-shake .4s var(--ease)}
+.dot{width:16px;height:16px;border-radius:50%;box-sizing:border-box;border:2px solid var(--ol)}
+.dot.filled{background:var(--p);border-color:var(--p)}
+.keys{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 20px;width:100%;max-width:288px}
+.key{position:relative;overflow:hidden;width:76px;height:76px;border-radius:50%;border:none;background:var(--c3);color:var(--os);font:400 28px Roboto,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;justify-self:center}
+.key.alt{background:transparent;color:var(--osv);font-size:16px;font-weight:500}
+.key:active:not(:disabled){transform:scale(.92)}
+.key:disabled{opacity:.38;cursor:default}.key:disabled::after{display:none}
+.lock-foot{display:flex;flex-direction:column;align-items:center;gap:2px}
+.msg{min-height:20px;text-align:center;color:var(--e);font-weight:500}
+.msg.info{color:var(--osv);font-weight:400}
+
+.lock-switch{position:absolute;top:16px;right:24px;z-index:2}
+/* Laptop screens are often shorter than the 900px design: tighten the card so it fits without scrolling. */
+@media (max-height:900px){
+  .lock-page{padding:16px 24px}
+  .lock-card{padding:28px 28px 20px;gap:16px}
+  .lock-logo{width:56px;height:56px;border-radius:18px}
+  .lock-logo svg{width:34px;height:34px}
+  .keys{gap:10px 20px}
+  .key{width:62px;height:62px;font-size:24px}
+}
+
+/* Recovery code */
+.code{font:500 28px/36px Roboto,sans-serif;letter-spacing:3px;font-variant-numeric:tabular-nums;padding:20px 24px;border-radius:16px;background:var(--pc);color:var(--opc);text-align:center;user-select:all;width:100%;box-sizing:border-box}
+.check{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer;border-radius:8px;padding:0 8px;align-self:stretch}
+.check input{position:absolute;opacity:0;pointer-events:none}
+.cbox{width:20px;height:20px;border-radius:4px;border:2px solid var(--osv);box-sizing:border-box;display:flex;align-items:center;justify-content:center;flex:none;color:var(--op)}
+.check input:checked+.cbox{background:var(--p);border-color:var(--p)}
+
+/* Text field */
+.tf{position:relative;display:flex;flex-direction:column;align-self:stretch}
+.tf input{height:56px;box-sizing:border-box;padding:0 16px;border:1px solid var(--ol);border-radius:4px;background:transparent;color:var(--os);font:400 16px Roboto,sans-serif;outline:none;width:100%}
+.tf input:hover{border-color:var(--os)}
+.tf input:focus{border:2px solid var(--p);padding-left:15px}
+.tf .lb{position:absolute;left:12px;top:-8px;padding:0 4px;background:var(--c1);font-size:12px;line-height:16px;color:var(--osv);z-index:1}
+.tf:focus-within .lb{color:var(--p)}
+.tf .help{font-size:12px;line-height:16px;color:var(--osv);padding:4px 16px 0}
+
+/* Placeholder pages */
+.soon-card{display:flex;flex-direction:column;gap:12px;align-items:flex-start;max-width:640px}
+.step-chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:8px;font-size:12px;font-weight:500;line-height:16px;letter-spacing:.5px;background:var(--sc);color:var(--osc)}
+
+/* ---------- Motion ---------- */
+@keyframes lh-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes lh-card-in{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes lh-pill{from{transform:scaleX(.3);opacity:0}to{transform:none;opacity:1}}
+@keyframes lh-pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+@keyframes lh-shake{0%,100%{transform:none}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.in{animation:lh-in .6s var(--dec) both}
+.card-in{animation:lh-card-in .7s var(--dec) both}
+.pop{animation:lh-pop .3s var(--dec) both}
+
+@media (max-width:720px){.shell{flex-direction:column}.rail{flex:0 0 auto;flex-direction:row;justify-content:space-around;padding:8px 4px;order:2;position:sticky;top:auto;bottom:0;height:auto;background:var(--c2);z-index:5}.rail .logo,.rail .fab,.rail-end{display:none}.dest{width:auto;flex:1}.main{padding:16px}}
+@media (prefers-reduced-motion:reduce){.lh,.lh *{animation:none!important;transition:none!important}}
