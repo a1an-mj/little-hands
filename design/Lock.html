@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Little Hands – Unlock</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.lh{--p:#02696D;--op:#FFFFFF;--pc:#9AE8EB;--opc:#012021;--sc:#C6E9EA;--osc:#012021;--s:#F2FBFB;--os:#161D1D;--osv:#394A4A;--ol:#687A7B;--olv:#B7CACB;--c1:#EAF2F3;--c3:#DEE7E7;--c4:#D9E1E1;--sh1:0 1px 2px rgba(0,0,0,.3),0 1px 3px 1px rgba(0,0,0,.15);--ease:cubic-bezier(.2,0,0,1);--dec:cubic-bezier(.05,.7,.1,1);color-scheme:light;background:var(--s);color:var(--os);font-family:Roboto,system-ui,sans-serif;font-size:14px;line-height:20px;letter-spacing:.25px}
+.lh[data-theme="dark"]{--p:#9AE8EB;--op:#033638;--pc:#004F52;--opc:#9AE8EB;--sc:#2D4C4D;--osc:#C6E9EA;--s:#0D1515;--os:#DCE4E4;--osv:#B7CACB;--ol:#829495;--olv:#394A4A;--c1:#161D1D;--c3:#252B2B;--c4:#2F3636;color-scheme:dark}
+.lh,.lh *{transition:background-color .45s var(--ease),color .45s var(--ease),border-color .45s var(--ease),box-shadow .25s var(--ease),transform .2s var(--ease),opacity .25s var(--ease)}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 24px;border-radius:24px;border:none;font:500 15px/20px Roboto,sans-serif;letter-spacing:.1px;text-decoration:none;cursor:pointer;box-sizing:border-box}
+.filled{background:var(--p);color:var(--op)}
+.dis{background:color-mix(in srgb,var(--os) 12%,transparent);color:color-mix(in srgb,var(--os) 38%,transparent);cursor:default}
+.textb{background:transparent;color:var(--p);padding:0 12px;min-height:44px}
+.key{position:relative;overflow:hidden;width:76px;height:76px;border-radius:50%;border:none;background:var(--c3);color:var(--os);font:400 28px Roboto,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;justify-self:center}
+.key.alt{background:transparent;color:var(--osv);font-size:16px;font-weight:500}
+.btn::after,.key::after,.sw::after{content:"";position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .2s var(--ease);pointer-events:none}
+.btn:hover::after,.key:hover::after{opacity:.08}
+.btn:active::after,.key:active::after{opacity:.12}
+.key:active{transform:scale(.92)}
+.btn:focus-visible,.key:focus-visible,.sw:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+.sw{display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:0 4px 0 12px;border:none;border-radius:22px;background:transparent;color:var(--osv);font:500 14px Roboto,sans-serif;cursor:pointer}
+.track{position:relative;width:52px;height:32px;border-radius:16px;box-sizing:border-box;border:2px solid var(--ol);background:var(--c4)}
+.thumb{position:absolute;top:50%;left:2px;width:24px;height:24px;margin-top:-12px;border-radius:50%;background:var(--ol);color:var(--c4);display:flex;align-items:center;justify-content:center;transition:all .4s var(--dec)}
+.sw[aria-checked="true"] .track{background:var(--p);border-color:var(--p)}
+.sw[aria-checked="true"] .thumb{left:22px;background:var(--op);color:var(--p)}
+.dot{width:16px;height:16px;border-radius:50%;box-sizing:border-box}
+@keyframes lh-in{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes lh-pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.in{animation:lh-in .7s var(--dec) both}
+.pop{animation:lh-pop .3s var(--dec) both}
+@media (prefers-reduced-motion:reduce){.lh *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="lh" data-theme="{{theme}}" style="min-height: 900px; display: flex; flex-direction: column; box-sizing: border-box; padding: 16px 24px 48px">
+<div style="display: flex; justify-content: flex-end">
+<button type="button" role="switch" class="sw" aria-checked="{{darkStr}}" onClick="{{toggleTheme}}" title="Switch between light and dark">Dark theme<span class="track"><span class="thumb"><sc-if value="{{isDark}}" hint-placeholder-val="{{false}}"><svg class="pop" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if><sc-if value="{{isLight}}" hint-placeholder-val="{{true}}"><svg class="pop" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if></span></span></button>
+</div>
+<div style="flex: 1; display: flex; align-items: center; justify-content: center">
+<div class="in" style="width: 100%; max-width: 400px; background: var(--c1); border-radius: 28px; padding: 40px 32px 28px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 24px">
+<div aria-hidden="true" style="width: 72px; height: 72px; border-radius: 24px; background: var(--p); color: var(--op); display: flex; align-items: center; justify-content: center"><svg width="44" height="44" viewBox="8 7 22 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 22v-8a2 2 0 0 1 4 0v6M18 19v-8a2 2 0 0 1 4 0v8M22 19v-6a2 2 0 0 1 4 0v9c0 4-3 7-7 7h-1c-2.2 0-3.6-.9-5-2.6L10 24.5a2 2 0 0 1 3.2-2.4L14 23"></path></svg></div>
+<div style="text-align: center">
+<h1 style="margin: 0; font-size: 28px; line-height: 36px; font-weight: 400">Little Hands</h1>
+<p style="margin: 4px 0 0; color: var(--osv); font-size: 16px; line-height: 24px">Enter your PIN</p>
+</div>
+<div role="status" aria-label="{{count}} of 4 digits entered" style="display: flex; gap: 20px; height: 16px">
+<sc-for list="{{dots}}" as="d" hint-placeholder-count="4">
+<sc-if value="{{d.filled}}" hint-placeholder-val="{{false}}"><span class="dot pop" style="background: var(--p)"></span></sc-if>
+<sc-if value="{{d.empty}}" hint-placeholder-val="{{true}}"><span class="dot" style="border: 2px solid var(--ol)"></span></sc-if>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 20px; width: 100%; max-width: 288px">
+<sc-for list="{{keys}}" as="k" hint-placeholder-count="12">
+<button type="button" class="{{k.cls}}" onClick="{{k.press}}" aria-label="{{k.aria}}">{{k.label}}</button>
+</sc-for>
+</div>
+<sc-if value="{{ready}}" hint-placeholder-val="{{false}}"><a href="Main.dc.html" class="btn filled pop" style="width: 100%">Unlock</a></sc-if>
+<sc-if value="{{notReady}}" hint-placeholder-val="{{true}}"><span class="btn dis" aria-disabled="true" style="width: 100%">Unlock</span></sc-if>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+<a href="#" class="btn textb">Forgot PIN?</a>
+<span style="font-size: 12px; line-height: 16px; color: var(--osv)">Locks itself after 10 minutes without use</span>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+themeOf() {
+const s = this.state && this.state.theme;
+if (s) return s;
+let st = null;
+try { st = window.localStorage.getItem('lh-theme'); } catch (e) {}
+if (st === 'dark' || st === 'light') return st;
+try { if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'; } catch (e) {}
+return 'light';
+}
+componentDidMount() {
+try {
+this._mq = window.matchMedia('(prefers-color-scheme: dark)');
+this._mqf = () => this.forceUpdate();
+this._mq.addEventListener('change', this._mqf);
+} catch (e) {}
+}
+componentWillUnmount() { try { this._mq.removeEventListener('change', this._mqf); } catch (e) {} }
+renderVals() {
+const theme = this.themeOf();
+const pin = (this.state && this.state.pin) || '';
+const add = (d) => () => {
+const p = (this.state && this.state.pin) || '';
+if (p.length < 4) this.setState({ pin: p + d });
+};
+const keys = ['1','2','3','4','5','6','7','8','9'].map((l) => ({ label: l, aria: l, cls: 'key', press: add(l) }));
+keys.push({ label: 'Clear', aria: 'Clear', cls: 'key alt', press: () => this.setState({ pin: '' }) });
+keys.push({ label: '0', aria: '0', cls: 'key', press: add('0') });
+keys.push({ label: '⌫', aria: 'Delete last digit', cls: 'key alt', press: () => { const p = (this.state && this.state.pin) || ''; this.setState({ pin: p.slice(0, -1) }); } });
+return {
+theme: theme,
+isDark: theme === 'dark',
+isLight: theme !== 'dark',
+darkStr: theme === 'dark' ? 'true' : 'false',
+toggleTheme: () => {
+const t = this.themeOf() === 'dark' ? 'light' : 'dark';
+try { window.localStorage.setItem('lh-theme', t); } catch (e) {}
+this.setState({ theme: t });
+},
+keys: keys,
+dots: [0, 1, 2, 3].map((i) => ({ filled: i < pin.length, empty: i >= pin.length })),
+count: pin.length,
+ready: pin.length === 4,
+notReady: pin.length < 4
+};
+}
+}
+</script>
+</body>
+</html>

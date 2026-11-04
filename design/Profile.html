@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Little Hands – Student profile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.lh{--p:#02696D;--op:#FFFFFF;--pc:#9AE8EB;--opc:#012021;--sc:#C6E9EA;--osc:#012021;--tc:#FFDCBE;--otc:#2C1600;--e:#BA1A1A;--ec:#FFDAD6;--oec:#410002;--s:#F2FBFB;--os:#161D1D;--osv:#394A4A;--ol:#687A7B;--olv:#B7CACB;--c1:#EAF2F3;--c2:#E4EDED;--c3:#DEE7E7;--c4:#D9E1E1;--pgc:#FFDAD3;--pgo:#5C1A10;--lkc:#FFE08D;--lko:#3A2E00;--ukc:#D3E4FF;--uko:#0B305A;--tuc:#EADDFF;--tuo:#3B2271;--sh1:0 1px 2px rgba(0,0,0,.3),0 1px 3px 1px rgba(0,0,0,.15);--sh3:0 1px 3px rgba(0,0,0,.3),0 4px 8px 3px rgba(0,0,0,.15);--ease:cubic-bezier(.2,0,0,1);--dec:cubic-bezier(.05,.7,.1,1);color-scheme:light;background:var(--s);color:var(--os);font-family:Roboto,system-ui,sans-serif;font-size:14px;line-height:20px;letter-spacing:.25px}
+.lh[data-theme="dark"]{--p:#9AE8EB;--op:#033638;--pc:#004F52;--opc:#9AE8EB;--sc:#2D4C4D;--osc:#C6E9EA;--tc:#693C00;--otc:#FFDCBE;--e:#FFB4AB;--ec:#93000A;--oec:#FFDAD6;--s:#0D1515;--os:#DCE4E4;--osv:#B7CACB;--ol:#829495;--olv:#394A4A;--c1:#161D1D;--c2:#1A2121;--c3:#252B2B;--c4:#2F3636;--pgc:#73342A;--pgo:#FFDAD3;--lkc:#574500;--lko:#FFE08D;--ukc:#1F4876;--uko:#D3E4FF;--tuc:#4F378B;--tuo:#EADDFF;color-scheme:dark}
+.lh,.lh *{transition:background-color .45s var(--ease),color .45s var(--ease),border-color .45s var(--ease),box-shadow .25s var(--ease),transform .25s var(--ease),opacity .25s var(--ease)}
+.shell{display:flex;align-items:stretch}
+.rail{flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 0;box-sizing:border-box}
+.logo{width:48px;height:48px;border-radius:16px;background:var(--p);color:var(--op);display:flex;align-items:center;justify-content:center}
+.fab{position:relative;overflow:hidden;width:56px;height:56px;border-radius:16px;background:var(--pc);color:var(--opc);display:flex;align-items:center;justify-content:center;box-shadow:var(--sh3);text-decoration:none;margin:8px 0 12px}
+.dest{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:56px;width:80px;text-decoration:none;color:var(--osv);font-size:12px;font-weight:500;line-height:16px;letter-spacing:.5px}
+.pill{position:relative;overflow:hidden;width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.dest[aria-current="page"]{color:var(--os);font-weight:700}
+.dest[aria-current="page"] .pill{background:var(--sc);color:var(--osc);animation:lh-pill .5s var(--dec) both}
+.rail-end{margin-top:auto}
+.dest.soon{opacity:.45;cursor:default}.dest.soon .pill::after{display:none}
+.pill::after,.btn::after,.fab::after,.tab::after,.iconb::after{content:"";position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .2s var(--ease);pointer-events:none}
+.dest:hover .pill::after,.btn:hover::after,.fab:hover::after,.tab:hover::after,.iconb:hover::after{opacity:.08}
+.dest:active .pill::after,.btn:active::after,.fab:active::after,.tab:active::after,.iconb:active::after{opacity:.12}
+.main{flex:1 1 auto;min-width:0;box-sizing:border-box;padding:16px 32px 48px 8px;display:flex;flex-direction:column;gap:20px}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-height:64px}
+.h-lg{margin:0;font-size:32px;line-height:40px;font-weight:400;letter-spacing:0}
+.h-md{margin:0;font-size:22px;line-height:28px;font-weight:400;letter-spacing:0}
+.t-lg{font-size:16px;line-height:24px;font-weight:500;letter-spacing:.15px}
+.muted{color:var(--osv)}
+.small{font-size:12px;line-height:16px;letter-spacing:.4px}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 24px;border-radius:22px;border:none;font:500 14px/20px Roboto,sans-serif;letter-spacing:.1px;text-decoration:none;cursor:pointer;white-space:nowrap;box-sizing:border-box}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible,.dest:focus-visible,.tab:focus-visible,.sw:focus-visible,.fab:focus-visible,.iconb:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+.filled{background:var(--p);color:var(--op)}.filled:hover{box-shadow:var(--sh1)}
+.tonal{background:var(--sc);color:var(--osc)}
+.outlined{background:transparent;color:var(--p);border:1px solid var(--ol)}
+.textb{background:transparent;color:var(--p);padding:0 12px}
+.iconb{position:relative;overflow:hidden;width:44px;height:44px;border-radius:50%;border:none;background:transparent;color:var(--osv);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none}
+.card{background:var(--c1);border-radius:24px;padding:24px;box-sizing:border-box}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:8px;font-size:12px;font-weight:500;line-height:16px;letter-spacing:.5px;white-space:nowrap}
+.pg{background:var(--pgc);color:var(--pgo)}.lk{background:var(--lkc);color:var(--lko)}.uk{background:var(--ukc);color:var(--uko)}.tu{background:var(--tuc);color:var(--tuo)}
+.ok{background:var(--pc);color:var(--opc)}.part{background:var(--tc);color:var(--otc)}.due{background:var(--ec);color:var(--oec)}.nt{background:var(--c4);color:var(--osv)}
+.row{border-top:1px solid var(--olv)}
+.tabs{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--olv)}
+.tab{position:relative;overflow:hidden;min-height:48px;padding:0 20px;border:none;background:transparent;color:var(--osv);font:500 14px Roboto,sans-serif;letter-spacing:.1px;cursor:pointer}
+.tab[aria-selected="true"]{color:var(--p)}
+.ind{position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--p);animation:lh-pill .45s var(--dec) both}
+.sw{display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:0 4px 0 12px;border:none;border-radius:22px;background:transparent;color:var(--osv);font:500 14px Roboto,sans-serif;cursor:pointer}
+.track{position:relative;width:52px;height:32px;border-radius:16px;box-sizing:border-box;border:2px solid var(--ol);background:var(--c4)}
+.thumb{position:absolute;top:50%;left:2px;width:24px;height:24px;margin-top:-12px;border-radius:50%;background:var(--ol);color:var(--c4);display:flex;align-items:center;justify-content:center;transition:all .4s var(--dec)}
+.sw[aria-checked="true"] .track{background:var(--p);border-color:var(--p)}
+.sw[aria-checked="true"] .thumb{left:22px;background:var(--op);color:var(--p)}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:12px 8px}
+th{font-weight:500;color:var(--osv);font-size:12px;letter-spacing:.4px}
+@keyframes lh-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes lh-pill{from{transform:scaleX(.3);opacity:0}to{transform:none;opacity:1}}
+@keyframes lh-pop{from{transform:scale(.5);opacity:0}to{transform:none;opacity:1}}
+.in{animation:lh-in .55s var(--dec) both}
+.pop{animation:lh-pop .35s var(--dec) both}
+@media (max-width:720px){.shell{flex-direction:column}.rail{flex:0 0 auto;flex-direction:row;justify-content:space-around;padding:8px 4px;order:2;position:sticky;bottom:0;background:var(--c2);z-index:5}.rail .logo,.rail .fab,.rail-end{display:none}.dest{width:auto;flex:1}.main{padding:16px}}
+@media (prefers-reduced-motion:reduce){.lh *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="lh" data-theme="{{theme}}" style="min-height: 1320px">
+<div class="shell" style="min-height: 1320px">
+
+<nav class="rail" aria-label="Main menu">
+<div class="logo" aria-hidden="true"><svg width="30" height="30" viewBox="8 7 22 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 22v-8a2 2 0 0 1 4 0v6M18 19v-8a2 2 0 0 1 4 0v8M22 19v-6a2 2 0 0 1 4 0v9c0 4-3 7-7 7h-1c-2.2 0-3.6-.9-5-2.6L10 24.5a2 2 0 0 1 3.2-2.4L14 23"></path></svg></div>
+<a href="Payment.dc.html" class="fab" aria-label="Record a payment"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></a>
+<a href="Main.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20h-5v-6H9v6H4z"></path></svg></span>Home</a>
+<a href="Students.dc.html" class="dest" aria-current="page"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.9.7 3.1 2.4 3.5 5.2"></path></svg></span>Students</a>
+<a href="Payment.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18M7 15h4"></path></svg></span>Fees</a>
+<a href="Students.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15l2 2 4-4"></path></svg></span>Attendance</a>
+<a class="dest soon" aria-disabled="true" title="Coming in a later version"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"></path></svg></span>Reports</a>
+<a class="dest soon" aria-disabled="true" title="Coming in a later version"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"></path></svg></span>Settings</a>
+<a href="Lock.dc.html" class="dest rail-end"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></span>Lock</a>
+</nav>
+
+<main class="main">
+<header class="topbar in">
+<a href="Students.dc.html" class="iconb" aria-label="Back to all students"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></a>
+<span class="t-lg" style="flex: 1">Student profile</span>
+<button type="button" role="switch" class="sw" aria-checked="{{darkStr}}" onClick="{{toggleTheme}}" title="Switch between light and dark">Dark theme<span class="track"><span class="thumb"><sc-if value="{{isDark}}" hint-placeholder-val="{{true}}"><svg class="pop" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if><sc-if value="{{isLight}}" hint-placeholder-val="{{false}}"><svg class="pop" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if></span></span></button>
+</header>
+
+<section aria-label="Student summary" class="card in" style="display: flex; flex-wrap: wrap; align-items: center; gap: 24px; animation-delay: 60ms">
+<div style="position: relative; flex: none">
+<div aria-hidden="true" style="width: 104px; height: 104px; border-radius: 32px; background: var(--lkc); color: var(--lko); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 400">AM</div>
+<button type="button" class="btn filled" aria-label="Add photo" style="position: absolute; right: -10px; bottom: -10px; width: 48px; height: 48px; padding: 0; border-radius: 16px; box-shadow: var(--sh3)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></button>
+</div>
+<div style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px"><h1 class="h-lg">Aadhya Menon</h1><span class="tag ok">Active</span></div>
+<div class="muted" style="display: flex; flex-wrap: wrap; gap: 4px 20px"><span>LH-2025-014</span><span>Joined 3 June 2025</span><span>No photo yet</span></div>
+<div style="display: flex; gap: 6px"><span class="tag lk">LKG</span><span class="tag tu">Tuition</span></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<button type="button" class="btn outlined"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"></path></svg>Edit</button>
+<a href="Payment.dc.html" class="btn filled"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Record payment</a>
+</div>
+</section>
+
+<div class="tabs in" role="tablist" aria-label="Profile sections" style="animation-delay: 120ms">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="4">
+<button type="button" role="tab" class="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}">{{t.label}}<sc-if value="{{t.on}}" hint-placeholder-val="{{false}}"><span class="ind"></span></sc-if></button>
+</sc-for>
+</div>
+
+<sc-if value="{{tOverview}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+<div style="flex: 2 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+<section aria-labelledby="enr-h" class="card in" style="animation-delay: 160ms">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px"><h2 id="enr-h" class="h-md">Programs, timings &amp; fees</h2><button type="button" class="btn tonal">Add program</button></div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">
+<div style="background: var(--lkc); color: var(--lko); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; justify-content: space-between"><span class="t-lg">LKG · 2026–27</span><button type="button" class="iconb" aria-label="Edit LKG" style="color: inherit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"></path></svg></button></div>
+<div><div class="small" style="opacity: .8">Timings</div><div class="t-lg">Mon–Fri · 8:45 AM – 12:30 PM</div></div>
+<div><div class="small" style="opacity: .8">Agreed fee</div><div class="t-lg">₹1,500 / month</div><div class="small">No concession · since 1 Jun 2026</div></div>
+</div>
+<div style="background: var(--tuc); color: var(--tuo); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; justify-content: space-between"><span class="t-lg">Tuition · 2026–27</span><button type="button" class="iconb" aria-label="Edit Tuition" style="color: inherit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"></path></svg></button></div>
+<div><div class="small" style="opacity: .8">Timings</div><div class="t-lg">Mon, Wed, Fri · 4:00 – 5:30 PM</div></div>
+<div><div class="small" style="opacity: .8">Agreed fee</div><div class="t-lg">₹800 / month</div><div class="small">₹1,000 − ₹200 concession · since 1 Jun 2026</div></div>
+</div>
+</div>
+</section>
+<section aria-labelledby="tod-h" class="card in" style="animation-delay: 220ms">
+<h2 id="tod-h" class="h-md" style="margin-bottom: 8px">Today</h2>
+<div class="row" style="display: flex; justify-content: space-between; padding: 12px 0"><span class="muted">LKG arrived</span><span><span class="t-lg">8:41 AM</span> <span class="muted">· expected 8:45</span></span></div>
+<div class="row" style="display: flex; justify-content: space-between; padding: 12px 0"><span class="muted">LKG leaves</span><span class="t-lg">12:30 PM</span></div>
+<div class="row" style="display: flex; justify-content: space-between; padding: 12px 0"><span class="muted">Tuition</span><span>Not today · Mon, Wed, Fri</span></div>
+</section>
+</div>
+<div style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+<section aria-labelledby="bal-h" class="card in" style="display: flex; flex-direction: column; gap: 10px; background: var(--tc); color: var(--otc); animation-delay: 200ms">
+<h2 id="bal-h" class="t-lg" style="margin: 0">Fee balance</h2>
+<div style="font-size: 45px; line-height: 52px">₹500</div>
+<div>LKG, October. November's ₹2,300 is due by the 10th.</div>
+<div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--otc) 25%, transparent)"><span>Paid in 2026–27</span><span class="t-lg">₹11,000</span></div>
+<a href="Payment.dc.html" class="btn filled" style="margin-top: 6px">Collect ₹500</a>
+</section>
+<section aria-labelledby="gua-h" class="card in" style="animation-delay: 260ms">
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px"><h2 id="gua-h" class="h-md">Parents &amp; guardians</h2><button type="button" class="btn textb">Add</button></div>
+<div class="row" style="display: flex; align-items: center; gap: 12px; padding: 12px 0"><div style="flex: 1"><div style="display: flex; align-items: center; gap: 8px"><span class="t-lg">Suresh Menon</span><span class="tag ok">Main</span></div><div class="small muted">Father · +91 90000 00014</div></div><button type="button" class="iconb" aria-label="Copy Suresh Menon&#39;s number" title="Copy number"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a1 1 0 0 1 1-1h10"></path></svg></button></div>
+<div class="row" style="display: flex; align-items: center; gap: 12px; padding: 12px 0"><div style="flex: 1"><div class="t-lg">Lakshmi Menon</div><div class="small muted">Mother · +91 90000 00015</div></div><button type="button" class="iconb" aria-label="Copy Lakshmi Menon&#39;s number" title="Copy number"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a1 1 0 0 1 1-1h10"></path></svg></button></div>
+<div class="row" style="display: flex; align-items: center; gap: 12px; padding: 12px 0"><div style="flex: 1"><div style="display: flex; align-items: center; gap: 8px"><span class="t-lg">Sarojini Amma</span><span class="tag due">Emergency</span></div><div class="small muted">Grandmother · +91 90000 00016</div></div><button type="button" class="iconb" aria-label="Copy Sarojini Amma&#39;s number" title="Copy number"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a1 1 0 0 1 1-1h10"></path></svg></button></div>
+<div class="row" style="padding-top: 12px"><div class="small muted">Address</div><div>[House name, street, town, PIN]</div></div>
+</section>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{tFees}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 24px">
+<section aria-labelledby="mon-h" class="card in">
+<h2 id="mon-h" class="h-md" style="margin-bottom: 8px">Month by month</h2>
+<div style="overflow-x: auto"><table style="min-width: 480px">
+<thead><tr><th scope="col" style="padding-left: 0">Month</th><th scope="col">LKG · ₹1,500</th><th scope="col">Tuition · ₹800</th></tr></thead>
+<tbody>
+<tr class="row"><th scope="row" style="padding-left: 0; color: var(--os); font-size: 14px">Nov 2026</th><td><span class="tag nt">Due ₹1,500</span></td><td><span class="tag nt">Due ₹800</span></td></tr>
+<tr class="row"><th scope="row" style="padding-left: 0; color: var(--os); font-size: 14px">Oct 2026</th><td><span class="tag part">₹500 left</span></td><td><span class="tag ok">Paid</span></td></tr>
+<tr class="row"><th scope="row" style="padding-left: 0; color: var(--os); font-size: 14px">Sep 2026</th><td><span class="tag ok">Paid</span></td><td><span class="tag ok">Paid</span></td></tr>
+<tr class="row"><th scope="row" style="padding-left: 0; color: var(--os); font-size: 14px">Aug 2026</th><td><span class="tag ok">Paid</span></td><td><span class="tag ok">Paid</span></td></tr>
+</tbody></table></div>
+</section>
+<section aria-labelledby="his-h" class="card in" style="animation-delay: 80ms">
+<div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px"><h2 id="his-h" class="h-md">Payment history</h2><span class="small muted">Newest first · saved entries are never edited or deleted</span></div>
+<div style="overflow-x: auto"><table style="min-width: 680px">
+<thead><tr><th scope="col" style="padding-left: 0">Date</th><th scope="col">Payment</th><th scope="col">For</th><th scope="col">Method</th><th scope="col" style="text-align: right">Amount</th><th scope="col" style="text-align: right; padding-right: 0">Left for month</th></tr></thead>
+<tbody>
+<tr class="row"><td style="padding-left: 0">30 Oct 2026<div class="small muted">12:35 PM</div></td><td class="muted">PAY-0418</td><td>LKG · Oct</td><td>Cash</td><td class="t-lg" style="text-align: right">₹1,000</td><td style="text-align: right; padding-right: 0"><span class="tag part">₹500</span></td></tr>
+<tr class="row"><td style="padding-left: 0">5 Oct 2026<div class="small muted">4:10 PM</div></td><td class="muted">PAY-0391</td><td>Tuition · Oct</td><td>UPI</td><td class="t-lg" style="text-align: right">₹800</td><td style="text-align: right; padding-right: 0"><span class="tag ok">₹0</span></td></tr>
+<tr class="row"><td style="padding-left: 0">8 Sep 2026<div class="small muted">10:02 AM</div></td><td class="muted">PAY-0352</td><td>LKG · Sep</td><td>UPI</td><td class="t-lg" style="text-align: right">₹1,500</td><td style="text-align: right; padding-right: 0"><span class="tag ok">₹0</span></td></tr>
+<tr class="row" style="background: var(--c2)"><td style="padding-left: 8px">8 Sep 2026<div class="small muted">10:01 AM</div></td><td class="muted">PAY-0351</td><td>Reversal of PAY-0350<div class="small muted">Typed ₹15,000 instead of ₹1,500</div></td><td>—</td><td class="t-lg" style="text-align: right; color: var(--e)">−₹15,000</td><td style="text-align: right; padding-right: 8px" class="muted">—</td></tr>
+<tr class="row" style="background: var(--c2)"><td style="padding-left: 8px">8 Sep 2026<div class="small muted">9:58 AM</div></td><td class="muted">PAY-0350</td><td>LKG · Sep <span class="tag nt">Reversed</span></td><td>UPI</td><td class="muted" style="text-align: right; text-decoration: line-through">₹15,000</td><td style="text-align: right; padding-right: 8px" class="muted">—</td></tr>
+<tr class="row"><td style="padding-left: 0">4 Sep 2026<div class="small muted">4:05 PM</div></td><td class="muted">PAY-0347</td><td>Tuition · Sep</td><td>Cash</td><td class="t-lg" style="text-align: right">₹800</td><td style="text-align: right; padding-right: 0"><span class="tag ok">₹0</span></td></tr>
+</tbody></table></div>
+<div class="row" style="padding-top: 12px"><button type="button" class="btn textb">Show June – August</button></div>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{tAtt}}" hint-placeholder-val="{{false}}">
+<section aria-labelledby="att-h" class="card in">
+<h2 id="att-h" class="h-md" style="margin-bottom: 8px">Last 5 school days · LKG</h2>
+<div class="row" style="display: flex; flex-wrap: wrap; gap: 12px; padding: 14px 0; align-items: center"><span class="t-lg" style="flex: 0 0 140px">Mon 2 Nov</span><span style="flex: 1">In 8:41 AM · out —</span><span class="tag ok">On time</span></div>
+<div class="row" style="display: flex; flex-wrap: wrap; gap: 12px; padding: 14px 0; align-items: center"><span class="t-lg" style="flex: 0 0 140px">Fri 30 Oct</span><span style="flex: 1">In 8:50 AM · out 12:35 PM</span><span class="tag part">5 min late</span></div>
+<div class="row" style="display: flex; flex-wrap: wrap; gap: 12px; padding: 14px 0; align-items: center"><span class="t-lg" style="flex: 0 0 140px">Thu 29 Oct</span><span style="flex: 1">In 8:44 AM · out 12:30 PM</span><span class="tag ok">On time</span></div>
+<div class="row" style="display: flex; flex-wrap: wrap; gap: 12px; padding: 14px 0; align-items: center"><span class="t-lg" style="flex: 0 0 140px">Wed 28 Oct</span><span style="flex: 1">—</span><span class="tag due">Absent · fever</span></div>
+<div class="row" style="display: flex; flex-wrap: wrap; gap: 12px; padding: 14px 0; align-items: center"><span class="t-lg" style="flex: 0 0 140px">Tue 27 Oct</span><span style="flex: 1">In 8:40 AM · out 12:30 PM</span><span class="tag ok">On time</span></div>
+</section>
+</sc-if>
+
+<sc-if value="{{tNotes}}" hint-placeholder-val="{{false}}">
+<section aria-labelledby="nt-h" class="card in" style="display: flex; flex-direction: column; gap: 12px">
+<h2 id="nt-h" class="h-md">Notes for staff</h2>
+<div style="background: var(--ec); color: var(--oec); border-radius: 16px; padding: 16px"><div class="t-lg">Peanut allergy</div><div>Inform the kitchen and any new teacher.</div></div>
+<div style="background: var(--c3); border-radius: 16px; padding: 16px"><div class="t-lg">Pick-up</div><div class="muted">Grandmother collects on Tuesdays and Thursdays.</div></div>
+<button type="button" class="btn tonal" style="align-self: flex-start">Add a note</button>
+</section>
+</sc-if>
+
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1320}}'>
+class Component extends DCLogic {
+themeOf() {
+const s = this.state && this.state.theme;
+if (s) return s;
+let st = null;
+try { st = window.localStorage.getItem('lh-theme'); } catch (e) {}
+if (st === 'dark' || st === 'light') return st;
+try { if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'; } catch (e) {}
+return 'light';
+}
+componentDidMount() {
+try {
+this._mq = window.matchMedia('(prefers-color-scheme: dark)');
+this._mqf = () => this.forceUpdate();
+this._mq.addEventListener('change', this._mqf);
+} catch (e) {}
+}
+componentWillUnmount() { try { this._mq.removeEventListener('change', this._mqf); } catch (e) {} }
+renderVals() {
+const theme = this.themeOf();
+const tab = (this.state && this.state.tab) || 'overview';
+const defs = [['overview', 'Overview'], ['fees', 'Fees & payments'], ['att', 'Attendance'], ['notes', 'Notes']];
+return {
+theme: theme,
+isDark: theme === 'dark',
+isLight: theme !== 'dark',
+darkStr: theme === 'dark' ? 'true' : 'false',
+toggleTheme: () => {
+const t = this.themeOf() === 'dark' ? 'light' : 'dark';
+try { window.localStorage.setItem('lh-theme', t); } catch (e) {}
+this.setState({ theme: t });
+},
+tabs: defs.map((d) => ({ label: d[1], on: tab === d[0], sel: tab === d[0] ? 'true' : 'false', pick: () => this.setState({ tab: d[0] }) })),
+tOverview: tab === 'overview',
+tFees: tab === 'fees',
+tAtt: tab === 'att',
+tNotes: tab === 'notes'
+};
+}
+}
+</script>
+</body>
+</html>

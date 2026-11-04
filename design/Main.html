@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Little Hands – Dashboard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.lh{--p:#02696D;--op:#FFFFFF;--pc:#9AE8EB;--opc:#012021;--sc:#C6E9EA;--osc:#012021;--tc:#FFDCBE;--otc:#2C1600;--e:#BA1A1A;--ec:#FFDAD6;--oec:#410002;--s:#F2FBFB;--os:#161D1D;--osv:#394A4A;--ol:#687A7B;--olv:#B7CACB;--c1:#EAF2F3;--c2:#E4EDED;--c3:#DEE7E7;--c4:#D9E1E1;--is:#2B3232;--ios:#EAF2F3;--ip:#9AE8EB;--pgc:#FFDAD3;--pgo:#5C1A10;--pgs:#A33F2F;--lkc:#FFE08D;--lko:#3A2E00;--lks:#8A6D00;--ukc:#D3E4FF;--uko:#0B305A;--uks:#3A608F;--tuc:#EADDFF;--tuo:#3B2271;--tus:#6750A4;--sh1:0 1px 2px rgba(0,0,0,.3),0 1px 3px 1px rgba(0,0,0,.15);--sh3:0 1px 3px rgba(0,0,0,.3),0 4px 8px 3px rgba(0,0,0,.15);--ease:cubic-bezier(.2,0,0,1);--dec:cubic-bezier(.05,.7,.1,1);color-scheme:light;background:var(--s);color:var(--os);font-family:Roboto,system-ui,sans-serif;font-size:14px;line-height:20px;letter-spacing:.25px}
+.lh[data-theme="dark"]{--p:#9AE8EB;--op:#033638;--pc:#004F52;--opc:#9AE8EB;--sc:#2D4C4D;--osc:#C6E9EA;--tc:#693C00;--otc:#FFDCBE;--e:#FFB4AB;--ec:#93000A;--oec:#FFDAD6;--s:#0D1515;--os:#DCE4E4;--osv:#B7CACB;--ol:#829495;--olv:#394A4A;--c1:#161D1D;--c2:#1A2121;--c3:#252B2B;--c4:#2F3636;--is:#DCE4E4;--ios:#2B3232;--ip:#02696D;--pgc:#73342A;--pgo:#FFDAD3;--pgs:#FFB4A5;--lkc:#574500;--lko:#FFE08D;--lks:#E9C349;--ukc:#1F4876;--uko:#D3E4FF;--uks:#A3C9FE;--tuc:#4F378B;--tuo:#EADDFF;--tus:#D0BCFF;color-scheme:dark}
+.lh,.lh *{transition:background-color .45s var(--ease),color .45s var(--ease),border-color .45s var(--ease),box-shadow .25s var(--ease),transform .25s var(--ease),opacity .25s var(--ease)}
+.shell{display:flex;align-items:stretch}
+.rail{flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 0;box-sizing:border-box}
+.logo{width:48px;height:48px;border-radius:16px;background:var(--p);color:var(--op);display:flex;align-items:center;justify-content:center}
+.fab{position:relative;overflow:hidden;width:56px;height:56px;border-radius:16px;background:var(--pc);color:var(--opc);display:flex;align-items:center;justify-content:center;box-shadow:var(--sh3);text-decoration:none;margin:8px 0 12px}
+.dest{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:56px;width:80px;text-decoration:none;color:var(--osv);font-size:12px;font-weight:500;line-height:16px;letter-spacing:.5px}
+.pill{position:relative;overflow:hidden;width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.dest[aria-current="page"]{color:var(--os);font-weight:700}
+.dest[aria-current="page"] .pill{background:var(--sc);color:var(--osc);animation:lh-pill .5s var(--dec) both}
+.rail-end{margin-top:auto}
+.dest.soon{opacity:.45;cursor:default}.dest.soon .pill::after{display:none}
+.pill::after,.btn::after,.fab::after,.chip::after,.segb::after,.key::after{content:"";position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .2s var(--ease);pointer-events:none}
+.dest:hover .pill::after,.btn:hover::after,.fab:hover::after,.chip:hover::after,.segb:hover::after,.key:hover::after{opacity:.08}
+.dest:active .pill::after,.btn:active::after,.fab:active::after,.chip:active::after,.segb:active::after,.key:active::after{opacity:.12}
+.main{flex:1 1 auto;min-width:0;box-sizing:border-box;padding:16px 32px 48px 8px;display:flex;flex-direction:column;gap:24px}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:16px;min-height:72px}
+.h-lg{margin:0;font-size:32px;line-height:40px;font-weight:400;letter-spacing:0}
+.h-md{margin:0;font-size:22px;line-height:28px;font-weight:400;letter-spacing:0}
+.t-lg{font-size:16px;line-height:24px;font-weight:500;letter-spacing:.15px}
+.muted{color:var(--osv)}
+.small{font-size:12px;line-height:16px;letter-spacing:.4px}
+.num{font-size:36px;line-height:44px;font-weight:400;letter-spacing:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.search{position:relative;display:flex;align-items:center;gap:12px;height:56px;padding:0 20px;border-radius:28px;background:var(--c3);color:var(--osv);flex:1 1 260px;max-width:480px;box-sizing:border-box}
+.search:focus-within{background:var(--c4);box-shadow:var(--sh1)}
+.search input{flex:1;min-width:0;border:none;outline:none;background:transparent;color:var(--os);font:400 16px Roboto,sans-serif}
+.search input::placeholder{color:var(--osv)}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 24px;border-radius:22px;border:none;font:500 14px/20px Roboto,sans-serif;letter-spacing:.1px;text-decoration:none;cursor:pointer;white-space:nowrap;box-sizing:border-box}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible,.dest:focus-visible,.chip:focus-visible,.sw:focus-visible,.fab:focus-visible,.segb:focus-visible,.key:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+.filled{background:var(--p);color:var(--op)}.filled:hover{box-shadow:var(--sh1)}
+.tonal{background:var(--sc);color:var(--osc)}
+.outlined{background:transparent;color:var(--p);border:1px solid var(--ol)}
+.textb{background:transparent;color:var(--p);padding:0 12px}
+.card{background:var(--c1);border-radius:24px;padding:24px;box-sizing:border-box}
+.card.hov:hover{box-shadow:var(--sh1)}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:8px;font-size:12px;font-weight:500;line-height:16px;letter-spacing:.5px;white-space:nowrap}
+.pg{background:var(--pgc);color:var(--pgo)}.lk{background:var(--lkc);color:var(--lko)}.uk{background:var(--ukc);color:var(--uko)}.tu{background:var(--tuc);color:var(--tuo)}
+.ok{background:var(--pc);color:var(--opc)}.part{background:var(--tc);color:var(--otc)}.due{background:var(--ec);color:var(--oec)}.nt{background:var(--c4);color:var(--osv)}
+.avatar{width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:500;flex:none}
+.plain{list-style:none;margin:0;padding:0}
+.row{border-top:1px solid var(--olv)}
+.bar{height:8px;border-radius:4px;background:var(--c4);overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:4px;background:var(--p);transform-origin:left;animation:lh-grow 1.1s var(--dec) .3s both;transition:width .6s var(--dec)}
+.sw{display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:0 4px 0 12px;border:none;border-radius:22px;background:transparent;color:var(--osv);font:500 14px Roboto,sans-serif;cursor:pointer}
+.track{position:relative;width:52px;height:32px;border-radius:16px;box-sizing:border-box;border:2px solid var(--ol);background:var(--c4)}
+.thumb{position:absolute;top:50%;left:2px;width:24px;height:24px;margin-top:-12px;border-radius:50%;background:var(--ol);color:var(--c4);display:flex;align-items:center;justify-content:center;transition:all .4s var(--dec)}
+.sw[aria-checked="true"] .track{background:var(--p);border-color:var(--p)}
+.sw[aria-checked="true"] .thumb{left:22px;background:var(--op);color:var(--p)}
+.seg{display:inline-flex;border:1px solid var(--ol);border-radius:22px;overflow:hidden}
+.segb{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border:none;border-left:1px solid var(--ol);background:transparent;color:var(--os);font:500 14px Roboto,sans-serif;cursor:pointer}
+.segb:first-child{border-left:none}
+.segb[aria-pressed="true"]{background:var(--sc);color:var(--osc)}
+.snack{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;min-height:48px;padding:4px 8px 4px 16px;border-radius:4px;background:var(--is);color:var(--ios);box-shadow:var(--sh3);animation:lh-snack .45s var(--dec) both;z-index:10;max-width:calc(100% - 32px);box-sizing:border-box}
+.snack .btn{color:var(--ip);background:transparent;padding:0 12px}
+@keyframes lh-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes lh-pill{from{transform:scaleX(.3);opacity:0}to{transform:none;opacity:1}}
+@keyframes lh-grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes lh-pop{from{transform:scale(.5);opacity:0}to{transform:none;opacity:1}}
+@keyframes lh-snack{from{opacity:0;transform:translate(-50%,24px)}to{opacity:1;transform:translate(-50%,0)}}
+.in{animation:lh-in .6s var(--dec) both}
+.pop{animation:lh-pop .35s var(--dec) both}
+@media (max-width:720px){.shell{flex-direction:column}.rail{flex:0 0 auto;flex-direction:row;justify-content:space-around;padding:8px 4px;order:2;position:sticky;bottom:0;background:var(--c2);z-index:5}.rail .logo,.rail .fab,.rail-end{display:none}.dest{width:auto;flex:1}.main{padding:16px}}
+@media (prefers-reduced-motion:reduce){.lh *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="lh" data-theme="{{theme}}" style="min-height: 1280px">
+<div class="shell" style="min-height: 1280px">
+
+<nav class="rail" aria-label="Main menu">
+<div class="logo" aria-hidden="true"><svg width="30" height="30" viewBox="8 7 22 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 22v-8a2 2 0 0 1 4 0v6M18 19v-8a2 2 0 0 1 4 0v8M22 19v-6a2 2 0 0 1 4 0v9c0 4-3 7-7 7h-1c-2.2 0-3.6-.9-5-2.6L10 24.5a2 2 0 0 1 3.2-2.4L14 23"></path></svg></div>
+<a href="Payment.dc.html" class="fab" aria-label="Record a payment"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></a>
+<a href="Main.dc.html" class="dest" aria-current="page"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20h-5v-6H9v6H4z"></path></svg></span>Home</a>
+<a href="Students.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.9.7 3.1 2.4 3.5 5.2"></path></svg></span>Students</a>
+<a href="Payment.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18M7 15h4"></path></svg></span>Fees</a>
+<a href="Students.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15l2 2 4-4"></path></svg></span>Attendance</a>
+<a class="dest soon" aria-disabled="true" title="Coming in a later version"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"></path></svg></span>Reports</a>
+<a class="dest soon" aria-disabled="true" title="Coming in a later version"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"></path></svg></span>Settings</a>
+<a href="Lock.dc.html" class="dest rail-end"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></span>Lock</a>
+</nav>
+
+<main class="main">
+<header class="topbar in">
+<div style="flex: 1 1 240px; min-width: 0">
+<div class="muted">Monday, 2 November 2026</div>
+<h1 class="h-lg">Good morning</h1>
+</div>
+<label class="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg><span class="sr">Search students</span><input type="search" placeholder="Search name or student ID"></label>
+<button type="button" role="switch" class="sw" aria-checked="{{darkStr}}" onClick="{{toggleTheme}}" title="Switch between light and dark">Dark theme<span class="track"><span class="thumb"><sc-if value="{{isDark}}" hint-placeholder-val="{{false}}"><svg class="pop" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if><sc-if value="{{isLight}}" hint-placeholder-val="{{true}}"><svg class="pop" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if></span></span></button>
+</header>
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px" class="in">
+<a href="Payment.dc.html" class="btn filled"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Record payment</a>
+<a href="AddStudent.dc.html" class="btn tonal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5 3.3 0 5.9 1.9 6.5 5.5M19 8v6M16 11h6"></path></svg>New admission</a>
+</div>
+
+<section aria-label="Today at a glance" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px">
+<div class="card hov in" style="display: flex; flex-direction: column; gap: 10px; animation-delay: 60ms; background: var(--pc); color: var(--opc)">
+<div style="font-weight: 500">Arrived today</div>
+<div><span class="num">{{arrived}}</span> <span class="t-lg">of 58</span></div>
+<div class="bar" style="background: color-mix(in srgb, var(--opc) 14%, transparent)"><i style="width: {{pct}}%; background: var(--opc)"></i></div>
+<div class="small">{{notYet}} yet to arrive · {{absent}} absent</div>
+</div>
+<div class="card hov in" style="display: flex; flex-direction: column; gap: 10px; animation-delay: 120ms">
+<div class="muted" style="font-weight: 500">Active students</div>
+<div class="num">64</div>
+<div class="small muted">6 attend kindergarten + Tuition</div>
+</div>
+<div class="card hov in" style="display: flex; flex-direction: column; gap: 10px; animation-delay: 180ms">
+<div class="muted" style="font-weight: 500">Collected in November</div>
+<div class="num">₹38,500</div>
+<div class="bar"><i style="width: 40%"></i></div>
+<div class="small muted">of ₹96,000 due this month</div>
+</div>
+<div class="card hov in" style="display: flex; flex-direction: column; gap: 10px; animation-delay: 240ms; background: var(--ec); color: var(--oec)">
+<div style="font-weight: 500">Outstanding from earlier</div>
+<div class="num">₹23,750</div>
+<div class="small">12 students · oldest from September</div>
+</div>
+</section>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<section aria-labelledby="arr-h" class="card in" style="flex: 2 1 600px; min-width: 0; animation-delay: 300ms">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px">
+<h2 id="arr-h" class="h-md">Today's arrivals</h2>
+<div class="seg" role="group" aria-label="Filter arrivals">
+<sc-for list="{{segs}}" as="g" hint-placeholder-count="3">
+<button type="button" class="segb" aria-pressed="{{g.pressed}}" onClick="{{g.pick}}"><sc-if value="{{g.on}}" hint-placeholder-val="{{false}}"><svg class="pop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if>{{g.label}}</button>
+</sc-for>
+</div>
+</div>
+<ul class="plain">
+<sc-for list="{{items}}" as="a" hint-placeholder-count="6">
+<li class="row in" style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 12px 0">
+<div style="display: flex; align-items: center; gap: 16px; flex: 2 1 240px; min-width: 0">
+<span class="avatar {{a.av}}" aria-hidden="true">{{a.ini}}</span>
+<div style="min-width: 0"><div class="t-lg">{{a.name}}</div><div style="display: flex; gap: 6px; margin-top: 4px"><sc-for list="{{a.tags}}" as="t" hint-placeholder-count="1"><span class="{{t.c}}">{{t.l}}</span></sc-for></div></div>
+</div>
+<div style="flex: 1 1 150px"><div class="small muted">Expected</div><div>{{a.exp}}</div></div>
+<div style="flex: 1 1 150px">
+<sc-if value="{{a.isWait}}" hint-placeholder-val="{{true}}"><span class="{{a.noteCls}}">{{a.note}}</span></sc-if>
+<sc-if value="{{a.isIn}}" hint-placeholder-val="{{false}}"><span class="tag ok pop">Arrived {{a.at}}</span></sc-if>
+<sc-if value="{{a.isOut}}" hint-placeholder-val="{{false}}"><span class="tag nt pop">Left {{a.out}}</span></sc-if>
+<sc-if value="{{a.isAbs}}" hint-placeholder-val="{{false}}"><span class="tag due pop">Absent today</span></sc-if>
+</div>
+<div style="flex: 0 0 236px; display: flex; gap: 8px; justify-content: flex-end">
+<sc-if value="{{a.isWait}}" hint-placeholder-val="{{true}}"><button type="button" class="btn filled pop" style="padding: 0 18px" onClick="{{a.arrive}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Arrived</button></sc-if>
+<sc-if value="{{a.canAbsent}}" hint-placeholder-val="{{true}}"><button type="button" class="btn outlined pop" style="padding: 0 18px" onClick="{{a.mkAbsent}}">Absent</button></sc-if>
+<sc-if value="{{a.isIn}}" hint-placeholder-val="{{false}}"><button type="button" class="btn tonal pop" style="padding: 0 18px" onClick="{{a.leave}}">Mark left</button></sc-if>
+</div>
+</li>
+</sc-for>
+</ul>
+<sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}"><p class="muted pop" style="margin: 0; padding: 24px 0; text-align: center">Everyone expected so far has arrived.</p></sc-if>
+<div class="row" style="padding-top: 12px"><a href="Students.dc.html" class="btn textb">Open attendance for all 58</a></div>
+</section>
+
+<section aria-labelledby="fee-h" class="card in" style="flex: 1 1 320px; min-width: 0; animation-delay: 360ms">
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px">
+<h2 id="fee-h" class="h-md">Fees to follow up</h2>
+<span class="muted">₹23,750</span>
+</div>
+<ul class="plain">
+<li class="row" style="display: flex; align-items: center; gap: 12px; padding: 12px 0"><div style="flex: 1 1 auto; min-width: 0"><div class="t-lg">Neha Varghese</div><div class="small muted">UKG · Sep + Oct</div></div><div style="text-align: right"><div class="t-lg">₹3,200</div><span class="tag due">2 months</span></div></li>
+<li class="row" style="display: flex; align-items: center; gap: 12px; padding: 12px 0"><div style="flex: 1 1 auto; min-width: 0"><div class="t-lg">Mohammed Ayaan</div><div class="small muted">Playgroup · Oct</div></div><div style="text-align: right"><div class="t-lg">₹1,200</div><span class="tag due">Unpaid</span></div></li>
+<li class="row" style="display: flex; align-items: center; gap: 12px; padding: 12px 0"><div style="flex: 1 1 auto; min-width: 0"><div class="t-lg">Ishaan Nair</div><div class="small muted">Tuition · Oct</div></div><div style="text-align: right"><div class="t-lg">₹800</div><span class="tag due">Unpaid</span></div></li>
+<li class="row" style="display: flex; align-items: center; gap: 12px; padding: 12px 0"><div style="flex: 1 1 auto; min-width: 0"><div class="t-lg">Aadhya Menon</div><div class="small muted">LKG · Oct · ₹1,000 of ₹1,500 paid</div></div><div style="text-align: right"><div class="t-lg">₹500</div><span class="tag part">Partly paid</span></div></li>
+</ul>
+<div class="row" style="padding-top: 12px"><a href="Payment.dc.html" class="btn textb">Collect a payment</a></div>
+</section>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<section aria-labelledby="pay-h" class="card in" style="flex: 3 1 420px; min-width: 0; animation-delay: 420ms">
+<h2 id="pay-h" class="h-md" style="margin-bottom: 12px">Recent payments</h2>
+<ul class="plain">
+<li class="row" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 0"><div class="small muted" style="flex: 0 0 88px">Today<br>9:12 AM</div><div style="flex: 1 1 160px; min-width: 0"><div class="t-lg">Sara Mathew</div><div class="small muted">LKG · Nov</div></div><span class="tag nt">UPI</span><div class="t-lg" style="flex: 0 0 80px; text-align: right">₹1,500</div></li>
+<li class="row" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 0"><div class="small muted" style="flex: 0 0 88px">Today<br>8:50 AM</div><div style="flex: 1 1 160px; min-width: 0"><div class="t-lg">Arjun Pillai</div><div class="small muted">UKG · Nov</div></div><span class="tag nt">Cash</span><div class="t-lg" style="flex: 0 0 80px; text-align: right">₹1,800</div></li>
+<li class="row" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 0"><div class="small muted" style="flex: 0 0 88px">Sat 31 Oct<br>5:40 PM</div><div style="flex: 1 1 160px; min-width: 0"><div class="t-lg">Ishaan Nair</div><div class="small muted">UKG · Oct</div></div><span class="tag nt">Bank transfer</span><div class="t-lg" style="flex: 0 0 80px; text-align: right">₹1,800</div></li>
+<li class="row" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 0"><div class="small muted" style="flex: 0 0 88px">Fri 30 Oct<br>12:35 PM</div><div style="flex: 1 1 160px; min-width: 0"><div class="t-lg">Aadhya Menon</div><div class="small muted">LKG · Oct · part payment</div></div><span class="tag nt">Cash</span><div class="t-lg" style="flex: 0 0 80px; text-align: right">₹1,000</div></li>
+</ul>
+</section>
+
+<section aria-labelledby="cls-h" class="card in" style="flex: 2 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 16px; animation-delay: 480ms">
+<h2 id="cls-h" class="h-md">Students by program</h2>
+<div><div style="display: flex; justify-content: space-between; margin-bottom: 6px"><span>Playgroup</span><span class="t-lg">14</span></div><div class="bar"><i style="width: 64%; background: var(--pgs)"></i></div></div>
+<div><div style="display: flex; justify-content: space-between; margin-bottom: 6px"><span>LKG</span><span class="t-lg">18</span></div><div class="bar"><i style="width: 82%; background: var(--lks)"></i></div></div>
+<div><div style="display: flex; justify-content: space-between; margin-bottom: 6px"><span>UKG</span><span class="t-lg">16</span></div><div class="bar"><i style="width: 73%; background: var(--uks)"></i></div></div>
+<div><div style="display: flex; justify-content: space-between; margin-bottom: 6px"><span>Tuition</span><span class="t-lg">22</span></div><div class="bar"><i style="width: 100%; background: var(--tus)"></i></div></div>
+<p class="small muted" style="margin: 0">Tuition includes 6 kindergarten children, so programs add up to more than 64.</p>
+</section>
+
+<section aria-labelledby="adm-h" class="card in" style="flex: 2 1 300px; min-width: 0; animation-delay: 540ms">
+<h2 id="adm-h" class="h-md" style="margin-bottom: 12px">Recent admissions</h2>
+<ul class="plain">
+<li class="row" style="display: flex; align-items: center; gap: 12px; padding: 12px 0"><span class="avatar pg" aria-hidden="true">MA</span><div style="flex: 1 1 auto"><div class="t-lg">Mohammed Ayaan</div><div class="small muted">Playgroup · 26 Oct</div></div><a href="Profile.dc.html" class="btn textb">Add photo</a></li>
+<li class="row" style="display: flex; align-items: center; gap: 12px; padding: 12px 0"><span class="avatar tu" aria-hidden="true">AJ</span><div style="flex: 1 1 auto"><div class="t-lg">Anna Joseph</div><div class="small muted">Tuition · 19 Oct</div></div></li>
+<li class="row" style="display: flex; align-items: center; gap: 12px; padding: 12px 0"><span class="avatar lk" aria-hidden="true">DK</span><div style="flex: 1 1 auto"><div class="t-lg">Dev Krishna</div><div class="small muted">LKG · 12 Oct</div></div></li>
+</ul>
+</section>
+</div>
+</main>
+</div>
+
+<sc-if value="{{hasSnack}}" hint-placeholder-val="{{false}}">
+<div class="snack" role="status"><span>{{snackMsg}}</span><button type="button" class="btn" onClick="{{undo}}">Undo</button></div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1280}}'>
+class Component extends DCLogic {
+themeOf() {
+const s = this.state && this.state.theme;
+if (s) return s;
+let st = null;
+try { st = window.localStorage.getItem('lh-theme'); } catch (e) {}
+if (st === 'dark' || st === 'light') return st;
+try { if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'; } catch (e) {}
+return 'light';
+}
+componentDidMount() {
+try {
+this._mq = window.matchMedia('(prefers-color-scheme: dark)');
+this._mqf = () => this.forceUpdate();
+this._mq.addEventListener('change', this._mqf);
+} catch (e) {}
+}
+componentWillUnmount() { clearTimeout(this._t); try { this._mq.removeEventListener('change', this._mqf); } catch (e) {} }
+renderVals() {
+const theme = this.themeOf();
+const arr = (this.state && this.state.arr) || {};
+const filter = (this.state && this.state.filter) || 'all';
+const snack = this.state && this.state.snack;
+const now = '10:15 AM';
+const base = [
+{ id: 'fr', ini: 'FR', av: 'pg', name: 'Fathima Rasheed', tags: [{ l: 'Playgroup', c: 'tag pg' }], exp: '9:30 AM – 12:00 PM', s: 'wait', note: 'Not yet', late: false, later: false },
+{ id: 'dk', ini: 'DK', av: 'lk', name: 'Dev Krishna', tags: [{ l: 'LKG', c: 'tag lk' }], exp: '8:45 AM – 12:30 PM', s: 'wait', note: '1 hr 30 min late', late: true, later: false },
+{ id: 'nv', ini: 'NV', av: 'uk', name: 'Neha Varghese', tags: [{ l: 'UKG', c: 'tag uk' }], exp: '8:45 AM – 1:00 PM', s: 'wait', note: '1 hr 30 min late', late: true, later: false },
+{ id: 'aj', ini: 'AJ', av: 'tu', name: 'Anna Joseph', tags: [{ l: 'Tuition', c: 'tag tu' }], exp: '4:00 PM – 5:30 PM', s: 'wait', note: 'Later today', late: false, later: true },
+{ id: 'am', ini: 'AM', av: 'lk', name: 'Aadhya Menon', tags: [{ l: 'LKG', c: 'tag lk' }, { l: 'Tuition', c: 'tag tu' }], exp: '8:45 AM – 12:30 PM', s: 'in', at: '8:41 AM' },
+{ id: 'ap', ini: 'AP', av: 'uk', name: 'Arjun Pillai', tags: [{ l: 'UKG', c: 'tag uk' }], exp: '8:45 AM – 1:00 PM', s: 'in', at: '8:39 AM' }
+];
+const setS = (id, v, msg) => () => {
+const cur = (this.state && this.state.arr) || {};
+const prev = cur[id] || null;
+const next = Object.assign({}, cur);
+next[id] = v;
+this.setState({ arr: next, snack: { msg: msg, id: id, prev: prev } });
+clearTimeout(this._t);
+this._t = setTimeout(() => this.setState({ snack: null }), 4000);
+};
+const all = base.map((b) => {
+const o = arr[b.id];
+const s = o ? o.s : b.s;
+const at = o && o.at ? o.at : b.at;
+const first = b.name.split(' ')[0];
+return Object.assign({}, b, {
+s: s, at: at, out: o && o.out,
+isWait: s === 'wait', isIn: s === 'in', isOut: s === 'out', isAbs: s === 'absent',
+canAbsent: s === 'wait' && !b.later,
+noteCls: b.late ? 'tag due' : 'tag nt',
+arrive: setS(b.id, { s: 'in', at: now }, first + ' marked arrived at ' + now),
+mkAbsent: setS(b.id, { s: 'absent' }, first + ' marked absent today'),
+leave: setS(b.id, { s: 'out', at: at, out: now }, first + ' marked as left at ' + now)
+});
+});
+const nIn = all.filter((x) => x.isIn || x.isOut).length;
+const nWait = all.filter((x) => x.isWait).length;
+const nAbs = all.filter((x) => x.isAbs).length;
+const arrived = 39 + nIn;
+const notYet = 11 + nWait;
+const items = filter === 'not' ? all.filter((x) => x.isWait) : filter === 'in' ? all.filter((x) => x.isIn || x.isOut) : all;
+const mk = (id, label) => ({ label: label, on: filter === id, pressed: filter === id ? 'true' : 'false', pick: () => this.setState({ filter: id }) });
+return {
+theme: theme,
+isDark: theme === 'dark',
+isLight: theme !== 'dark',
+darkStr: theme === 'dark' ? 'true' : 'false',
+toggleTheme: () => {
+const t = this.themeOf() === 'dark' ? 'light' : 'dark';
+try { window.localStorage.setItem('lh-theme', t); } catch (e) {}
+this.setState({ theme: t });
+},
+items: items,
+isEmpty: items.length === 0,
+segs: [mk('all', 'All'), mk('not', 'Not yet · ' + notYet), mk('in', 'Arrived · ' + arrived)],
+arrived: arrived,
+notYet: notYet,
+absent: 2 + nAbs,
+pct: Math.round(arrived / 58 * 100),
+hasSnack: !!snack,
+snackMsg: snack ? snack.msg : '',
+undo: () => {
+const sn = this.state && this.state.snack;
+if (!sn) return;
+const cur = Object.assign({}, (this.state && this.state.arr) || {});
+if (sn.prev) cur[sn.id] = sn.prev; else delete cur[sn.id];
+clearTimeout(this._t);
+this.setState({ arr: cur, snack: null });
+}
+};
+}
+}
+</script>
+</body>
+</html>

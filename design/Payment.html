@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Little Hands – Record a payment</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.lh{--p:#02696D;--op:#FFFFFF;--pc:#9AE8EB;--opc:#012021;--sc:#C6E9EA;--osc:#012021;--tc:#FFDCBE;--otc:#2C1600;--e:#BA1A1A;--ec:#FFDAD6;--oec:#410002;--s:#F2FBFB;--os:#161D1D;--osv:#394A4A;--ol:#687A7B;--olv:#B7CACB;--c1:#EAF2F3;--c2:#E4EDED;--c3:#DEE7E7;--c4:#D9E1E1;--is:#2B3232;--ios:#EAF2F3;--ip:#9AE8EB;--lkc:#FFE08D;--lko:#3A2E00;--tuc:#EADDFF;--tuo:#3B2271;--sh1:0 1px 2px rgba(0,0,0,.3),0 1px 3px 1px rgba(0,0,0,.15);--sh3:0 1px 3px rgba(0,0,0,.3),0 4px 8px 3px rgba(0,0,0,.15);--ease:cubic-bezier(.2,0,0,1);--dec:cubic-bezier(.05,.7,.1,1);color-scheme:light;background:var(--s);color:var(--os);font-family:Roboto,system-ui,sans-serif;font-size:14px;line-height:20px;letter-spacing:.25px}
+.lh[data-theme="dark"]{--p:#9AE8EB;--op:#033638;--pc:#004F52;--opc:#9AE8EB;--sc:#2D4C4D;--osc:#C6E9EA;--tc:#693C00;--otc:#FFDCBE;--e:#FFB4AB;--ec:#93000A;--oec:#FFDAD6;--s:#0D1515;--os:#DCE4E4;--osv:#B7CACB;--ol:#829495;--olv:#394A4A;--c1:#161D1D;--c2:#1A2121;--c3:#252B2B;--c4:#2F3636;--is:#DCE4E4;--ios:#2B3232;--ip:#02696D;--lkc:#574500;--lko:#FFE08D;--tuc:#4F378B;--tuo:#EADDFF;color-scheme:dark}
+.lh,.lh *{transition:background-color .45s var(--ease),color .45s var(--ease),border-color .45s var(--ease),box-shadow .25s var(--ease),transform .25s var(--ease),opacity .25s var(--ease)}
+.shell{display:flex;align-items:stretch}
+.rail{flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 0;box-sizing:border-box}
+.logo{width:48px;height:48px;border-radius:16px;background:var(--p);color:var(--op);display:flex;align-items:center;justify-content:center}
+.fab{position:relative;overflow:hidden;width:56px;height:56px;border-radius:16px;background:var(--pc);color:var(--opc);display:flex;align-items:center;justify-content:center;box-shadow:var(--sh3);text-decoration:none;margin:8px 0 12px}
+.dest{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:56px;width:80px;text-decoration:none;color:var(--osv);font-size:12px;font-weight:500;line-height:16px;letter-spacing:.5px}
+.pill{position:relative;overflow:hidden;width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.dest[aria-current="page"]{color:var(--os);font-weight:700}
+.dest[aria-current="page"] .pill{background:var(--sc);color:var(--osc);animation:lh-pill .5s var(--dec) both}
+.rail-end{margin-top:auto}
+.dest.soon{opacity:.45;cursor:default}.dest.soon .pill::after{display:none}
+.pill::after,.btn::after,.fab::after,.chip::after,.opt::after{content:"";position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .2s var(--ease);pointer-events:none}
+.dest:hover .pill::after,.btn:hover::after,.fab:hover::after,.chip:hover::after,.opt:hover::after{opacity:.08}
+.dest:active .pill::after,.btn:active::after,.fab:active::after,.chip:active::after,.opt:active::after{opacity:.12}
+.main{flex:1 1 auto;min-width:0;box-sizing:border-box;padding:16px 32px 48px 8px;display:flex;flex-direction:column;gap:24px}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:16px;min-height:72px}
+.h-lg{margin:0;font-size:32px;line-height:40px;font-weight:400;letter-spacing:0}
+.h-md{margin:0;font-size:22px;line-height:28px;font-weight:400;letter-spacing:0}
+.h-sm{margin:0 0 12px;padding:0;font-size:16px;line-height:24px;font-weight:500;letter-spacing:.15px}
+.t-lg{font-size:16px;line-height:24px;font-weight:500;letter-spacing:.15px}
+.muted{color:var(--osv)}
+.small{font-size:12px;line-height:16px;letter-spacing:.4px}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 24px;border-radius:22px;border:none;font:500 14px/20px Roboto,sans-serif;letter-spacing:.1px;text-decoration:none;cursor:pointer;white-space:nowrap;box-sizing:border-box}
+.btn:active,.opt:active,.chip:active{transform:scale(.98)}
+.btn:focus-visible,.dest:focus-visible,.chip:focus-visible,.sw:focus-visible,.fab:focus-visible,.opt:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+.filled{background:var(--p);color:var(--op)}.filled:hover{box-shadow:var(--sh1)}
+.outlined{background:transparent;color:var(--p);border:1px solid var(--ol)}
+.textb{background:transparent;color:var(--p);padding:0 12px}
+.card{background:var(--c1);border-radius:24px;padding:24px;box-sizing:border-box}
+.tag{display:inline-flex;align-items:center;min-height:28px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:500;line-height:16px;letter-spacing:.4px}
+.ok{background:var(--pc);color:var(--opc)}.part{background:var(--tc);color:var(--otc)}.due{background:var(--ec);color:var(--oec)}
+.chip{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--ol);background:transparent;color:var(--osv);font:500 14px Roboto,sans-serif;cursor:pointer;box-sizing:border-box}
+.chip[aria-pressed="true"]{background:var(--sc);color:var(--osc);border-color:var(--sc);padding-left:10px}
+.chip:disabled{opacity:.45;cursor:default}
+.opt{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:1px solid var(--olv);background:transparent;color:var(--os);text-align:left;font:inherit;cursor:pointer;width:100%;box-sizing:border-box}
+.opt[aria-pressed="true"]{border:2px solid var(--p);padding:13px 15px;background:color-mix(in srgb,var(--p) 8%,transparent)}
+.radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--osv);box-sizing:border-box;display:flex;align-items:center;justify-content:center;flex:none}
+.opt[aria-pressed="true"] .radio{border-color:var(--p)}
+.radio i{width:10px;height:10px;border-radius:50%;background:var(--p)}
+.tf{position:relative;display:flex;flex-direction:column}
+.tf input,.tf textarea{height:56px;box-sizing:border-box;padding:0 16px;border:1px solid var(--ol);border-radius:4px;background:transparent;color:var(--os);font:400 16px Roboto,sans-serif;outline:none;width:100%}
+.tf textarea{height:auto;padding:16px;resize:vertical}
+.tf input:hover,.tf textarea:hover{border-color:var(--os)}
+.tf input:focus,.tf textarea:focus{border:2px solid var(--p);padding-left:15px}
+.tf .lb{position:absolute;left:12px;top:-8px;padding:0 4px;background:var(--c1);font-size:12px;line-height:16px;color:var(--osv);z-index:1}
+.tf:focus-within .lb{color:var(--p)}
+.tf .help{font-size:12px;line-height:16px;color:var(--osv);padding:4px 16px 0}
+.sw{display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:0 4px 0 12px;border:none;border-radius:22px;background:transparent;color:var(--osv);font:500 14px Roboto,sans-serif;cursor:pointer}
+.track{position:relative;width:52px;height:32px;border-radius:16px;box-sizing:border-box;border:2px solid var(--ol);background:var(--c4)}
+.thumb{position:absolute;top:50%;left:2px;width:24px;height:24px;margin-top:-12px;border-radius:50%;background:var(--ol);color:var(--c4);display:flex;align-items:center;justify-content:center;transition:all .4s var(--dec)}
+.sw[aria-checked="true"] .track{background:var(--p);border-color:var(--p)}
+.sw[aria-checked="true"] .thumb{left:22px;background:var(--op);color:var(--p)}
+.snack{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;min-height:48px;padding:4px 8px 4px 16px;border-radius:4px;background:var(--is);color:var(--ios);box-shadow:var(--sh3);animation:lh-snack .45s var(--dec) both;z-index:10;max-width:calc(100% - 32px);box-sizing:border-box}
+.snack .btn{color:var(--ip);background:transparent;padding:0 12px}
+.big{font-size:45px;line-height:52px;font-weight:400}
+@keyframes lh-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes lh-pill{from{transform:scaleX(.3);opacity:0}to{transform:none;opacity:1}}
+@keyframes lh-pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+@keyframes lh-snack{from{opacity:0;transform:translate(-50%,24px)}to{opacity:1;transform:translate(-50%,0)}}
+.in{animation:lh-in .55s var(--dec) both}
+.pop{animation:lh-pop .35s var(--dec) both}
+@media (max-width:720px){.shell{flex-direction:column}.rail{flex:0 0 auto;flex-direction:row;justify-content:space-around;padding:8px 4px;order:2;position:sticky;bottom:0;background:var(--c2);z-index:5}.rail .logo,.rail .fab,.rail-end{display:none}.dest{width:auto;flex:1}.main{padding:16px}}
+@media (prefers-reduced-motion:reduce){.lh *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="lh" data-theme="{{theme}}" style="min-height: 1240px">
+<div class="shell" style="min-height: 1240px">
+
+<nav class="rail" aria-label="Main menu">
+<div class="logo" aria-hidden="true"><svg width="30" height="30" viewBox="8 7 22 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 22v-8a2 2 0 0 1 4 0v6M18 19v-8a2 2 0 0 1 4 0v8M22 19v-6a2 2 0 0 1 4 0v9c0 4-3 7-7 7h-1c-2.2 0-3.6-.9-5-2.6L10 24.5a2 2 0 0 1 3.2-2.4L14 23"></path></svg></div>
+<a href="Payment.dc.html" class="fab" aria-label="Record a payment"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></a>
+<a href="Main.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20h-5v-6H9v6H4z"></path></svg></span>Home</a>
+<a href="Students.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.9.7 3.1 2.4 3.5 5.2"></path></svg></span>Students</a>
+<a href="Payment.dc.html" class="dest" aria-current="page"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18M7 15h4"></path></svg></span>Fees</a>
+<a href="Students.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15l2 2 4-4"></path></svg></span>Attendance</a>
+<a class="dest soon" aria-disabled="true" title="Coming in a later version"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"></path></svg></span>Reports</a>
+<a class="dest soon" aria-disabled="true" title="Coming in a later version"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"></path></svg></span>Settings</a>
+<a href="Lock.dc.html" class="dest rail-end"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></span>Lock</a>
+</nav>
+
+<main class="main">
+<header class="topbar in">
+<div style="flex: 1 1 240px; min-width: 0">
+<h1 class="h-lg">Record a payment</h1>
+<div class="muted">Each payment is saved as a new entry. Nothing earlier is overwritten.</div>
+</div>
+<button type="button" role="switch" class="sw" aria-checked="{{darkStr}}" onClick="{{toggleTheme}}" title="Switch between light and dark">Dark theme<span class="track"><span class="thumb"><sc-if value="{{isDark}}" hint-placeholder-val="{{true}}"><svg class="pop" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if><sc-if value="{{isLight}}" hint-placeholder-val="{{false}}"><svg class="pop" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if></span></span></button>
+</header>
+
+<div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+<div class="card in" style="flex: 3 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 28px; animation-delay: 60ms">
+
+<div>
+<h2 class="h-sm">Student</h2>
+<div style="display: flex; align-items: center; gap: 16px; padding: 12px 8px 12px 16px; border-radius: 16px; background: var(--c3)">
+<span aria-hidden="true" style="width: 48px; height: 48px; border-radius: 50%; background: var(--lkc); color: var(--lko); display: inline-flex; align-items: center; justify-content: center; font-weight: 500; font-size: 16px; flex: none">AM</span>
+<div style="flex: 1 1 auto; min-width: 0"><div class="t-lg">Aadhya Menon</div><div class="small muted">LH-2025-014 · LKG + Tuition · Father: Suresh Menon</div></div>
+<a href="Students.dc.html" class="btn textb">Change</a>
+</div>
+</div>
+
+<div role="group" aria-labelledby="fee-l">
+<h2 id="fee-l" class="h-sm">Which fee?</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px">
+<sc-for list="{{fees}}" as="f" hint-placeholder-count="2">
+<button type="button" class="opt" aria-pressed="{{f.pressed}}" onClick="{{f.pick}}"><span class="radio"><sc-if value="{{f.on}}" hint-placeholder-val="{{false}}"><i class="pop"></i></sc-if></span><span style="flex: 1"><span class="t-lg" style="display: block">{{f.label}}</span><span class="small muted">{{f.sub}}</span></span><span class="{{f.tagCls}}" style="display: inline-block; width: 12px; height: 12px; border-radius: 50%"></span></button>
+</sc-for>
+</div>
+</div>
+
+<div role="group" aria-labelledby="per-l">
+<h2 id="per-l" class="h-sm">For which month?</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{periods}}" as="p" hint-placeholder-count="3">
+<button type="button" class="chip pop" aria-pressed="{{p.pressed}}" onClick="{{p.pick}}" disabled="{{p.paid}}"><sc-if value="{{p.on}}" hint-placeholder-val="{{false}}"><svg class="pop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if>{{p.label}} · {{p.note}}</button>
+</sc-for>
+</div>
+</div>
+
+<div>
+<h2 class="h-sm">Amount received</h2>
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px">
+<label class="tf" style="flex: 0 1 240px"><span class="lb">Amount (₹)</span><input type="number" inputmode="numeric" value="{{amountStr}}" onChange="{{onAmount}}" style="font-size: 24px; height: 64px"></label>
+<button type="button" class="chip" style="margin-top: 10px" onClick="{{setFull}}">Full balance ₹{{dueFmt}}</button>
+<button type="button" class="chip" style="margin-top: 10px" onClick="{{setHalf}}">Half ₹{{halfFmt}}</button>
+</div>
+</div>
+
+<div role="group" aria-labelledby="met-l">
+<h2 id="met-l" class="h-sm">How was it paid?</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{methods}}" as="m" hint-placeholder-count="5">
+<button type="button" class="chip" aria-pressed="{{m.pressed}}" onClick="{{m.pick}}"><sc-if value="{{m.on}}" hint-placeholder-val="{{false}}"><svg class="pop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if>{{m.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px 16px">
+<label class="tf"><span class="lb">Date &amp; time</span><input type="text" defaultValue="2 Nov 2026, 10:15 AM"><span class="help">Defaults to now</span></label>
+<sc-if value="{{needsRef}}" hint-placeholder-val="{{false}}"><label class="tf in"><span class="lb">{{refLabel}}</span><input type="text"><span class="help">Optional</span></label></sc-if>
+</div>
+<label class="tf"><span class="lb">Remarks (optional)</span><textarea rows="2" placeholder="e.g. Paid by grandmother"></textarea></label>
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px; padding-top: 4px">
+<button type="button" class="btn filled" style="min-height: 48px; padding: 0 28px" onClick="{{save}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Save payment</button>
+<a href="Main.dc.html" class="btn outlined" style="min-height: 48px">Cancel</a>
+</div>
+</div>
+
+<aside aria-labelledby="sum-h" style="flex: 2 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+<section class="card in" style="display: flex; flex-direction: column; gap: 14px; animation-delay: 140ms">
+<h2 id="sum-h" class="h-md">{{sumTitle}}</h2>
+<div style="display: flex; justify-content: space-between"><span class="muted">Agreed fee</span><span class="t-lg">₹{{feeFmt}}</span></div>
+<div style="display: flex; justify-content: space-between"><span class="muted">Paid earlier</span><span class="t-lg">₹{{paidFmt}}</span></div>
+<div style="display: flex; justify-content: space-between"><span class="muted">This payment</span><span class="t-lg" style="color: var(--p)">+ ₹{{amountFmt}}</span></div>
+<div style="height: 8px; border-radius: 4px; background: var(--c4); overflow: hidden; display: flex"><span style="width: {{paidPct}}%; background: var(--osv); opacity: .55"></span><span style="width: {{nowPct}}%; background: var(--p); transition: width .6s var(--dec)"></span></div>
+<div style="display: flex; justify-content: space-between; align-items: baseline; padding-top: 12px; border-top: 1px solid var(--olv)"><span class="t-lg">Balance after</span><span class="big">₹{{balanceFmt}}</span></div>
+<sc-if value="{{isFull}}" hint-placeholder-val="{{true}}"><span class="tag ok pop" style="align-self: flex-start">Month will be fully paid</span></sc-if>
+<sc-if value="{{isPartial}}" hint-placeholder-val="{{false}}"><span class="tag part pop" style="align-self: flex-start">Still partly paid</span></sc-if>
+<sc-if value="{{isOver}}" hint-placeholder-val="{{false}}"><span class="tag due pop" style="align-self: flex-start">More than what's due – check the amount</span></sc-if>
+</section>
+
+<section aria-labelledby="ear-h" class="card in" style="animation-delay: 200ms">
+<h2 id="ear-h" class="t-lg" style="margin: 0 0 8px">Already paid for this month</h2>
+<sc-if value="{{hasEarlier}}" hint-placeholder-val="{{true}}"><div style="display: flex; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--olv)"><span>30 Oct · Cash · PAY-0418</span><span class="t-lg">₹1,000</span></div></sc-if>
+<sc-if value="{{noEarlier}}" hint-placeholder-val="{{false}}"><div class="muted" style="padding: 12px 0; border-top: 1px solid var(--olv)">Nothing yet for this month.</div></sc-if>
+</section>
+
+<section class="in" style="display: flex; gap: 12px; padding: 16px 20px; border-radius: 16px; background: var(--sc); color: var(--osc); animation-delay: 260ms">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+<p style="margin: 0">Saved payments can't be edited or deleted. A wrong entry is fixed with a <strong>reversal</strong> from the payment history, so the full record stays intact.</p>
+</section>
+</aside>
+</div>
+</main>
+</div>
+
+<sc-if value="{{saved}}" hint-placeholder-val="{{false}}">
+<div class="snack" role="status"><span>Payment PAY-0419 saved · ₹{{savedFmt}}</span><a href="Profile.dc.html" class="btn">View</a></div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+themeOf() {
+const s = this.state && this.state.theme;
+if (s) return s;
+let st = null;
+try { st = window.localStorage.getItem('lh-theme'); } catch (e) {}
+if (st === 'dark' || st === 'light') return st;
+try { if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'; } catch (e) {}
+return 'light';
+}
+componentDidMount() {
+try {
+this._mq = window.matchMedia('(prefers-color-scheme: dark)');
+this._mqf = () => this.forceUpdate();
+this._mq.addEventListener('change', this._mqf);
+} catch (e) {}
+}
+componentWillUnmount() { clearTimeout(this._t); try { this._mq.removeEventListener('change', this._mqf); } catch (e) {} }
+renderVals() {
+const S = this.state || {};
+const theme = this.themeOf();
+const FEES = {
+lkg: { label: 'LKG', sub: '₹1,500 / month', dot: 'var(--lkc)', periods: [
+{ id: 'sep', label: 'Sep 2026', name: 'September 2026', fee: 1500, paid: 1500 },
+{ id: 'oct', label: 'Oct 2026', name: 'October 2026', fee: 1500, paid: 1000 },
+{ id: 'nov', label: 'Nov 2026', name: 'November 2026', fee: 1500, paid: 0 }] },
+tu: { label: 'Tuition', sub: '₹800 / month after concession', dot: 'var(--tuc)', periods: [
+{ id: 'oct', label: 'Oct 2026', name: 'October 2026', fee: 800, paid: 800 },
+{ id: 'nov', label: 'Nov 2026', name: 'November 2026', fee: 800, paid: 0 }] }
+};
+const feeId = S.fee || 'lkg';
+const F = FEES[feeId];
+const perId = S.period || (feeId === 'lkg' ? 'oct' : 'nov');
+const P = F.periods.find((p) => p.id === perId) || F.periods[F.periods.length - 1];
+const due = P.fee - P.paid;
+const raw = S.amount !== undefined ? S.amount : String(due);
+const amt = Math.max(0, parseInt(raw, 10) || 0);
+const bal = due - amt;
+const fmt = (n) => Math.abs(n).toLocaleString('en-IN');
+const method = S.method || 'Cash';
+const pct = (n) => Math.min(100, Math.round(n / P.fee * 100));
+return {
+theme: theme,
+isDark: theme === 'dark',
+isLight: theme !== 'dark',
+darkStr: theme === 'dark' ? 'true' : 'false',
+toggleTheme: () => {
+const t = this.themeOf() === 'dark' ? 'light' : 'dark';
+try { window.localStorage.setItem('lh-theme', t); } catch (e) {}
+this.setState({ theme: t });
+},
+fees: ['lkg', 'tu'].map((id) => {
+const x = FEES[id];
+const open = x.periods.filter((p) => p.fee > p.paid).reduce((a, p) => a + p.fee - p.paid, 0);
+return { label: x.label, sub: x.sub + ' · ₹' + fmt(open) + ' open', on: id === feeId, pressed: id === feeId ? 'true' : 'false', tagCls: id === 'lkg' ? 'lk' : 'tu', pick: () => this.setState({ fee: id, period: undefined, amount: undefined, saved: false }) };
+}),
+periods: F.periods.map((p) => {
+const left = p.fee - p.paid;
+return { label: p.label, note: left === 0 ? 'Paid' : left < p.fee ? '₹' + fmt(left) + ' left' : '₹' + fmt(left) + ' due', paid: left === 0, on: p.id === P.id, pressed: p.id === P.id ? 'true' : 'false', pick: () => this.setState({ period: p.id, amount: undefined, saved: false }) };
+}),
+amountStr: raw,
+onAmount: (e) => this.setState({ amount: e.target.value, saved: false }),
+setFull: () => this.setState({ amount: String(due), saved: false }),
+setHalf: () => this.setState({ amount: String(Math.round(due / 2)), saved: false }),
+dueFmt: fmt(due),
+halfFmt: fmt(Math.round(due / 2)),
+methods: ['Cash', 'UPI', 'Bank transfer', 'Cheque', 'Other'].map((m) => ({ label: m, on: m === method, pressed: m === method ? 'true' : 'false', pick: () => this.setState({ method: m }) })),
+needsRef: method !== 'Cash',
+refLabel: method === 'UPI' ? 'UPI reference no.' : method === 'Cheque' ? 'Cheque no.' : 'Reference no.',
+sumTitle: F.label + ' · ' + P.name,
+feeFmt: fmt(P.fee),
+paidFmt: fmt(P.paid),
+amountFmt: fmt(amt),
+balanceFmt: bal < 0 ? '0' : fmt(bal),
+paidPct: pct(P.paid),
+nowPct: Math.max(0, Math.min(100 - pct(P.paid), pct(amt))),
+isFull: bal === 0,
+isPartial: bal > 0,
+isOver: bal < 0,
+hasEarlier: feeId === 'lkg' && P.id === 'oct',
+noEarlier: !(feeId === 'lkg' && P.id === 'oct'),
+save: () => {
+clearTimeout(this._t);
+this.setState({ saved: true, savedAmt: amt });
+this._t = setTimeout(() => this.setState({ saved: false }), 5000);
+},
+saved: !!S.saved,
+savedFmt: fmt(S.savedAmt || 0)
+};
+}
+}
+</script>
+</body>
+</html>

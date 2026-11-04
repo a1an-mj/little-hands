@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Little Hands – Students</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.lh{--p:#02696D;--op:#FFFFFF;--pc:#9AE8EB;--opc:#012021;--sc:#C6E9EA;--osc:#012021;--tc:#FFDCBE;--otc:#2C1600;--e:#BA1A1A;--ec:#FFDAD6;--oec:#410002;--s:#F2FBFB;--os:#161D1D;--osv:#394A4A;--ol:#687A7B;--olv:#B7CACB;--c1:#EAF2F3;--c2:#E4EDED;--c3:#DEE7E7;--c4:#D9E1E1;--pgc:#FFDAD3;--pgo:#5C1A10;--lkc:#FFE08D;--lko:#3A2E00;--ukc:#D3E4FF;--uko:#0B305A;--tuc:#EADDFF;--tuo:#3B2271;--sh1:0 1px 2px rgba(0,0,0,.3),0 1px 3px 1px rgba(0,0,0,.15);--sh3:0 1px 3px rgba(0,0,0,.3),0 4px 8px 3px rgba(0,0,0,.15);--ease:cubic-bezier(.2,0,0,1);--dec:cubic-bezier(.05,.7,.1,1);color-scheme:light;background:var(--s);color:var(--os);font-family:Roboto,system-ui,sans-serif;font-size:14px;line-height:20px;letter-spacing:.25px}
+.lh[data-theme="dark"]{--p:#9AE8EB;--op:#033638;--pc:#004F52;--opc:#9AE8EB;--sc:#2D4C4D;--osc:#C6E9EA;--tc:#693C00;--otc:#FFDCBE;--e:#FFB4AB;--ec:#93000A;--oec:#FFDAD6;--s:#0D1515;--os:#DCE4E4;--osv:#B7CACB;--ol:#829495;--olv:#394A4A;--c1:#161D1D;--c2:#1A2121;--c3:#252B2B;--c4:#2F3636;--pgc:#73342A;--pgo:#FFDAD3;--lkc:#574500;--lko:#FFE08D;--ukc:#1F4876;--uko:#D3E4FF;--tuc:#4F378B;--tuo:#EADDFF;color-scheme:dark}
+.lh,.lh *{transition:background-color .45s var(--ease),color .45s var(--ease),border-color .45s var(--ease),box-shadow .25s var(--ease),transform .25s var(--ease),opacity .25s var(--ease)}
+.shell{display:flex;align-items:stretch}
+.rail{flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 0;box-sizing:border-box}
+.logo{width:48px;height:48px;border-radius:16px;background:var(--p);color:var(--op);display:flex;align-items:center;justify-content:center}
+.fab{position:relative;overflow:hidden;width:56px;height:56px;border-radius:16px;background:var(--pc);color:var(--opc);display:flex;align-items:center;justify-content:center;box-shadow:var(--sh3);text-decoration:none;margin:8px 0 12px}
+.dest{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:56px;width:80px;text-decoration:none;color:var(--osv);font-size:12px;font-weight:500;line-height:16px;letter-spacing:.5px}
+.pill{position:relative;overflow:hidden;width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.dest[aria-current="page"]{color:var(--os);font-weight:700}
+.dest[aria-current="page"] .pill{background:var(--sc);color:var(--osc);animation:lh-pill .5s var(--dec) both}
+.rail-end{margin-top:auto}
+.dest.soon{opacity:.45;cursor:default}.dest.soon .pill::after{display:none}
+.pill::after,.btn::after,.fab::after,.chip::after,.lrow::after{content:"";position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .2s var(--ease);pointer-events:none;border-radius:inherit}
+.dest:hover .pill::after,.btn:hover::after,.fab:hover::after,.chip:hover::after,.lrow:hover::after{opacity:.08}
+.dest:active .pill::after,.btn:active::after,.fab:active::after,.chip:active::after,.lrow:active::after{opacity:.12}
+.main{flex:1 1 auto;min-width:0;box-sizing:border-box;padding:16px 32px 48px 8px;display:flex;flex-direction:column;gap:20px}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:16px;min-height:72px}
+.h-lg{margin:0;font-size:32px;line-height:40px;font-weight:400;letter-spacing:0}
+.t-lg{font-size:16px;line-height:24px;font-weight:500;letter-spacing:.15px}
+.muted{color:var(--osv)}
+.small{font-size:12px;line-height:16px;letter-spacing:.4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.search{position:relative;display:flex;align-items:center;gap:12px;height:56px;padding:0 20px;border-radius:28px;background:var(--c3);color:var(--osv);flex:1 1 260px;max-width:480px;box-sizing:border-box}
+.search:focus-within{background:var(--c4);box-shadow:var(--sh1)}
+.search input{flex:1;min-width:0;border:none;outline:none;background:transparent;color:var(--os);font:400 16px Roboto,sans-serif}
+.search input::placeholder{color:var(--osv)}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 24px;border-radius:22px;border:none;font:500 14px/20px Roboto,sans-serif;letter-spacing:.1px;text-decoration:none;cursor:pointer;white-space:nowrap;box-sizing:border-box}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible,.dest:focus-visible,.chip:focus-visible,.sw:focus-visible,.fab:focus-visible,.lrow:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+.filled{background:var(--p);color:var(--op)}.filled:hover{box-shadow:var(--sh1)}
+.outlined{background:transparent;color:var(--p);border:1px solid var(--ol)}
+.card{background:var(--c1);border-radius:24px;padding:8px;box-sizing:border-box}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:8px;font-size:12px;font-weight:500;line-height:16px;letter-spacing:.5px;white-space:nowrap}
+.pg{background:var(--pgc);color:var(--pgo)}.lk{background:var(--lkc);color:var(--lko)}.uk{background:var(--ukc);color:var(--uko)}.tu{background:var(--tuc);color:var(--tuo)}
+.ok{background:var(--pc);color:var(--opc)}.part{background:var(--tc);color:var(--otc)}.due{background:var(--ec);color:var(--oec)}
+.avatar{width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:500;flex:none}
+.chip{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--ol);background:transparent;color:var(--osv);font:500 14px Roboto,sans-serif;cursor:pointer;box-sizing:border-box}
+.chip[aria-pressed="true"]{background:var(--sc);color:var(--osc);border-color:var(--sc);padding-left:10px}
+.lrow{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:12px 16px;border-radius:16px;text-decoration:none;color:inherit}
+.sw{display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:0 4px 0 12px;border:none;border-radius:22px;background:transparent;color:var(--osv);font:500 14px Roboto,sans-serif;cursor:pointer}
+.track{position:relative;width:52px;height:32px;border-radius:16px;box-sizing:border-box;border:2px solid var(--ol);background:var(--c4)}
+.thumb{position:absolute;top:50%;left:2px;width:24px;height:24px;margin-top:-12px;border-radius:50%;background:var(--ol);color:var(--c4);display:flex;align-items:center;justify-content:center;transition:all .4s var(--dec)}
+.sw[aria-checked="true"] .track{background:var(--p);border-color:var(--p)}
+.sw[aria-checked="true"] .thumb{left:22px;background:var(--op);color:var(--p)}
+.seg{display:inline-flex;border:1px solid var(--ol);border-radius:22px;overflow:hidden;flex:none}
+.segb{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px;border:none;border-left:1px solid var(--ol);background:transparent;color:var(--os);font:500 14px Roboto,sans-serif;cursor:pointer}
+.segb:first-child{border-left:none}
+.segb[aria-pressed="true"].yes{background:var(--pc);color:var(--opc)}
+.segb[aria-pressed="true"].no{background:var(--ec);color:var(--oec)}
+.segb::after{content:"";position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .2s var(--ease);pointer-events:none}
+.segb:hover::after{opacity:.08}.segb:active::after{opacity:.12}
+.segb:focus-visible{outline:3px solid var(--p);outline-offset:-3px}
+.tonal{background:var(--sc);color:var(--osc)}
+.textb{background:transparent;color:var(--p);padding:0 12px}
+.arow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:12px 16px;border-radius:16px}
+.attbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;padding:16px 20px;border-radius:24px;background:var(--pc);color:var(--opc)}
+.snack{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;min-height:48px;padding:4px 16px;border-radius:4px;background:var(--is);color:var(--ios);box-shadow:var(--sh3);animation:lh-snack .45s var(--dec) both;z-index:10;max-width:calc(100% - 32px);box-sizing:border-box}
+@keyframes lh-snack{from{opacity:0;transform:translate(-50%,24px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes lh-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes lh-pill{from{transform:scaleX(.3);opacity:0}to{transform:none;opacity:1}}
+@keyframes lh-pop{from{transform:scale(.5);opacity:0}to{transform:none;opacity:1}}
+.in{animation:lh-in .6s var(--dec) both}
+.pop{animation:lh-pop .35s var(--dec) both}
+@media (max-width:720px){.shell{flex-direction:column}.rail{flex:0 0 auto;flex-direction:row;justify-content:space-around;padding:8px 4px;order:2;position:sticky;bottom:0;background:var(--c2);z-index:5}.rail .logo,.rail .fab,.rail-end{display:none}.dest{width:auto;flex:1}.main{padding:16px}.hdr{display:none!important}}
+@media (prefers-reduced-motion:reduce){.lh *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="lh" data-theme="{{theme}}" style="min-height: 1120px">
+<div class="shell" style="min-height: 1120px">
+
+<nav class="rail" aria-label="Main menu">
+<div class="logo" aria-hidden="true"><svg width="30" height="30" viewBox="8 7 22 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 22v-8a2 2 0 0 1 4 0v6M18 19v-8a2 2 0 0 1 4 0v8M22 19v-6a2 2 0 0 1 4 0v9c0 4-3 7-7 7h-1c-2.2 0-3.6-.9-5-2.6L10 24.5a2 2 0 0 1 3.2-2.4L14 23"></path></svg></div>
+<a href="Payment.dc.html" class="fab" aria-label="Record a payment"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></a>
+<a href="Main.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20h-5v-6H9v6H4z"></path></svg></span>Home</a>
+<a href="Students.dc.html" class="dest" aria-current="page"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.9.7 3.1 2.4 3.5 5.2"></path></svg></span>Students</a>
+<a href="Payment.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18M7 15h4"></path></svg></span>Fees</a>
+<a href="Students.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15l2 2 4-4"></path></svg></span>Attendance</a>
+<a class="dest soon" aria-disabled="true" title="Coming in a later version"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"></path></svg></span>Reports</a>
+<a class="dest soon" aria-disabled="true" title="Coming in a later version"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"></path></svg></span>Settings</a>
+<a href="Lock.dc.html" class="dest rail-end"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></span>Lock</a>
+</nav>
+
+<main class="main">
+<header class="topbar in">
+<div style="flex: 1 1 240px; min-width: 0">
+<h1 class="h-lg">Students</h1>
+<div class="muted">64 active · 3 inactive · 21 graduated</div>
+</div>
+<label class="search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg><span class="sr">Search students</span><input type="search" placeholder="Name, student ID or parent phone" value="{{q}}" onChange="{{onSearch}}"></label>
+<button type="button" role="switch" class="sw" aria-checked="{{darkStr}}" onClick="{{toggleTheme}}" title="Switch between light and dark">Dark theme<span class="track"><span class="thumb"><sc-if value="{{isDark}}" hint-placeholder-val="{{false}}"><svg class="pop" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if><sc-if value="{{isLight}}" hint-placeholder-val="{{true}}"><svg class="pop" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if></span></span></button>
+</header>
+
+<div class="in" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; animation-delay: 80ms">
+<sc-for list="{{chips}}" as="c" hint-placeholder-count="5">
+<button type="button" class="chip" aria-pressed="{{c.pressed}}" onClick="{{c.pick}}"><sc-if value="{{c.on}}" hint-placeholder-val="{{false}}"><svg class="pop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if>{{c.label}}</button>
+</sc-for>
+<span aria-hidden="true" style="width: 1px; height: 32px; background: var(--olv); margin: 0 8px"></span>
+<button type="button" class="chip" aria-pressed="{{balPressed}}" onClick="{{toggleBal}}"><sc-if value="{{balOnly}}" hint-placeholder-val="{{false}}"><svg class="pop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if>Has fee balance</button>
+<div style="flex: 1"></div>
+<sc-if value="{{notAtt}}" hint-placeholder-val="{{true}}"><button type="button" class="btn tonal pop" onClick="{{toggleAtt}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15l2 2 4-4"></path></svg>Mark attendance</button></sc-if>
+<a href="AddStudent.dc.html" class="btn filled"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>New admission</a>
+</div>
+
+<sc-if value="{{isAtt}}" hint-placeholder-val="{{false}}">
+<section aria-labelledby="att-h" class="attbar in">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15l2 2 4-4"></path></svg>
+<div style="flex: 1 1 220px"><h2 id="att-h" class="t-lg" style="margin: 0">Attendance · Monday, 2 November</h2><div>{{nPresent}} present · {{nAbsent}} absent · {{nLeft}} not marked yet</div></div>
+<button type="button" class="btn" style="background: var(--op); color: var(--p)" onClick="{{allPresent}}">Mark the rest present</button>
+<button type="button" class="btn textb" style="color: inherit" onClick="{{toggleAtt}}">Cancel</button>
+<button type="button" class="btn filled" onClick="{{saveAtt}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Save</button>
+</section>
+<section aria-label="Mark attendance" class="card in" style="animation-delay: 80ms">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="9">
+<div class="arow in" style="animation-delay: {{r.delay}}ms">
+<span style="flex: 2 1 240px; display: flex; align-items: center; gap: 16px; min-width: 0"><span class="avatar {{r.av}}" aria-hidden="true">{{r.ini}}</span><span><span class="t-lg" style="display: block">{{r.name}}</span><span class="small muted">{{r.when}}</span></span></span>
+<span style="flex: 1 1 150px; display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{r.tags}}" as="t" hint-placeholder-count="1"><span class="{{t.c}}">{{t.l}}</span></sc-for></span>
+<span class="seg" role="group" aria-label="Attendance for {{r.name}}">
+<button type="button" class="segb yes" aria-pressed="{{r.pYes}}" onClick="{{r.markYes}}"><sc-if value="{{r.isYes}}" hint-placeholder-val="{{false}}"><svg class="pop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if>Present</button>
+<button type="button" class="segb no" aria-pressed="{{r.pNo}}" onClick="{{r.markNo}}"><sc-if value="{{r.isNo}}" hint-placeholder-val="{{false}}"><svg class="pop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></sc-if>Absent</button>
+</span>
+</div>
+</sc-for>
+<sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}"><div class="pop muted" style="padding: 48px 16px; text-align: center">No students match. Try another name or clear the filters.</div></sc-if>
+</section>
+</sc-if>
+
+<sc-if value="{{notAtt}}" hint-placeholder-val="{{true}}">
+<section aria-label="Student list" class="card in" style="animation-delay: 160ms">
+<div class="hdr small muted" style="display: flex; gap: 16px; padding: 12px 16px 8px; font-weight: 500">
+<span style="flex: 2 1 240px">Student</span><span style="flex: 1 1 150px">Programs</span><span style="flex: 1.4 1 200px">Main contact</span><span style="flex: 0 0 100px">Joined</span><span style="flex: 0 0 120px">Fees</span><span style="flex: 0 0 72px; text-align: right">Balance</span>
+</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="9">
+<a href="Profile.dc.html" class="lrow in" style="animation-delay: {{r.delay}}ms">
+<span style="flex: 2 1 240px; display: flex; align-items: center; gap: 16px; min-width: 0"><span class="avatar {{r.av}}" aria-hidden="true">{{r.ini}}</span><span><span class="t-lg" style="display: block">{{r.name}}</span><span class="small muted">{{r.id}}</span></span></span>
+<span style="flex: 1 1 150px; display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{r.tags}}" as="t" hint-placeholder-count="1"><span class="{{t.c}}">{{t.l}}</span></sc-for></span>
+<span style="flex: 1.4 1 200px"><span style="display: block">{{r.contact}}</span><span class="small muted">{{r.phone}}</span></span>
+<span style="flex: 0 0 100px" class="muted">{{r.joined}}</span>
+<span style="flex: 0 0 120px"><span class="{{r.feeCls}}">{{r.fee}}</span></span>
+<span class="t-lg" style="flex: 0 0 72px; text-align: right">{{r.bal}}</span>
+</a>
+</sc-for>
+<sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}"><div class="pop muted" style="padding: 48px 16px; text-align: center">No students match. Try another name or clear the filters.</div></sc-if>
+</section>
+</sc-if>
+
+<div class="muted" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<span>Showing {{count}} of 64 active students, A–Z</span>
+<div style="display: flex; gap: 8px"><button type="button" class="btn outlined" disabled="disabled" style="opacity: .5">Previous</button><button type="button" class="btn outlined">Next</button></div>
+</div>
+</main>
+</div>
+<sc-if value="{{hasSnack}}" hint-placeholder-val="{{false}}"><div class="snack" role="status">{{snackMsg}}</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1120}}'>
+class Component extends DCLogic {
+themeOf() {
+const s = this.state && this.state.theme;
+if (s) return s;
+let st = null;
+try { st = window.localStorage.getItem('lh-theme'); } catch (e) {}
+if (st === 'dark' || st === 'light') return st;
+try { if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'; } catch (e) {}
+return 'light';
+}
+componentDidMount() {
+try {
+this._mq = window.matchMedia('(prefers-color-scheme: dark)');
+this._mqf = () => this.forceUpdate();
+this._mq.addEventListener('change', this._mqf);
+} catch (e) {}
+}
+componentWillUnmount() { clearTimeout(this._t); try { this._mq.removeEventListener('change', this._mqf); } catch (e) {} }
+renderVals() {
+const theme = this.themeOf();
+const prog = (this.state && this.state.prog) || 'All';
+const q = (this.state && this.state.q) || '';
+const balOnly = !!(this.state && this.state.bal);
+const T = { Playgroup: 'tag pg', LKG: 'tag lk', UKG: 'tag uk', Tuition: 'tag tu' };
+const tg = (list) => list.map((l) => ({ l: l, c: T[l] }));
+const data = [
+{ ini: 'AM', av: 'lk', name: 'Aadhya Menon', id: 'LH-2025-014', tags: tg(['LKG', 'Tuition']), contact: 'Suresh Menon · Father', phone: '+91 90000 00014', joined: '3 Jun 2025', fee: 'Partly paid', feeCls: 'tag part', bal: '₹500' },
+{ ini: 'AJ', av: 'tu', name: 'Anna Joseph', id: 'LH-2026-063', tags: tg(['Tuition']), contact: 'Mary Joseph · Mother', phone: '+91 90000 00063', joined: '19 Oct 2026', fee: 'Up to date', feeCls: 'tag ok', bal: '—' },
+{ ini: 'AP', av: 'uk', name: 'Arjun Pillai', id: 'LH-2024-031', tags: tg(['UKG']), contact: 'Rekha Pillai · Mother', phone: '+91 90000 00031', joined: '10 Jun 2024', fee: 'Up to date', feeCls: 'tag ok', bal: '—' },
+{ ini: 'DK', av: 'lk', name: 'Dev Krishna', id: 'LH-2026-061', tags: tg(['LKG']), contact: 'Krishnan K · Father', phone: '+91 90000 00061', joined: '12 Oct 2026', fee: 'Up to date', feeCls: 'tag ok', bal: '—' },
+{ ini: 'FR', av: 'pg', name: 'Fathima Rasheed', id: 'LH-2026-048', tags: tg(['Playgroup']), contact: 'Rasheed A · Father', phone: '+91 90000 00048', joined: '2 Jun 2026', fee: 'Up to date', feeCls: 'tag ok', bal: '—' },
+{ ini: 'IN', av: 'uk', name: 'Ishaan Nair', id: 'LH-2024-027', tags: tg(['UKG', 'Tuition']), contact: 'Deepa Nair · Mother', phone: '+91 90000 00027', joined: '5 Jun 2024', fee: 'Unpaid', feeCls: 'tag due', bal: '₹800' },
+{ ini: 'MA', av: 'pg', name: 'Mohammed Ayaan', id: 'LH-2026-064', tags: tg(['Playgroup']), contact: 'Shabana N · Mother', phone: '+91 90000 00064', joined: '26 Oct 2026', fee: 'Unpaid', feeCls: 'tag due', bal: '₹1,200' },
+{ ini: 'NV', av: 'uk', name: 'Neha Varghese', id: 'LH-2025-022', tags: tg(['UKG']), contact: 'Thomas Varghese · Father', phone: '+91 90000 00022', joined: '4 Jun 2025', fee: '2 months due', feeCls: 'tag due', bal: '₹3,200' },
+{ ini: 'SM', av: 'lk', name: 'Sara Mathew', id: 'LH-2025-009', tags: tg(['LKG']), contact: 'Mathew P · Father', phone: '+91 90000 00009', joined: '2 Jun 2025', fee: 'Up to date', feeCls: 'tag ok', bal: '—' }
+];
+const ql = q.trim().toLowerCase();
+const rows = data.filter((r) =>
+(prog === 'All' || r.tags.some((t) => t.l === prog)) &&
+(!balOnly || r.bal !== '—') &&
+(!ql || (r.name + ' ' + r.id + ' ' + r.phone).toLowerCase().indexOf(ql) >= 0)
+).map((r, i) => Object.assign({}, r, { delay: i * 40 }));
+const att = !!(this.state && this.state.att);
+const marks = (this.state && this.state.marks) || { 'LH-2025-014': 'p', 'LH-2024-031': 'p' };
+const setMark = (id, v) => () => {
+const cur = Object.assign({}, (this.state && this.state.marks) || { 'LH-2025-014': 'p', 'LH-2024-031': 'p' });
+cur[id] = cur[id] === v ? undefined : v;
+this.setState({ marks: cur });
+};
+const times = { 'LH-2025-014': 'Arrived 8:41 AM', 'LH-2024-031': 'Arrived 8:39 AM' };
+const attRows = rows.map((r) => {
+const m = marks[r.id];
+return Object.assign({}, r, {
+when: m === 'p' ? (times[r.id] || 'Present · 10:15 AM') : m === 'a' ? 'Absent today' : 'Not marked yet',
+isYes: m === 'p', isNo: m === 'a', pYes: m === 'p' ? 'true' : 'false', pNo: m === 'a' ? 'true' : 'false',
+markYes: setMark(r.id, 'p'), markNo: setMark(r.id, 'a')
+});
+});
+const nP = data.filter((r) => marks[r.id] === 'p').length;
+const nA = data.filter((r) => marks[r.id] === 'a').length;
+const snack = this.state && this.state.snack;
+return {
+isAtt: att,
+notAtt: !att,
+toggleAtt: () => this.setState({ att: !att }),
+nPresent: nP, nAbsent: nA, nLeft: data.length - nP - nA,
+allPresent: () => {
+const cur = Object.assign({}, (this.state && this.state.marks) || { 'LH-2025-014': 'p', 'LH-2024-031': 'p' });
+data.forEach((r) => { if (!cur[r.id]) cur[r.id] = 'p'; });
+this.setState({ marks: cur });
+},
+saveAtt: () => {
+clearTimeout(this._t);
+this.setState({ att: false, snack: 'Attendance saved · ' + nP + ' present, ' + nA + ' absent' });
+this._t = setTimeout(() => this.setState({ snack: null }), 4000);
+},
+hasSnack: !!snack,
+snackMsg: snack || '',
+theme: theme,
+isDark: theme === 'dark',
+isLight: theme !== 'dark',
+darkStr: theme === 'dark' ? 'true' : 'false',
+toggleTheme: () => {
+const t = this.themeOf() === 'dark' ? 'light' : 'dark';
+try { window.localStorage.setItem('lh-theme', t); } catch (e) {}
+this.setState({ theme: t });
+},
+q: q,
+onSearch: (e) => this.setState({ q: e.target.value }),
+chips: ['All', 'Playgroup', 'LKG', 'UKG', 'Tuition'].map((l) => ({ label: l, on: prog === l, pressed: prog === l ? 'true' : 'false', pick: () => this.setState({ prog: l }) })),
+balOnly: balOnly,
+balPressed: balOnly ? 'true' : 'false',
+toggleBal: () => this.setState({ bal: !balOnly }),
+rows: attRows,
+count: rows.length,
+isEmpty: rows.length === 0
+};
+}
+}
+</script>
+</body>
+</html>

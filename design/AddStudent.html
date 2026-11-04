@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Little Hands – New admission</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}a:hover{color:inherit}
+.lh{--p:#02696D;--op:#FFFFFF;--pc:#9AE8EB;--opc:#012021;--sc:#C6E9EA;--osc:#012021;--tc:#FFDCBE;--otc:#2C1600;--e:#BA1A1A;--ec:#FFDAD6;--oec:#410002;--s:#F2FBFB;--os:#161D1D;--osv:#394A4A;--ol:#687A7B;--olv:#B7CACB;--c1:#EAF2F3;--c2:#E4EDED;--c3:#DEE7E7;--c4:#D9E1E1;--is:#2B3232;--ios:#EAF2F3;--ip:#9AE8EB;--pgc:#FFDAD3;--pgo:#5C1A10;--lkc:#FFE08D;--lko:#3A2E00;--ukc:#D3E4FF;--uko:#0B305A;--tuc:#EADDFF;--tuo:#3B2271;--sh1:0 1px 2px rgba(0,0,0,.3),0 1px 3px 1px rgba(0,0,0,.15);--sh3:0 1px 3px rgba(0,0,0,.3),0 4px 8px 3px rgba(0,0,0,.15);--ease:cubic-bezier(.2,0,0,1);--dec:cubic-bezier(.05,.7,.1,1);color-scheme:light;background:var(--s);color:var(--os);font-family:Roboto,system-ui,sans-serif;font-size:14px;line-height:20px;letter-spacing:.25px}
+.lh[data-theme="dark"]{--p:#9AE8EB;--op:#033638;--pc:#004F52;--opc:#9AE8EB;--sc:#2D4C4D;--osc:#C6E9EA;--tc:#693C00;--otc:#FFDCBE;--e:#FFB4AB;--ec:#93000A;--oec:#FFDAD6;--s:#0D1515;--os:#DCE4E4;--osv:#B7CACB;--ol:#829495;--olv:#394A4A;--c1:#161D1D;--c2:#1A2121;--c3:#252B2B;--c4:#2F3636;--is:#DCE4E4;--ios:#2B3232;--ip:#02696D;--pgc:#73342A;--pgo:#FFDAD3;--lkc:#574500;--lko:#FFE08D;--ukc:#1F4876;--uko:#D3E4FF;--tuc:#4F378B;--tuo:#EADDFF;color-scheme:dark}
+.lh,.lh *{transition:background-color .45s var(--ease),color .45s var(--ease),border-color .45s var(--ease),box-shadow .25s var(--ease),transform .25s var(--ease),opacity .25s var(--ease)}
+.shell{display:flex;align-items:stretch}
+.rail{flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 0;box-sizing:border-box}
+.logo{width:48px;height:48px;border-radius:16px;background:var(--p);color:var(--op);display:flex;align-items:center;justify-content:center}
+.fab{position:relative;overflow:hidden;width:56px;height:56px;border-radius:16px;background:var(--pc);color:var(--opc);display:flex;align-items:center;justify-content:center;box-shadow:var(--sh3);text-decoration:none;margin:8px 0 12px}
+.dest{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:56px;width:80px;text-decoration:none;color:var(--osv);font-size:12px;font-weight:500;line-height:16px;letter-spacing:.5px}
+.pill{position:relative;overflow:hidden;width:56px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.dest[aria-current="page"]{color:var(--os);font-weight:700}
+.dest[aria-current="page"] .pill{background:var(--sc);color:var(--osc);animation:lh-pill .5s var(--dec) both}
+.rail-end{margin-top:auto}
+.dest.soon{opacity:.45;cursor:default}.dest.soon .pill::after{display:none}
+.pill::after,.btn::after,.fab::after,.chip::after,.phead::after,.iconb::after,.photo::after{content:"";position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .2s var(--ease);pointer-events:none;border-radius:inherit}
+.dest:hover .pill::after,.btn:hover::after,.fab:hover::after,.chip:hover::after,.phead:hover::after,.iconb:hover::after,.photo:hover::after{opacity:.08}
+.dest:active .pill::after,.btn:active::after,.fab:active::after,.chip:active::after,.phead:active::after,.iconb:active::after,.photo:active::after{opacity:.12}
+.main{flex:1 1 auto;min-width:0;box-sizing:border-box;padding:16px 32px 32px 8px;display:flex;flex-direction:column;gap:24px}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-height:72px}
+.h-lg{margin:0;font-size:32px;line-height:40px;font-weight:400;letter-spacing:0}
+.h-md{margin:0;font-size:22px;line-height:28px;font-weight:400;letter-spacing:0}
+.t-lg{font-size:16px;line-height:24px;font-weight:500;letter-spacing:.15px}
+.muted{color:var(--osv)}
+.small{font-size:12px;line-height:16px;letter-spacing:.4px}
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 24px;border-radius:22px;border:none;font:500 14px/20px Roboto,sans-serif;letter-spacing:.1px;text-decoration:none;cursor:pointer;white-space:nowrap;box-sizing:border-box}
+.btn:active,.chip:active{transform:scale(.97)}
+.btn:focus-visible,.dest:focus-visible,.chip:focus-visible,.sw:focus-visible,.fab:focus-visible,.phead:focus-visible,.iconb:focus-visible,.photo:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+.filled{background:var(--p);color:var(--op)}.filled:hover{box-shadow:var(--sh1)}
+.tonal{background:var(--sc);color:var(--osc)}
+.outlined{background:transparent;color:var(--p);border:1px solid var(--ol)}
+.textb{background:transparent;color:var(--p);padding:0 12px}
+.iconb{position:relative;overflow:hidden;width:44px;height:44px;border-radius:50%;border:none;background:transparent;color:var(--osv);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none}
+.card{background:var(--c1);border-radius:24px;padding:28px;box-sizing:border-box}
+.tag{display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:500;line-height:16px;letter-spacing:.4px;white-space:nowrap}
+.pg{background:var(--pgc);color:var(--pgo)}.lk{background:var(--lkc);color:var(--lko)}.uk{background:var(--ukc);color:var(--uko)}.tu{background:var(--tuc);color:var(--tuo)}
+.chip{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 14px;border-radius:8px;border:1px solid var(--ol);background:transparent;color:var(--osv);font:500 14px Roboto,sans-serif;cursor:pointer;box-sizing:border-box}
+.chip[aria-pressed="true"]{background:var(--sc);color:var(--osc);border-color:var(--sc);padding-left:8px}
+.tf{position:relative;display:flex;flex-direction:column}
+.tf input,.tf textarea,.tf select{height:56px;box-sizing:border-box;padding:0 16px;border:1px solid var(--ol);border-radius:4px;background:transparent;color:var(--os);font:400 16px Roboto,sans-serif;outline:none;width:100%}
+.tf select{padding-right:8px}
+.tf textarea{height:auto;padding:16px;resize:vertical}
+.tf input:hover,.tf textarea:hover,.tf select:hover{border-color:var(--os)}
+.tf input:focus,.tf textarea:focus,.tf select:focus{border:2px solid var(--p);padding-left:15px}
+.tf .lb{position:absolute;left:12px;top:-8px;padding:0 4px;background:var(--c1);font-size:12px;line-height:16px;color:var(--osv);z-index:1}
+.tf:focus-within .lb{color:var(--p)}
+.tf .help{font-size:12px;line-height:16px;color:var(--osv);padding:4px 16px 0}
+.tf.ro input{background:var(--c3);border-color:transparent;color:var(--osv)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px 16px}
+.prog{border:1px solid var(--olv);border-radius:20px;overflow:hidden}
+.prog.on{border:2px solid var(--p)}
+.phead{position:relative;display:flex;align-items:center;gap:14px;width:100%;min-height:64px;padding:0 20px;border:none;background:transparent;color:var(--os);font:inherit;text-align:left;cursor:pointer;box-sizing:border-box}
+.cbox{width:20px;height:20px;border-radius:4px;border:2px solid var(--osv);box-sizing:border-box;display:flex;align-items:center;justify-content:center;flex:none;color:var(--op)}
+.prog.on .cbox{background:var(--p);border-color:var(--p)}
+.pbody{padding:8px 20px 24px;display:flex;flex-direction:column;gap:24px;animation:lh-open .5s var(--dec) both;transform-origin:top}
+.photo{position:relative;overflow:hidden;width:128px;height:128px;border-radius:50%;border:2px dashed var(--ol);background:var(--c3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--osv);font:500 13px Roboto,sans-serif}
+.sw{display:inline-flex;align-items:center;gap:12px;min-height:44px;padding:0 4px 0 12px;border:none;border-radius:22px;background:transparent;color:var(--osv);font:500 14px Roboto,sans-serif;cursor:pointer}
+.track{position:relative;width:52px;height:32px;border-radius:16px;box-sizing:border-box;border:2px solid var(--ol);background:var(--c4)}
+.thumb{position:absolute;top:50%;left:2px;width:24px;height:24px;margin-top:-12px;border-radius:50%;background:var(--ol);color:var(--c4);display:flex;align-items:center;justify-content:center;transition:all .4s var(--dec)}
+.sw[aria-checked="true"] .track{background:var(--p);border-color:var(--p)}
+.sw[aria-checked="true"] .thumb{left:22px;background:var(--op);color:var(--p)}
+.bar{position:sticky;bottom:0;display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:16px 24px;border-radius:24px 24px 0 0;background:var(--c2);box-shadow:0 -1px 3px rgba(0,0,0,.12);z-index:4}
+@keyframes lh-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes lh-pill{from{transform:scaleX(.3);opacity:0}to{transform:none;opacity:1}}
+@keyframes lh-pop{from{transform:scale(.5);opacity:0}to{transform:none;opacity:1}}
+@keyframes lh-open{from{opacity:0;transform:translateY(-8px) scaleY(.96)}to{opacity:1;transform:none}}
+.in{animation:lh-in .55s var(--dec) both}
+.pop{animation:lh-pop .3s var(--dec) both}
+@media (max-width:720px){.shell{flex-direction:column}.rail{flex:0 0 auto;flex-direction:row;justify-content:space-around;padding:8px 4px;order:2;position:sticky;bottom:0;background:var(--c2);z-index:5}.rail .logo,.rail .fab,.rail-end{display:none}.dest{width:auto;flex:1}.main{padding:16px}.card{padding:20px}}
+@media (prefers-reduced-motion:reduce){.lh *{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div class="lh" data-theme="{{theme}}" style="min-height: 1760px">
+<div class="shell" style="min-height: 1760px">
+
+<nav class="rail" aria-label="Main menu">
+<div class="logo" aria-hidden="true"><svg width="30" height="30" viewBox="8 7 22 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 22v-8a2 2 0 0 1 4 0v6M18 19v-8a2 2 0 0 1 4 0v8M22 19v-6a2 2 0 0 1 4 0v9c0 4-3 7-7 7h-1c-2.2 0-3.6-.9-5-2.6L10 24.5a2 2 0 0 1 3.2-2.4L14 23"></path></svg></div>
+<a href="Payment.dc.html" class="fab" aria-label="Record a payment"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></a>
+<a href="Main.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20h-5v-6H9v6H4z"></path></svg></span>Home</a>
+<a href="Students.dc.html" class="dest" aria-current="page"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.9.7 3.1 2.4 3.5 5.2"></path></svg></span>Students</a>
+<a href="Payment.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"></rect><path d="M3 10h18M7 15h4"></path></svg></span>Fees</a>
+<a href="Students.dc.html" class="dest"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16M9 15l2 2 4-4"></path></svg></span>Attendance</a>
+<a class="dest soon" aria-disabled="true" title="Coming in a later version"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"></path></svg></span>Reports</a>
+<a class="dest soon" aria-disabled="true" title="Coming in a later version"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"></path></svg></span>Settings</a>
+<a href="Lock.dc.html" class="dest rail-end"><span class="pill"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></span>Lock</a>
+</nav>
+
+<main class="main">
+<header class="topbar in">
+<a href="Students.dc.html" class="iconb" aria-label="Close and go back to students"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></a>
+<div style="flex: 1 1 240px; min-width: 0">
+<h1 class="h-lg">New admission</h1>
+<div class="muted">Fields marked * are needed. The photo and everything else can be added later.</div>
+</div>
+<button type="button" role="switch" class="sw" aria-checked="{{darkStr}}" onClick="{{toggleTheme}}" title="Switch between light and dark">Dark theme<span class="track"><span class="thumb"><sc-if value="{{isDark}}" hint-placeholder-val="{{true}}"><svg class="pop" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></sc-if><sc-if value="{{isLight}}" hint-placeholder-val="{{false}}"><svg class="pop" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg></sc-if></span></span></button>
+</header>
+
+<form style="max-width: 960px; width: 100%; display: flex; flex-direction: column; gap: 24px">
+
+<section aria-labelledby="s1" class="card in" style="display: flex; flex-wrap: wrap; gap: 32px; animation-delay: 60ms">
+<div style="flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 8px">
+<button type="button" class="photo" aria-label="Add photo, optional"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>Add photo</button>
+<span class="small muted">Optional</span>
+</div>
+<div style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+<h2 id="s1" class="h-md">Child</h2>
+<label class="tf"><span class="lb">Full name *</span><input type="text"></label>
+<div class="grid">
+<label class="tf"><span class="lb">Joining date *</span><input type="text" defaultValue="2 Nov 2026"></label>
+<label class="tf ro"><span class="lb">Student ID</span><input type="text" value="LH-2026-065" readonly="readonly"><span class="help">Given automatically</span></label>
+</div>
+<label class="tf"><span class="lb">Notes for staff</span><textarea rows="2" placeholder="Allergies, pick-up instructions, anything staff should know"></textarea></label>
+</div>
+</section>
+
+<section aria-labelledby="s2" class="card in" style="display: flex; flex-direction: column; gap: 24px; animation-delay: 120ms">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<h2 id="s2" class="h-md">Parents &amp; guardians</h2>
+<button type="button" class="btn tonal">Same family as an existing student</button>
+</div>
+<div class="grid">
+<label class="tf"><span class="lb">Father's name</span><input type="text"></label>
+<label class="tf"><span class="lb">Father's phone</span><input type="tel" placeholder="+91"></label>
+<label class="tf"><span class="lb">Mother's name</span><input type="text"></label>
+<label class="tf"><span class="lb">Mother's phone</span><input type="tel" placeholder="+91"></label>
+</div>
+<div role="group" aria-labelledby="mc-l" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<span id="mc-l" class="t-lg" style="margin-right: 8px">Main contact for fees *</span>
+<sc-for list="{{contacts}}" as="c" hint-placeholder-count="2">
+<button type="button" class="chip" aria-pressed="{{c.pressed}}" onClick="{{c.pick}}"><sc-if value="{{c.on}}" hint-placeholder-val="{{false}}"><svg class="pop" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if>{{c.label}}</button>
+</sc-for>
+</div>
+<div class="grid" style="padding-top: 24px; border-top: 1px solid var(--olv)">
+<label class="tf"><span class="lb">Emergency contact</span><input type="text"></label>
+<label class="tf"><span class="lb">Relationship</span><input type="text" placeholder="e.g. Grandmother"></label>
+<label class="tf"><span class="lb">Emergency phone *</span><input type="tel" placeholder="+91"></label>
+</div>
+<label class="tf"><span class="lb">Home address</span><textarea rows="2"></textarea></label>
+<button type="button" class="btn outlined" style="align-self: flex-start"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add another guardian</button>
+</section>
+
+<section aria-labelledby="s3" class="card in" style="display: flex; flex-direction: column; gap: 16px; animation-delay: 180ms">
+<div>
+<h2 id="s3" class="h-md">Programs, timings &amp; fees</h2>
+<p class="muted" style="margin: 4px 0 0">Tick every program the child joins. Each one keeps its own timings and agreed fee.</p>
+</div>
+<sc-if value="{{kgClash}}" hint-placeholder-val="{{false}}"><div class="pop" role="alert" style="display: flex; gap: 12px; align-items: center; padding: 12px 16px; border-radius: 12px; background: var(--ec); color: var(--oec)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5v.01"></path></svg>A child is usually in only one of Playgroup, LKG or UKG. Please check.</div></sc-if>
+<sc-for list="{{progs}}" as="g" hint-placeholder-count="4">
+<div class="{{g.cls}}">
+<button type="button" class="phead" role="checkbox" aria-checked="{{g.checked}}" onClick="{{g.toggle}}">
+<span class="cbox"><sc-if value="{{g.on}}" hint-placeholder-val="{{false}}"><svg class="pop" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if></span>
+<span class="{{g.tag}}">{{g.label}}</span>
+<span class="muted" style="flex: 1">{{g.hint}}</span>
+<sc-if value="{{g.on}}" hint-placeholder-val="{{false}}"><span class="t-lg pop" style="color: var(--p)">₹{{g.agreedFmt}} / {{g.per}}</span></sc-if>
+</button>
+<sc-if value="{{g.on}}" hint-placeholder-val="{{false}}">
+<div class="pbody">
+<div role="group" aria-label="Days">
+<div class="small muted" style="margin-bottom: 8px">Days</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{g.days}}" as="d" hint-placeholder-count="6">
+<button type="button" class="chip" aria-pressed="{{d.pressed}}" onClick="{{d.toggle}}"><sc-if value="{{d.on}}" hint-placeholder-val="{{false}}"><svg class="pop" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></sc-if>{{d.label}}</button>
+</sc-for>
+</div>
+</div>
+<div class="grid">
+<label class="tf"><span class="lb">Arrives</span><input type="text" defaultValue="{{g.arr}}"></label>
+<label class="tf"><span class="lb">Leaves</span><input type="text" defaultValue="{{g.dep}}"></label>
+<label class="tf"><span class="lb">Starts on</span><input type="text" defaultValue="2 Nov 2026"></label>
+</div>
+<div class="grid" style="padding: 24px 20px 20px; border-radius: 16px; background: var(--c2)">
+<label class="tf"><span class="lb" style="background: var(--c2)">Charged</span><select value="{{g.freq}}" onChange="{{g.onFreq}}"><option value="month">Monthly</option><option value="term">Per term</option><option value="custom">Custom</option></select></label>
+<label class="tf"><span class="lb" style="background: var(--c2)">Standard fee (₹)</span><input type="number" value="{{g.std}}" onChange="{{g.onStd}}"></label>
+<label class="tf"><span class="lb" style="background: var(--c2)">Concession (₹)</span><input type="number" value="{{g.conc}}" onChange="{{g.onConc}}"></label>
+<div><div class="small muted">Agreed fee</div><div style="font-size: 28px; line-height: 36px; color: var(--p)">₹{{g.agreedFmt}}</div><div class="small muted">per {{g.per}}</div></div>
+</div>
+<label class="tf"><span class="lb">Reason for concession</span><input type="text" placeholder="e.g. Sibling, staff family"><span class="help">Only if there is one</span></label>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</section>
+
+<div class="bar">
+<div style="flex: 1 1 200px"><div class="small muted">Monthly total</div><div class="t-lg">₹{{totalFmt}} across {{nProgs}} program(s)</div></div>
+<a href="Students.dc.html" class="btn textb">Cancel</a>
+<a href="Payment.dc.html" class="btn outlined">Save &amp; collect first fee</a>
+<a href="Profile.dc.html" class="btn filled">Save student</a>
+</div>
+</form>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1760}}'>
+class Component extends DCLogic {
+themeOf() {
+const s = this.state && this.state.theme;
+if (s) return s;
+let st = null;
+try { st = window.localStorage.getItem('lh-theme'); } catch (e) {}
+if (st === 'dark' || st === 'light') return st;
+try { if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark'; } catch (e) {}
+return 'light';
+}
+componentDidMount() {
+try {
+this._mq = window.matchMedia('(prefers-color-scheme: dark)');
+this._mqf = () => this.forceUpdate();
+this._mq.addEventListener('change', this._mqf);
+} catch (e) {}
+}
+componentWillUnmount() { try { this._mq.removeEventListener('change', this._mqf); } catch (e) {} }
+renderVals() {
+const S = this.state || {};
+const theme = this.themeOf();
+const D = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const defs = [
+{ id: 'pg', label: 'Playgroup', tag: 'tag pg', kg: true, arr: '9:30 AM', dep: '12:00 PM', std: 1200, days: [1, 1, 1, 1, 1, 0] },
+{ id: 'lk', label: 'LKG', tag: 'tag lk', kg: true, arr: '8:45 AM', dep: '12:30 PM', std: 1500, days: [1, 1, 1, 1, 1, 0] },
+{ id: 'uk', label: 'UKG', tag: 'tag uk', kg: true, arr: '8:45 AM', dep: '1:00 PM', std: 1800, days: [1, 1, 1, 1, 1, 0] },
+{ id: 'tu', label: 'Tuition', tag: 'tag tu', kg: false, arr: '4:00 PM', dep: '5:30 PM', std: 1000, days: [1, 0, 1, 0, 1, 0] }
+];
+const P = S.progs || { lk: { on: true } };
+const upd = (id, patch) => {
+const cur = (this.state && this.state.progs) || { lk: { on: true } };
+const next = Object.assign({}, cur);
+next[id] = Object.assign({}, cur[id] || {}, patch);
+this.setState({ progs: next });
+};
+const fmt = (n) => Math.max(0, n).toLocaleString('en-IN');
+let total = 0; let n = 0; let kgCount = 0;
+const progs = defs.map((d) => {
+const st = P[d.id] || {};
+const on = !!st.on;
+const std = st.std !== undefined ? st.std : String(d.std);
+const conc = st.conc !== undefined ? st.conc : '0';
+const days = st.days || d.days;
+const freq = st.freq || 'month';
+const agreed = (parseInt(std, 10) || 0) - (parseInt(conc, 10) || 0);
+if (on) { n += 1; if (freq === 'month') total += Math.max(0, agreed); if (d.kg) kgCount += 1; }
+return {
+label: d.label, tag: d.tag, on: on, checked: on ? 'true' : 'false',
+cls: on ? 'prog on' : 'prog',
+hint: d.kg ? 'Kindergarten class' : 'Can be added with a kindergarten class',
+toggle: () => upd(d.id, { on: !on }),
+days: D.map((lab, i) => ({ label: lab, on: !!days[i], pressed: days[i] ? 'true' : 'false', toggle: () => { const nd = days.slice(); nd[i] = nd[i] ? 0 : 1; upd(d.id, { days: nd }); } })),
+arr: d.arr, dep: d.dep, std: std, conc: conc, freq: freq,
+per: freq === 'term' ? 'term' : freq === 'custom' ? 'period' : 'month',
+agreedFmt: fmt(agreed),
+onStd: (e) => upd(d.id, { std: e.target.value }),
+onConc: (e) => upd(d.id, { conc: e.target.value }),
+onFreq: (e) => upd(d.id, { freq: e.target.value })
+};
+});
+const main = S.main || 'Father';
+return {
+theme: theme,
+isDark: theme === 'dark',
+isLight: theme !== 'dark',
+darkStr: theme === 'dark' ? 'true' : 'false',
+toggleTheme: () => {
+const t = this.themeOf() === 'dark' ? 'light' : 'dark';
+try { window.localStorage.setItem('lh-theme', t); } catch (e) {}
+this.setState({ theme: t });
+},
+contacts: ['Father', 'Mother'].map((l) => ({ label: l, on: l === main, pressed: l === main ? 'true' : 'false', pick: () => this.setState({ main: l }) })),
+progs: progs,
+kgClash: kgCount > 1,
+totalFmt: fmt(total),
+nProgs: n
+};
+}
+}
+</script>
+</body>
+</html>
