@@ -10,6 +10,9 @@ import { call, messageOf, useLoad } from '../../lib/api'
 import { formatDateLong } from '../../lib/format'
 import type { Navigate } from '../../shell/routes'
 import { EditDetailsDialog, GuardianDialog, NoteDialog } from './ProfileDialogs'
+import { AddProgramDialog, EditProgramDialog, EndProgramDialog, ProgramsCard, type ProgramDialog } from './EnrollmentDialogs'
+import { ProgramTag } from './ProgramFields'
+import { PROGRAM_NAME, type EnrollmentView } from '@shared/enrollments'
 
 interface Props {
   theme: Theme
@@ -30,6 +33,7 @@ type Open =
   | { kind: 'details' }
   | { kind: 'guardian'; link: GuardianLink | null }
   | { kind: 'note'; note: StudentNote | null }
+  | ProgramDialog
   | null
 
 export function StudentProfile({ theme, onToggleTheme, id, navigate }: Props) {
@@ -82,6 +86,16 @@ export function StudentProfile({ theme, onToggleTheme, id, navigate }: Props) {
   }
   if (!p) return header
 
+  async function resume(e: EnrollmentView) {
+    try {
+      await call(window.lh.enrollments.resume(e.id))
+      snack(`${PROGRAM_NAME[e.program]} continues`)
+      await reload()
+    } catch (err) {
+      snack(messageOf(err))
+    }
+  }
+
   const done = async (message: string) => {
     setOpen(null)
     snack(message)
@@ -116,6 +130,13 @@ export function StudentProfile({ theme, onToggleTheme, id, navigate }: Props) {
             <span>Joined {formatDateLong(p.joiningDate)}</span>
             {!p.photo && <span>No photo yet</span>}
           </div>
+          {p.enrollments.some((e) => e.state !== 'ended') && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {[...new Set(p.enrollments.filter((e) => e.state !== 'ended').map((e) => e.program))].map((c) => (
+                <ProgramTag key={c} code={c} large />
+              ))}
+            </div>
+          )}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           <button type="button" className="btn outlined" onClick={() => setOpen({ kind: 'details' })}>
@@ -137,13 +158,7 @@ export function StudentProfile({ theme, onToggleTheme, id, navigate }: Props) {
 
       {tab === 'overview' && (
         <div className="cols">
-          <section aria-labelledby="enr-h" className="card in" style={{ animationDelay: '180ms', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <h2 id="enr-h" className="h-md">Programs, timings &amp; fees</h2>
-            <div className="soon-inline">
-              <span className="step-chip">Coming in step 3</span>
-              <p style={{ margin: '8px 0 0' }}>Playgroup, LKG, UKG or Tuition, with days, timings and the agreed fee for each.</p>
-            </div>
-          </section>
+          <ProgramsCard p={p} onOpen={setOpen} onResume={(e) => void resume(e)} />
           <Guardians
             p={p}
             onAdd={() => setOpen({ kind: 'guardian', link: null })}
@@ -194,6 +209,16 @@ export function StudentProfile({ theme, onToggleTheme, id, navigate }: Props) {
         <GuardianDialog studentId={p.id} link={open.link} onClose={() => setOpen(null)} onDone={done} />
       )}
       {open?.kind === 'note' && <NoteDialog studentId={p.id} note={open.note} onClose={() => setOpen(null)} onDone={done} />}
+      {open?.kind === 'add' && <AddProgramDialog p={p} onClose={() => setOpen(null)} onDone={done} />}
+      {open?.kind === 'edit' && (
+        <EditProgramDialog
+          enrollment={open.enrollment}
+          onClose={() => setOpen(null)}
+          onDone={done}
+          onEnd={() => setOpen({ kind: 'end', enrollment: open.enrollment })}
+        />
+      )}
+      {open?.kind === 'end' && <EndProgramDialog enrollment={open.enrollment} onClose={() => setOpen(null)} onDone={done} />}
     </>
   )
 }

@@ -1,4 +1,5 @@
 // Types shared by the Students module (main process ⇄ UI).
+import type { EnrollmentView, ProgramCode } from './enrollments'
 
 export const STUDENT_STATUSES = ['active', 'inactive', 'graduated'] as const
 export type StudentStatus = (typeof STUDENT_STATUSES)[number]
@@ -14,6 +15,8 @@ export const PAGE_SIZE = 25
 export interface StudentListQuery {
   search: string
   status: StudentStatus
+  /** Only children currently in (or about to start) this program. Default: all. */
+  program?: ProgramCode | 'all'
   /** 0-based */
   page: number
 }
@@ -31,6 +34,8 @@ export interface StudentListRow {
   joiningDate: string
   status: StudentStatus
   mainContact: ContactSummary | null
+  /** Programs the child is in now or about to start, in menu order. */
+  programs: ProgramCode[]
 }
 
 export interface StudentListResult {
@@ -69,6 +74,8 @@ export interface StudentProfile {
   photo: string | null
   guardians: GuardianLink[]
   notes: StudentNote[]
+  /** Current and upcoming programs first (menu order), then ended ones (latest first). */
+  enrollments: EnrollmentView[]
 }
 
 export type Result<T = void> = { ok: true; value: T } | { ok: false; message: string }

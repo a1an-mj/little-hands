@@ -1,17 +1,20 @@
 import { useMemo, useState } from 'react'
+import { PROGRAM_CODES, isKindergarten, monthlyTotalPaise, type ProgramCode, type ProgramDefaults } from '@shared/enrollments'
 import type { Theme } from '@shared/ipc-contract'
+import { formatRupees } from '@shared/money'
 import { formatPhone } from '@shared/phone'
 import { admissionSchema, fieldErrors, type AdmissionInput } from '@shared/schemas'
 import type { GuardianLink } from '@shared/students'
 import { Avatar } from '../../components/Avatar'
 import { ConfirmDialog, Dialog } from '../../components/Dialog'
-import { CameraIcon, CheckIcon, CloseIcon, PlusSmallIcon, SearchIcon } from '../../components/icons'
+import { AlertIcon, CameraIcon, CheckIcon, CloseIcon, PlusSmallIcon, SearchIcon } from '../../components/icons'
 import { useSnackbar } from '../../components/Snackbar'
 import { TextField } from '../../components/TextField'
 import { ThemeSwitch } from '../../components/ThemeSwitch'
 import { call, messageOf, useLoad } from '../../lib/api'
-import { todayIso } from '../../lib/format'
+import { plural, todayIso } from '../../lib/format'
 import type { Navigate } from '../../shell/routes'
+import { ProgramFields, ProgramTag, agreedPaise, agreedText, enrollmentInput, formFromDefaults, perText, type ProgramForm } from './ProgramFields'
 
 interface Props {
   theme: Theme
@@ -39,6 +42,8 @@ interface FormState {
   extra: Extra[]
   feeContact: string
   sibling: Sibling | null
+  /** Filled in the first time a program is ticked; kept (but not sent) if it's unticked again. */
+  programs: Partial<Record<ProgramCode, { on: boolean; form: ProgramForm }>>
 }
 
 const blank = (): FormState => ({
@@ -52,8 +57,11 @@ const blank = (): FormState => ({
   emergency: { name: '', relationship: '', phone: '' },
   extra: [],
   feeContact: 'father',
-  sibling: null
+  sibling: null,
+  programs: {}
 })
+
+const tickedPrograms = (f: FormState) => PROGRAM_CODES.filter((c) => f.programs[c]?.on)
 
 function toInput(f: FormState): AdmissionInput {
   return {
@@ -64,8 +72,20 @@ function toInput(f: FormState): AdmissionInput {
     photo: f.photo,
     family: f.sibling
       ? { kind: 'sibling', siblingId: f.sibling.id }
-      : { kind: 'new', father: f.father, mother: f.mother, emergency: f.emergency, extra: f.extra, feeContact: f.feeContact }
+      : { kind: 'new', father: f.father, mother: f.mother, emergency: f.emergency, extra: f.extra, feeContact: f.feeContact },
+    programs: tickedPrograms(f).map((c) => enrollmentInput(c, f.programs[c]!.form))
   }
+}
+
+/** "programs.1.fee.standard" → "prog.tu.fee.standard", so errors stay with the right program card. */
+function programErrors(errors: Record<string, string>, f: FormState): Record<string, string> {
+  const ticked = tickedPrograms(f)
+  return Object.fromEntries(
+    Object.entries(errors).map(([k, v]) => {
+      const m = /^programs\.(\d+)\.(.+)$/.exec(k)
+      return [m ? `prog.${ticked[Number(m[1])]}.${m[2]}` : k, v]
+    })
+  )
 }
 
 const filled = (p: Person) => Boolean(p.name.trim() || p.phone.trim())
@@ -79,8 +99,22 @@ export function AdmissionForm({ theme, onToggleTheme, navigate }: Props) {
   const [pickingSibling, setPickingSibling] = useState(false)
   const [confirmLeave, setConfirmLeave] = useState(false)
 
+  const { data: defaults } = useLoad(() => window.lh.enrollments.defaults(), [])
+
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
-    setF((s) => ({ ...s, [key]: value }))
+    setF((s) => {
+      const next = { ...s, [key]: value }
+      // Program start dates follow the joining date until the owner changes them.
+      if (key === 'joiningDate') {
+        next.programs = Object.fromEntries(
+          Object.entries(s.programs).map(([c, p]) => [
+            c,
+            p.form.startDate === s.joiningDate ? { ...p, form: { ...p.form, startDate: value as string } } : p
+          ])
+        )
+      }
+      return next
+    })
     setErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => k !== key && !k.startsWith(`family.${String(key)}`))))
   }
   const err = (path: string) => errors[path]
@@ -118,7 +152,7 @@ export function AdmissionForm({ theme, onToggleTheme, navigate }: Props) {
     if (busy) return
     const parsed = admissionSchema.safeParse(toInput(f))
     if (!parsed.success) {
-      setErrors(fieldErrors(parsed.error))
+      setErrors(programErrors(fieldErrors(parsed.error), f))
       requestAnimationFrame(() => {
         const el = document.querySelector<HTMLElement>('[aria-invalid="true"], [data-error="true"]')
         el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
@@ -219,19 +253,17 @@ export function AdmissionForm({ theme, onToggleTheme, navigate }: Props) {
           <TextField label="Home address" multiline name="homeAddress" value={f.homeAddress} onChange={(v) => set('homeAddress', v)} error={err('homeAddress')} />
         </section>
 
-        {/* ---------- Programs (step 3) ---------- */}
-        <section aria-labelledby="s3" className="card in" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 28, animationDelay: '180ms' }}>
-          <h2 id="s3" className="h-md">Programs, timings &amp; fees</h2>
-          <div className="soon-inline">
-            <span className="step-chip">Coming in step 3</span>
-            <p style={{ margin: '8px 0 0' }}>Choosing Playgroup, LKG, UKG or Tuition, with each one's days, timings and agreed fee.</p>
-          </div>
-        </section>
+        {/* ---------- Programs, timings & fees ---------- */}
+        <ProgramsSection
+          f={f}
+          setF={setF}
+          defaults={defaults}
+          errors={errors}
+          clearErrors={(prefix) => setErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => !k.startsWith(prefix))))}
+        />
 
         <div className="bar-bottom">
-          <div style={{ flex: '1 1 200px' }} className="muted">
-            {f.fullName.trim() ? `Admitting ${f.fullName.trim()}` : 'New admission'}
-          </div>
+          <MonthlyTotal f={f} />
           <button type="button" className="btn textb" onClick={leave}>
             Cancel
           </button>
@@ -388,7 +420,7 @@ function SiblingFamily({ sibling, onClear }: { sibling: Sibling; onClear: () => 
 
 function SiblingPicker({ onClose, onPick }: { onClose: () => void; onPick: (s: { sibling: Sibling; address: string }) => void }) {
   const [search, setSearch] = useState('')
-  const { data } = useLoad(() => window.lh.students.list({ search, status: 'active', page: 0 }), [search])
+  const { data } = useLoad(() => window.lh.students.list({ search, status: 'active', program: 'all', page: 0 }), [search])
   const snack = useSnackbar()
 
   async function pick(id: string) {
@@ -429,5 +461,114 @@ function SiblingPicker({ onClose, onPick }: { onClose: () => void; onPick: (s: {
         </button>
       </div>
     </Dialog>
+  )
+}
+
+// ---------- Programs, timings & fees ----------
+
+function ProgramsSection(props: {
+  f: FormState
+  setF: React.Dispatch<React.SetStateAction<FormState>>
+  defaults: ProgramDefaults[] | undefined
+  errors: Record<string, string>
+  clearErrors: (prefix: string) => void
+}) {
+  const { f, setF, defaults, errors, clearErrors } = props
+  const kgCount = tickedPrograms(f).filter(isKindergarten).length
+
+  const toggle = (d: ProgramDefaults) => {
+    clearErrors('programs')
+    setF((s) => {
+      const cur = s.programs[d.code]
+      const next = cur ? { ...cur, on: !cur.on } : { on: true, form: formFromDefaults(d, s.joiningDate) }
+      return { ...s, programs: { ...s.programs, [d.code]: next } }
+    })
+  }
+  const change = (code: ProgramCode, patch: Partial<ProgramForm>) => {
+    clearErrors(`prog.${code}.`)
+    setF((s) => {
+      const cur = s.programs[code]!
+      return { ...s, programs: { ...s.programs, [code]: { ...cur, form: { ...cur.form, ...patch } } } }
+    })
+  }
+  const errorsFor = (code: ProgramCode) =>
+    Object.fromEntries(
+      Object.entries(errors)
+        .filter(([k]) => k.startsWith(`prog.${code}.`))
+        .map(([k, v]) => [k.slice(`prog.${code}.`.length), v])
+    )
+
+  return (
+    <section aria-labelledby="s3" className="card in" style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 28, animationDelay: '180ms' }}>
+      <div>
+        <h2 id="s3" className="h-md">
+          Programs, timings &amp; fees *
+        </h2>
+        <p className="muted" style={{ margin: '4px 0 0' }}>
+          Tick every program the child joins. Each one keeps its own timings and agreed fee.
+        </p>
+      </div>
+      {errors.programs && (
+        <div className="alert pop" role="alert" data-error="true" tabIndex={-1}>
+          <AlertIcon />
+          {errors.programs}
+        </div>
+      )}
+      {kgCount > 1 && (
+        <div className="alert pop" role="alert">
+          <AlertIcon />A child is usually in only one of Playgroup, LKG or UKG. Please check.
+        </div>
+      )}
+      {!defaults && <div className="muted">Loading programs…</div>}
+      {defaults?.map((d) => {
+        const p = f.programs[d.code]
+        const on = !!p?.on
+        return (
+          <div key={d.code} className={on ? 'prog on' : 'prog'}>
+            <button type="button" className="phead" role="checkbox" aria-checked={on} onClick={() => toggle(d)}>
+              <span className="cbox">{on && <CheckIcon />}</span>
+              <ProgramTag code={d.code} large />
+              <span className="muted" style={{ flex: 1 }}>
+                {isKindergarten(d.code) ? 'Kindergarten class' : 'Can be added with a kindergarten class'}
+              </span>
+              {on && (
+                <span className="t-lg pop" style={{ color: 'var(--p)' }}>
+                  {agreedText(p.form)} / {perText(p.form)}
+                </span>
+              )}
+            </button>
+            {on && <ProgramFields program={d.code} value={p.form} onChange={(patch) => change(d.code, patch)} errors={errorsFor(d.code)} />}
+          </div>
+        )
+      })}
+    </section>
+  )
+}
+
+function MonthlyTotal({ f }: { f: FormState }) {
+  const ticked = tickedPrograms(f)
+  if (ticked.length === 0) {
+    return (
+      <div style={{ flex: '1 1 200px' }} className="muted">
+        {f.fullName.trim() ? `Admitting ${f.fullName.trim()}` : 'New admission'}
+      </div>
+    )
+  }
+  const forms = ticked.map((c) => f.programs[c]!.form)
+  const total = monthlyTotalPaise(forms.map((p) => ({ frequency: p.frequency, agreedPaise: agreedPaise(p) ?? 0 })))
+  const others = forms.filter((p) => p.frequency !== 'monthly').length
+  return (
+    <div style={{ flex: '1 1 200px' }}>
+      <div className="small muted">Monthly total</div>
+      <div className="t-lg" data-testid="monthly-total">
+        {formatRupees(total)} across {plural(ticked.length, 'program')}
+        {others > 0 && <span className="muted"> · plus {plural(others, 'other fee')}</span>}
+      </div>
+      <div className="small muted" style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+        {ticked.map((c) => (
+          <ProgramTag key={c} code={c} />
+        ))}
+      </div>
+    </div>
   )
 }

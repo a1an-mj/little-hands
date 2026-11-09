@@ -28,7 +28,7 @@ function greeting(d: Date): string {
 
 export function Shell({ theme, onToggleTheme, onLock }: Props) {
   const [route, setRoute] = useState<Route>({ name: 'home' })
-  const [listState, setListState] = useState<ListState>({ search: '', status: 'active', page: 0 })
+  const [listState, setListState] = useState<ListState>({ search: '', status: 'active', program: 'all', page: 0 })
   const common = { theme, onToggleTheme }
 
   // New screen → start at the top.

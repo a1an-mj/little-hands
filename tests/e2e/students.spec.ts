@@ -58,6 +58,7 @@ test('admission form shows what is missing', async () => {
   await expect(page.getByText("Enter the child's full name")).toBeVisible()
   await expect(page.getByText('An emergency phone number is needed')).toBeVisible()
   await expect(page.getByText(/Choose who pays the fees/)).toBeVisible()
+  await expect(page.getByText('Tick at least one program')).toBeVisible()
 
   await field("Father's phone").fill('12345')
   await page.getByRole('button', { name: 'Save student' }).click()
@@ -75,6 +76,8 @@ test('admit a child with parents, emergency contact, notes and photo', async () 
   await field('Emergency phone').fill('90000 00016')
   await field('Home address').fill('Rose Villa, Kochi')
   await field('Notes for staff').fill('Peanut allergy')
+  await page.getByRole('checkbox', { name: /LKG/ }).click()
+  await field('LKG standard fee (₹)').fill('1500')
   await page.getByRole('button', { name: 'Add photo, optional' }).click()
   await expect(page.getByRole('button', { name: 'Change photo' })).toBeVisible()
 
@@ -122,6 +125,8 @@ test('a brother joins: same family, shared guardians', async () => {
   await dlg.getByRole('button', { name: /Aadhya Menon/ }).click()
   await expect(page.getByText(/Same parents and guardians as/)).toBeVisible()
   await expect(field('Home address')).toHaveValue('Rose Villa, Kochi')
+  await page.getByRole('checkbox', { name: /UKG/ }).click()
+  await field('UKG standard fee (₹)').fill('1800')
   await page.getByRole('button', { name: 'Save student' }).click()
 
   await expect(page.getByRole('heading', { level: 1, name: 'Arav Menon' })).toBeVisible()

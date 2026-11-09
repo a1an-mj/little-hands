@@ -1,11 +1,15 @@
 import type Database from 'better-sqlite3'
 import type { Writer } from '../db/writer'
+import { EnrollmentsRepo } from '../enrollments/repo'
+import { UserError } from '../errors'
 import type { Admission, GuardianInput, NoteInput, StudentDetailsInput } from '@shared/schemas'
 import { guardianSchema, noteSchema, studentDetailsSchema } from '@shared/schemas'
 import { phoneSearchDigits } from '@shared/phone'
 import { formatStudentCode, yearOf } from '@shared/student-code'
+import { formatDate } from '@shared/dates'
 import {
   PAGE_SIZE,
+  STATUS_LABEL,
   STUDENT_STATUSES,
   type GuardianLink,
   type StudentListQuery,
@@ -14,8 +18,7 @@ import {
   type StudentStatus
 } from '@shared/students'
 
-/** A problem the owner can fix; its message is shown in the app as-is. */
-export class UserError extends Error {}
+export { UserError }
 
 type GuardianRow = {
   link_id: string
@@ -34,7 +37,10 @@ const likeEscape = (s: string) => s.replace(/[\\%_]/g, (c) => '\\' + c)
 export class StudentsRepo {
   private readonly db: Database.Database
 
-  constructor(private readonly w: Writer) {
+  constructor(
+    private readonly w: Writer,
+    readonly enrollments: EnrollmentsRepo = new EnrollmentsRepo(w)
+  ) {
     this.db = w.db
   }
 
@@ -43,8 +49,11 @@ export class StudentsRepo {
   list(q: StudentListQuery): StudentListResult {
     const search = q.search.trim()
     const digits = phoneSearchDigits(search)
+    const program = q.program ?? 'all'
     const params = {
       status: q.status,
+      program,
+      today: this.w.today(),
       like: `%${likeEscape(search)}%`,
       digits: digits ? `%${digits}%` : null,
       hasSearch: search ? 1 : 0,
@@ -58,7 +67,11 @@ export class StudentsRepo {
         OR (@digits IS NOT NULL AND EXISTS (
           SELECT 1 FROM student_guardians x JOIN guardians gx ON gx.id = x.guardian_id
           WHERE x.student_id = s.id AND x.deleted_at IS NULL AND gx.deleted_at IS NULL
-            AND gx.phone LIKE @digits)))`
+            AND gx.phone LIKE @digits)))
+      AND (@program = 'all' OR EXISTS (
+        SELECT 1 FROM enrollments e JOIN programs p ON p.id = e.program_id
+        WHERE e.student_id = s.id AND e.deleted_at IS NULL AND p.code = @program
+          AND (e.end_date IS NULL OR e.end_date >= @today)))`
 
     const rows = this.db
       .prepare(
@@ -91,10 +104,12 @@ export class StudentsRepo {
       counts[r.status] = r.n
     }
 
+    const programs = this.enrollments.openPrograms(rows.map((r) => r.id))
     return {
       total,
       counts,
       rows: rows.map((r) => ({
+        programs: programs.get(r.id) ?? [],
         id: r.id,
         code: r.student_code,
         fullName: r.full_name,
@@ -140,7 +155,8 @@ export class StudentsRepo {
       homeAddress: s.home_address,
       photo: photo ? `data:image/jpeg;base64,${photo.toString('base64')}` : null,
       guardians: this.guardians(id),
-      notes: notes.map((n) => ({ ...n, important: n.important === 1 }))
+      notes: notes.map((n) => ({ ...n, important: n.important === 1 })),
+      enrollments: this.enrollments.forStudent(id)
     }
   }
 
@@ -197,6 +213,7 @@ export class StudentsRepo {
         this.w.insert('student_notes', { student_id: studentId, title: 'Admission note', details: a.notes, important: 0 })
       }
       if (photo) this.w.insert('student_photos', { student_id: studentId, image: photo, mime: 'image/jpeg' })
+      for (const p of a.programs) this.enrollments.insert(studentId, p)
       return studentId
     })
   }
@@ -272,12 +289,27 @@ export class StudentsRepo {
   updateDetails(id: string, input: StudentDetailsInput): void {
     const d = studentDetailsSchema.parse(input)
     this.w.transaction(() => {
+      const before = this.db.prepare('SELECT status FROM students WHERE id = ? AND deleted_at IS NULL').get(id) as
+        | { status: StudentStatus }
+        | undefined
+      if (!before) throw new UserError('This student could not be found. They may have been removed.')
+      const firstStart = this.db
+        .prepare('SELECT min(start_date) FROM enrollments WHERE student_id = ? AND deleted_at IS NULL')
+        .pluck()
+        .get(id) as string | null
+      if (firstStart && d.joiningDate > firstStart) {
+        throw new UserError(`The joining date can't be after the first program starts (${formatDate(firstStart)}).`)
+      }
       this.w.update('students', id, {
         full_name: d.fullName,
         joining_date: d.joiningDate,
         status: d.status,
         home_address: d.homeAddress
       })
+      // Leaving or graduating ends the programs the child is still in, from today.
+      if (before.status === 'active' && d.status !== 'active') {
+        this.enrollments.endAllForStudent(id, this.w.today(), `Marked ${STATUS_LABEL[d.status].toLowerCase()}`)
+      }
     })
   }
 
@@ -287,6 +319,7 @@ export class StudentsRepo {
       this.requireStudent(id)
       // From step 4: refuse if the student has any payment.
       for (const link of this.guardians(id)) this.w.softDelete('student_guardians', link.linkId)
+      this.enrollments.removeAllForStudent(id)
       this.w.softDelete('students', id)
     })
   }

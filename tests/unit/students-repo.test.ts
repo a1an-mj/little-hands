@@ -55,7 +55,7 @@ describe('student IDs', () => {
 
   it('keeps the ID when the joining date changes', () => {
     const a = admit()
-    repo.updateDetails(a, { fullName: 'Aadhya Menon', joiningDate: '2027-06-01', status: 'active', homeAddress: '' })
+    repo.updateDetails(a, { fullName: 'Aadhya Menon', joiningDate: '2025-06-01', status: 'active', homeAddress: '' })
     expect(repo.profile(a)!.code).toBe('LH-2026-001')
   })
 
@@ -252,8 +252,7 @@ describe('change history', () => {
     expect(audit()).toHaveLength(before) // nothing changed → nothing logged
 
     repo.updateDetails(id, { fullName: 'Aadhya S Menon', joiningDate: '2026-06-03', status: 'inactive', homeAddress: '' })
-    const last = audit().at(-1)!
-    expect(last.table_name).toBe('students')
+    const last = audit().filter((a) => a.table_name === 'students').at(-1)!
     expect(last.action).toBe('update')
     expect(JSON.parse(last.changes)).toEqual({ full_name: ['Aadhya Menon', 'Aadhya S Menon'], status: ['active', 'inactive'] })
 

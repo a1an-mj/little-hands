@@ -1,7 +1,16 @@
 // The typed API the preload script exposes to the UI as `window.lh`.
 // All data access lives in the main process; the UI only talks through this.
 
-import type { AdmissionInput, GuardianInput, NoteInput, StudentDetailsInput } from './schemas'
+import type { ProgramDefaults } from './enrollments'
+import type {
+  AdmissionInput,
+  EndEnrollmentInput,
+  EnrollmentEditInput,
+  EnrollmentInput,
+  GuardianInput,
+  NoteInput,
+  StudentDetailsInput
+} from './schemas'
 import type { Result, StudentListQuery, StudentListResult, StudentProfile } from './students'
 
 export type Theme = 'light' | 'dark'
@@ -30,6 +39,21 @@ export const STUDENTS_METHODS = [
   'list', 'nextCode', 'profile', 'admit', 'updateDetails', 'remove', 'pickPhoto', 'setPhoto',
   'addGuardian', 'updateGuardian', 'setFeeContact', 'removeGuardian', 'addNote', 'updateNote', 'removeNote'
 ] as const satisfies readonly (keyof StudentsApi)[]
+
+/** Programs a child attends, with timings and fees. Same rules as StudentsApi. */
+export interface EnrollmentsApi {
+  /** Default days/timings per program, plus the last standard fee used, for pre-filling forms. */
+  defaults(): Promise<Result<ProgramDefaults[]>>
+  add(studentId: string, input: EnrollmentInput): Promise<Result<string>>
+  edit(enrollmentId: string, input: EnrollmentEditInput): Promise<Result>
+  end(enrollmentId: string, input: EndEnrollmentInput): Promise<Result>
+  /** Undoes "End": the child continues. */
+  resume(enrollmentId: string): Promise<Result>
+  /** "Added by mistake". */
+  remove(enrollmentId: string): Promise<Result>
+}
+
+export const ENROLLMENTS_METHODS = ['defaults', 'add', 'edit', 'end', 'resume', 'remove'] as const satisfies readonly (keyof EnrollmentsApi)[]
 
 export type LockStatus =
   | { state: 'needs-setup' }
@@ -67,6 +91,7 @@ export interface LhApi {
     onChange(listener: (theme: Theme) => void): () => void
   }
   students: StudentsApi
+  enrollments: EnrollmentsApi
 }
 
 export const IPC = {

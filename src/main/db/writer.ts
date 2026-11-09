@@ -1,8 +1,17 @@
 import { randomUUID } from 'node:crypto'
 import type Database from 'better-sqlite3'
+import { localIsoDate } from '@shared/dates'
 
 /** Tables written through the Writer. Every one gets id/created_at/updated_at/device_id/deleted_at. */
-export type SyncedTable = 'students' | 'student_photos' | 'guardians' | 'student_guardians' | 'student_notes'
+export type SyncedTable =
+  | 'students'
+  | 'student_photos'
+  | 'guardians'
+  | 'student_guardians'
+  | 'student_notes'
+  | 'enrollments'
+  | 'schedules'
+  | 'fee_agreements'
 
 type Row = Record<string, unknown>
 
@@ -26,6 +35,11 @@ export class Writer {
 
   now(): string {
     return this.clock().toISOString()
+  }
+
+  /** Today's date on this laptop's calendar, "YYYY-MM-DD". */
+  today(): string {
+    return localIsoDate(this.clock())
   }
 
   transaction<T>(fn: () => T): T {

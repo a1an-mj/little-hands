@@ -1,3 +1,4 @@
+import type { ProgramCode } from '@shared/enrollments'
 import type { StudentStatus } from '@shared/students'
 import type { Page } from './NavRail'
 
@@ -16,6 +17,7 @@ export function pageOf(route: Route): Page {
 export interface ListState {
   search: string
   status: StudentStatus
+  program: ProgramCode | 'all'
   page: number
 }
 

@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import type { Theme } from '@shared/ipc-contract'
 import { formatPhone } from '@shared/phone'
+import { PROGRAM_CODES, PROGRAM_NAME } from '@shared/enrollments'
 import { PAGE_SIZE, STATUS_LABEL, STUDENT_STATUSES, type StudentListRow } from '@shared/students'
 import { Avatar } from '../../components/Avatar'
-import { AddPersonIcon, SearchIcon } from '../../components/icons'
+import { AddPersonIcon, CheckIcon, SearchIcon } from '../../components/icons'
 import { ThemeSwitch } from '../../components/ThemeSwitch'
 import { useLoad } from '../../lib/api'
 import { formatDate } from '../../lib/format'
 import type { ListState, Navigate } from '../../shell/routes'
+import { ProgramTag } from './ProgramFields'
 
 interface Props {
   theme: Theme
@@ -27,15 +29,15 @@ export function StudentsList({ theme, onToggleTheme, state, setState, navigate }
   }, [typed, state, setState])
 
   const { data, error } = useLoad(
-    () => window.lh.students.list({ search: state.search, status: state.status, page: state.page }),
-    [state.search, state.status, state.page]
+    () => window.lh.students.list({ search: state.search, status: state.status, program: state.program, page: state.page }),
+    [state.search, state.status, state.program, state.page]
   )
 
   const counts = data?.counts
   const total = data?.total ?? 0
   const first = state.page * PAGE_SIZE + 1
   const last = Math.min(total, (state.page + 1) * PAGE_SIZE)
-  const statusWord = STATUS_LABEL[state.status].toLowerCase()
+  const statusWord = STATUS_LABEL[state.status].toLowerCase() + (state.program === 'all' ? '' : ` ${PROGRAM_NAME[state.program]}`)
   const noStudentsAtAll = counts && counts.active + counts.inactive + counts.graduated === 0
 
   return (
@@ -77,6 +79,20 @@ export function StudentsList({ theme, onToggleTheme, state, setState, navigate }
             </button>
           ))}
         </div>
+        <div role="group" aria-label="Program" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {(['all', ...PROGRAM_CODES] as const).map((c) => (
+            <button
+              key={c}
+              type="button"
+              className="chip"
+              aria-pressed={state.program === c}
+              onClick={() => setState({ ...state, program: c, page: 0 })}
+            >
+              {state.program === c && <CheckIcon />}
+              {c === 'all' ? 'All programs' : PROGRAM_NAME[c]}
+            </button>
+          ))}
+        </div>
         <div style={{ flex: 1 }} />
         <button type="button" className="btn filled" onClick={() => navigate({ name: 'admit' })}>
           <AddPersonIcon />
@@ -87,6 +103,7 @@ export function StudentsList({ theme, onToggleTheme, state, setState, navigate }
       <section aria-label="Student list" className="card list-card in" style={{ animationDelay: '120ms' }}>
         <div className="lhead small muted" aria-hidden="true">
           <span className="c-student">Student</span>
+          <span className="c-progs">Programs</span>
           <span className="c-contact">Main contact</span>
           <span className="c-joined">Joined</span>
         </div>
@@ -96,8 +113,8 @@ export function StudentsList({ theme, onToggleTheme, state, setState, navigate }
           <div className="empty">
             {noStudentsAtAll
               ? 'No students yet. Use "New admission" to add the first child.'
-              : state.search
-                ? 'No students match. Try another name or clear the search.'
+              : state.search || state.program !== 'all'
+                ? 'No students match. Try another name or clear the filters.'
                 : `No ${statusWord} students.`}
           </div>
         )}
@@ -132,6 +149,9 @@ function Row({ row, delay, onOpen }: { row: StudentListRow; delay: number; onOpe
           <span className="t-lg ellip" style={{ display: 'block' }}>{row.fullName}</span>
           <span className="small muted">{row.code}</span>
         </span>
+      </span>
+      <span className="c-progs">
+        {row.programs.length ? row.programs.map((p) => <ProgramTag key={p} code={p} />) : <span className="muted">—</span>}
       </span>
       <span className="c-contact">
         {c ? (

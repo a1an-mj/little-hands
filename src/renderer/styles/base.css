@@ -232,3 +232,43 @@ button{font-family:inherit}
 @keyframes lh-snack{from{opacity:0;transform:translate(-50%,24px)}to{opacity:1;transform:translate(-50%,0)}}
 @media (max-width:720px){.lhead{display:none!important}.card{padding:20px}}
 @media (prefers-reduced-motion:reduce){.dlg[open]{animation:none}}
+
+/* ======================================================================
+   Step 3: programs, timings & fees.
+   Rebuilt from design/AddStudent.html and Profile.html.
+   ====================================================================== */
+
+/* Program colours (Playgroup coral, LKG yellow, UKG blue, Tuition violet) */
+.pg{background:var(--pgc);color:var(--pgo)}.lk{background:var(--lkc);color:var(--lko)}.uk{background:var(--ukc);color:var(--uko)}.tu{background:var(--tuc);color:var(--tuo)}
+
+/* Program cards on the admission form */
+.prog{border:1px solid var(--olv);border-radius:20px;overflow:hidden}
+.prog.on{border:2px solid var(--p)}
+.phead{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;width:100%;min-height:64px;padding:10px 20px;border:none;background:transparent;color:var(--os);font:inherit;text-align:left;cursor:pointer;box-sizing:border-box}
+.phead::after{content:"";position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .2s var(--ease);pointer-events:none}
+.phead:hover::after{opacity:.08}.phead:active::after{opacity:.12}
+.phead:focus-visible{outline:3px solid var(--p);outline-offset:-3px;border-radius:18px}
+.prog.on .cbox{background:var(--p);border-color:var(--p)}
+.pbody{padding:8px 20px 24px;display:flex;flex-direction:column;gap:24px;animation:lh-open .5s var(--dec) both;transform-origin:top}
+.dlg .pbody{padding:0}
+.feebox{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px 16px;align-items:start;padding:24px 20px 20px;border-radius:16px;background:var(--c2)}
+.feebox .tf .lb,.dlg .feebox .tf .lb{background:var(--c2)}
+.agreed{font-size:28px;line-height:36px;color:var(--p)}
+.lh[data-theme="dark"] .tf input[type="time"]::-webkit-calendar-picker-indicator{filter:invert(1)}
+.tf input[type="time"]{padding-right:12px}
+
+/* Programs on the profile */
+.enr{border-radius:16px;padding:16px;background:var(--c3);display:flex;flex-direction:column;gap:12px}
+.enr.ended{background:transparent;border:1px solid var(--olv);padding:12px 16px}
+.enr-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.enr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 24px}
+.enr .next{border-top:1px dashed var(--ol);padding-top:10px}
+
+/* Radio choices in dialogs */
+.choice{display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:12px;border:1px solid var(--olv);cursor:pointer}
+.choice:has(input:checked){border:2px solid var(--p);padding:11px}
+.choice input{margin:3px 0 0;accent-color:var(--p);width:18px;height:18px;flex:none}
+.choice:has(input:focus-visible){outline:3px solid var(--p);outline-offset:2px}
+
+.c-progs{flex:1 1 150px;display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+@keyframes lh-open{from{opacity:0;transform:translateY(-8px) scaleY(.96)}to{opacity:1;transform:none}}

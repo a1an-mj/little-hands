@@ -9,6 +9,7 @@ import { PinAuth } from './lock/pin-auth'
 import { LockSession } from './lock/session'
 import { registerIpc } from './ipc/register'
 import { registerStudentsIpc } from './ipc/students'
+import { registerEnrollmentsIpc } from './ipc/enrollments'
 import { Writer } from './db/writer'
 import { StudentsRepo } from './students/repo'
 
@@ -78,7 +79,9 @@ app.whenReady().then(() => {
     }
   })
 
-  registerStudentsIpc(new StudentsRepo(new Writer(db, settings.deviceId)), session)
+  const students = new StudentsRepo(new Writer(db, settings.deviceId))
+  registerStudentsIpc(students, session)
+  registerEnrollmentsIpc(students.enrollments, session)
 
   // Lock when the laptop sleeps or Windows locks the screen.
   powerMonitor.on('suspend', () => session.lock())

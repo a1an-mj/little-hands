@@ -1,21 +1,17 @@
-import { BrowserWindow, ipcMain } from 'electron'
-import { ZodError, z } from 'zod'
+import { BrowserWindow } from 'electron'
+import { z } from 'zod'
 import type { StudentsApi } from '@shared/ipc-contract'
 import { admissionSchema, idSchema, isoDateSchema, studentListQuerySchema } from '@shared/schemas'
-import type { Result } from '@shared/students'
 import type { LockSession } from '../lock/session'
 import { jpegFromDataUrl, pickPhoto, toDataUrl } from '../students/photo'
-import { UserError, type StudentsRepo } from '../students/repo'
+import type { StudentsRepo } from '../students/repo'
+import { handleAll, type Impl } from './handle'
 
 // Guardian, note and detail inputs are validated inside the repository (it parses them itself).
-type Impl = { [K in keyof StudentsApi]: (...args: unknown[]) => Promise<unknown> | unknown }
 
-/**
- * Registers `students:<method>` handlers. Every call checks the app is unlocked and validates its
- * arguments; owner-fixable problems become `{ ok: false, message }`, anything else is a real error.
- */
+/** Registers `students:<method>` handlers (unlocked only; arguments validated). */
 export function registerStudentsIpc(repo: StudentsRepo, session: LockSession): void {
-  const impl: Impl = {
+  const impl: Impl<StudentsApi> = {
     list: (q) => repo.list(studentListQuerySchema.parse(q)),
     nextCode: (date) => repo.nextCode(isoDateSchema.parse(date)),
     profile: (id) => repo.profile(idSchema.parse(id)),
@@ -42,18 +38,5 @@ export function registerStudentsIpc(repo: StudentsRepo, session: LockSession): v
     removeNote: (noteId) => repo.removeNote(idSchema.parse(noteId))
   }
 
-  for (const [name, fn] of Object.entries(impl)) {
-    ipcMain.handle(`students:${name}`, async (_e, ...args: unknown[]): Promise<Result<unknown>> => {
-      session.requireUnlocked()
-      session.activity()
-      try {
-        const value = await fn(...args)
-        return { ok: true, value: value ?? undefined }
-      } catch (err) {
-        if (err instanceof UserError) return { ok: false, message: err.message }
-        if (err instanceof ZodError) return { ok: false, message: err.issues[0]?.message ?? 'Please check the form.' }
-        throw err
-      }
-    })
-  }
+  handleAll('students', impl, session)
 }

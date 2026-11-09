@@ -6,7 +6,9 @@ interface Props {
   onChange: (value: string) => void
   error?: string
   help?: ReactNode
-  type?: 'text' | 'tel' | 'date'
+  type?: 'text' | 'tel' | 'date' | 'time'
+  /** Shows a number keypad on touch screens, e.g. 'decimal' for money. */
+  inputMode?: 'decimal' | 'numeric'
   multiline?: boolean
   rows?: number
   placeholder?: string
@@ -42,7 +44,7 @@ export function TextField(p: Props) {
       {p.multiline ? (
         <textarea rows={p.rows ?? 2} {...common} />
       ) : (
-        <input type={p.type ?? 'text'} max={p.max} autoComplete="off" spellCheck={p.type === 'text' || !p.type} {...common} />
+        <input type={p.type ?? 'text'} max={p.max} inputMode={p.inputMode} autoComplete="off" spellCheck={p.type === 'text' || !p.type} {...common} />
       )}
       {(p.error || p.help) && (
         <span className="help" id={helpId} role={p.error ? 'alert' : undefined}>

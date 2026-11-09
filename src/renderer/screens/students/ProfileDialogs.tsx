@@ -3,14 +3,15 @@ import { formatPhone } from '@shared/phone'
 import { fieldErrors, guardianSchema, noteSchema, studentDetailsSchema, type GuardianInput, type NoteInput, type StudentDetailsInput } from '@shared/schemas'
 import { STATUS_LABEL, STUDENT_STATUSES, type GuardianLink, type StudentNote, type StudentProfile, type StudentStatus } from '@shared/students'
 import { ConfirmDialog, Dialog } from '../../components/Dialog'
-import { CheckIcon } from '../../components/icons'
+import { PROGRAM_NAME } from '@shared/enrollments'
+import { AlertIcon, CheckIcon } from '../../components/icons'
 import { useSnackbar } from '../../components/Snackbar'
 import { TextField } from '../../components/TextField'
 import { call, messageOf } from '../../lib/api'
 import type { z } from 'zod'
 
 /** Validates with the shared schema, then runs `action`. Returns field errors to show, if any. */
-function useSubmit() {
+export function useSubmit() {
   const snack = useSnackbar()
   const [busy, setBusy] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -60,6 +61,7 @@ export function EditDetailsDialog(props: {
   const [confirm, setConfirm] = useState<'remove' | 'photo' | null>(null)
   const { busy, errors, submit, snack } = useSubmit()
   const set = (patch: Partial<StudentDetailsInput>) => setD({ ...d, ...patch })
+  const openPrograms = p.enrollments.filter((e) => e.state !== 'ended')
 
   if (confirm === 'remove') {
     return (
@@ -132,6 +134,15 @@ export function EditDetailsDialog(props: {
             </select>
           </label>
         </div>
+        {p.status === 'active' && d.status !== 'active' && openPrograms.length > 0 && (
+          <div className="alert pop" role="alert">
+            <AlertIcon />
+            <span>
+              {openPrograms.map((e) => PROGRAM_NAME[e.program]).join(' and ')} will end today. You can change the last day afterwards
+              under "Programs, timings &amp; fees".
+            </span>
+          </div>
+        )}
         <TextField label="Home address" multiline value={d.homeAddress} onChange={(v) => set({ homeAddress: v })} error={errors.homeAddress} />
         <div className="dlg-actions" style={{ justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
