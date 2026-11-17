@@ -53,8 +53,11 @@ Before building the payments module (step 4), ask the owner:
 - Material 3 look, light + dark theme. The theme follows Windows' light/dark setting until the
   owner uses the switch; the switch choice is remembered. Smooth transitions; respect "reduce motion".
 - Reports and Settings appear in the menu but are greyed out ("Coming in a later version").
-- Seed colour #9AE8EB. Colour tokens are the CSS variables at the top of each file in `design/`
-  (`.lh{...}` = light, `.lh[data-theme="dark"]{...}` = dark). Reuse them exactly.
+- Logo: the hand from the school's logo (littlehandsekm.in), blue #20ADE4 on a white tile
+  (`LogoIcon`, `build/icon.svg` → `build/icon.png`).
+- Colours match the logo: Material 3 "fidelity" scheme from #20ADE4, in `src/renderer/styles/tokens.css`
+  (this replaced the designs' teal seed #9AE8EB). Token names are the same as the CSS variables in
+  `design/` (`.lh{...}` = light, `.lh[data-theme="dark"]{...}` = dark); use the app's tokens.css values.
 - Program colours: Playgroup coral, LKG yellow, UKG blue, Tuition violet (tokens pg/lk/uk/tu).
 - The design files are prototypes made in a design tool: the markup inside `<x-dc>` plus the
   `<style>` block show layout and styling; the `<script type="text/x-dc">` block shows intended

@@ -36,7 +36,7 @@ function createWindow(): BrowserWindow {
     // The installed app takes its icon from the installer (build/icon.png); this covers development runs.
     icon: app.isPackaged ? undefined : join(app.getAppPath(), 'build/icon.png'),
     autoHideMenuBar: true,
-    backgroundColor: nativeTheme.shouldUseDarkColors ? '#0D1515' : '#F2FBFB',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#0F1417' : '#F5FAFF',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -76,7 +76,7 @@ app.whenReady().then(() => {
     session,
     settings,
     sendTheme: (theme) => {
-      mainWindow?.setBackgroundColor(theme === 'dark' ? '#0D1515' : '#F2FBFB')
+      mainWindow?.setBackgroundColor(theme === 'dark' ? '#0F1417' : '#F5FAFF')
       mainWindow?.webContents.send(IPC.themeChanged, theme)
     }
   })
