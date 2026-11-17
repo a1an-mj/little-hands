@@ -33,6 +33,8 @@ function createWindow(): BrowserWindow {
     minHeight: 600,
     show: false,
     title: 'Little Hands',
+    // The installed app takes its icon from the installer (build/icon.png); this covers development runs.
+    icon: app.isPackaged ? undefined : join(app.getAppPath(), 'build/icon.png'),
     autoHideMenuBar: true,
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#0D1515' : '#F2FBFB',
     webPreferences: {
