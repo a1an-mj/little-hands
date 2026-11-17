@@ -1,9 +1,12 @@
 // The typed API the preload script exposes to the UI as `window.lh`.
 // All data access lives in the main process; the UI only talks through this.
 
+import type { DashboardSummary, DayView, ProgramHistory } from './attendance'
 import type { ProgramDefaults } from './enrollments'
 import type {
   AdmissionInput,
+  AttendanceDayInput,
+  AttendanceTap,
   EndEnrollmentInput,
   EnrollmentEditInput,
   EnrollmentInput,
@@ -55,6 +58,24 @@ export interface EnrollmentsApi {
 
 export const ENROLLMENTS_METHODS = ['defaults', 'add', 'edit', 'end', 'resume', 'remove'] as const satisfies readonly (keyof EnrollmentsApi)[]
 
+/** Attendance (append-only) and the dashboard figures. Same rules as StudentsApi. */
+export interface AttendanceApi {
+  /** Everyone expected on a day ("YYYY-MM-DD", default today), with what has been marked. */
+  day(date?: string): Promise<Result<DayView>>
+  /** A child's last school days, per program, newest first. */
+  history(studentId: string): Promise<Result<{ today: string; now: string; programs: ProgramHistory[] }>>
+  summary(): Promise<Result<DashboardSummary>>
+  /** Dashboard buttons, for today at the laptop's current time. Returns the event (for Undo) and the time used. */
+  tap(enrollmentId: string, input: AttendanceTap): Promise<Result<{ eventId: string; at: string }>>
+  undo(eventId: string): Promise<Result>
+  /** Sets what one day says (a correction). */
+  setDay(enrollmentId: string, date: string, input: AttendanceDayInput): Promise<Result>
+  /** The attendance screen's Save. */
+  setMany(date: string, items: { enrollmentId: string; day: AttendanceDayInput }[]): Promise<Result>
+}
+
+export const ATTENDANCE_METHODS = ['day', 'history', 'summary', 'tap', 'undo', 'setDay', 'setMany'] as const satisfies readonly (keyof AttendanceApi)[]
+
 export type LockStatus =
   | { state: 'needs-setup' }
   | { state: 'locked'; triesLeft: number; waitUntil: number | null }
@@ -92,6 +113,7 @@ export interface LhApi {
   }
   students: StudentsApi
   enrollments: EnrollmentsApi
+  attendance: AttendanceApi
 }
 
 export const IPC = {

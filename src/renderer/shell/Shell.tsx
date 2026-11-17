@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import type { Theme } from '@shared/ipc-contract'
 import { SnackbarProvider } from '../components/Snackbar'
 import { ThemeSwitch } from '../components/ThemeSwitch'
+import { AttendanceScreen } from '../screens/attendance/AttendanceScreen'
+import { Dashboard } from '../screens/home/Dashboard'
 import { AdmissionForm } from '../screens/students/AdmissionForm'
 import { StudentProfile } from '../screens/students/StudentProfile'
 import { StudentsList } from '../screens/students/StudentsList'
@@ -16,15 +18,8 @@ interface Props {
 
 // Placeholders until each module is built (see "Way of working" in CLAUDE.md).
 const SOON = {
-  home: { step: 5, title: 'Dashboard', text: "Today's arrivals and the fees to follow up will appear here." },
-  fees: { step: 4, title: 'Fees', text: 'Recording payments, partial payments and balances for each month will appear here.' },
-  attendance: { step: 5, title: 'Attendance', text: 'Marking arrivals, departures and absences will appear here.' }
+  fees: { step: 4, title: 'Fees', text: 'Recording payments, partial payments and balances for each month will appear here.' }
 } as const
-
-function greeting(d: Date): string {
-  const h = d.getHours()
-  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
-}
 
 export function Shell({ theme, onToggleTheme, onLock }: Props) {
   const [route, setRoute] = useState<Route>({ name: 'home' })
@@ -51,9 +46,18 @@ export function Shell({ theme, onToggleTheme, onLock }: Props) {
           )}
           {route.name === 'admit' && <AdmissionForm {...common} navigate={setRoute} />}
           {route.name === 'student' && <StudentProfile {...common} id={route.id} navigate={setRoute} />}
-          {(route.name === 'home' || route.name === 'fees' || route.name === 'attendance') && (
-            <Placeholder {...common} page={route.name} />
+          {route.name === 'home' && (
+            <Dashboard
+              {...common}
+              navigate={setRoute}
+              onSearch={(search) => {
+                setListState({ search, status: 'active', program: 'all', page: 0 })
+                setRoute({ name: 'students' })
+              }}
+            />
           )}
+          {route.name === 'attendance' && <AttendanceScreen {...common} navigate={setRoute} />}
+          {route.name === 'fees' && <Placeholder {...common} page={route.name} />}
         </main>
       </div>
     </SnackbarProvider>
@@ -70,7 +74,7 @@ function Placeholder({ theme, onToggleTheme, page }: { theme: Theme; onToggleThe
           <div className="muted">
             {now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </div>
-          <h1 className="h-lg">{page === 'home' ? greeting(now) : info.title}</h1>
+          <h1 className="h-lg">{info.title}</h1>
         </div>
         <ThemeSwitch theme={theme} onToggle={onToggleTheme} />
       </header>

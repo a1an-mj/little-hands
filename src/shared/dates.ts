@@ -18,3 +18,28 @@ export function localIsoDate(d: Date = new Date()): string {
 export function weekdayOf(iso: string): number {
   return (asUtc(iso).getUTCDay() + 6) % 7
 }
+
+/** The time on this laptop's clock, as "HH:MM". */
+export function localTime(d: Date = new Date()): string {
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+/** "Mon 2 Nov" (short, for lists of days). */
+export function formatDayShort(iso: string): string {
+  const d = asUtc(iso)
+  return `${dayShort.format(d)} ${d.getUTCDate()} ${monShort.format(d)}`
+}
+const dayShort = new Intl.DateTimeFormat('en-IN', { weekday: 'short', timeZone: 'UTC' })
+const monShort = new Intl.DateTimeFormat('en-IN', { month: 'short', timeZone: 'UTC' })
+
+/** "Monday, 2 November" */
+export function formatDayLong(iso: string): string {
+  return new Intl.DateTimeFormat('en-IN', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(asUtc(iso))
+}
+
+/** The ISO date n days before. */
+export function addDays(iso: string, n: number): string {
+  const d = asUtc(iso)
+  d.setUTCDate(d.getUTCDate() + n)
+  return d.toISOString().slice(0, 10)
+}

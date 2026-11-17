@@ -10,12 +10,17 @@ import { LockSession } from './lock/session'
 import { registerIpc } from './ipc/register'
 import { registerStudentsIpc } from './ipc/students'
 import { registerEnrollmentsIpc } from './ipc/enrollments'
+import { registerAttendanceIpc } from './ipc/attendance'
+import { AttendanceRepo } from './attendance/repo'
 import { Writer } from './db/writer'
 import { StudentsRepo } from './students/repo'
 
 // Test hooks: only honoured in development / test runs, never in the installed app.
 if (!app.isPackaged && process.env.LH_USER_DATA) app.setPath('userData', process.env.LH_USER_DATA)
 const idleMs = !app.isPackaged && process.env.LH_IDLE_MS ? Number(process.env.LH_IDLE_MS) : IDLE_LOCK_MS
+// Pretend the laptop's clock says this (local time, e.g. "2026-11-02T10:15"); the clock keeps running from there.
+const clockOffset = !app.isPackaged && process.env.LH_NOW ? new Date(process.env.LH_NOW).getTime() - Date.now() : 0
+const clock = () => new Date(Date.now() + clockOffset)
 
 // English (India) everywhere, whatever the laptop's language setting: dates read day/month/year.
 app.commandLine.appendSwitch('lang', 'en-IN')
@@ -81,9 +86,11 @@ app.whenReady().then(() => {
     }
   })
 
-  const students = new StudentsRepo(new Writer(db, settings.deviceId))
+  const writer = new Writer(db, settings.deviceId, clock)
+  const students = new StudentsRepo(writer)
   registerStudentsIpc(students, session)
   registerEnrollmentsIpc(students.enrollments, session)
+  registerAttendanceIpc(new AttendanceRepo(writer), session)
 
   // Lock when the laptop sleeps or Windows locks the screen.
   powerMonitor.on('suspend', () => session.lock())

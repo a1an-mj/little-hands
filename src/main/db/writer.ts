@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import type Database from 'better-sqlite3'
-import { localIsoDate } from '@shared/dates'
+import { localIsoDate, localTime } from '@shared/dates'
 
 /** Tables written through the Writer. Every one gets id/created_at/updated_at/device_id/deleted_at. */
 export type SyncedTable =
@@ -12,6 +12,7 @@ export type SyncedTable =
   | 'enrollments'
   | 'schedules'
   | 'fee_agreements'
+  | 'attendance_events'
 
 type Row = Record<string, unknown>
 
@@ -42,6 +43,11 @@ export class Writer {
     return localIsoDate(this.clock())
   }
 
+  /** The time on this laptop's clock, "HH:MM". */
+  time(): string {
+    return localTime(this.clock())
+  }
+
   transaction<T>(fn: () => T): T {
     return this.db.transaction(fn)()
   }
@@ -58,6 +64,22 @@ export class Writer {
     const changes: Row = {}
     for (const [k, v] of Object.entries(values)) changes[k] = [null, auditValue(v)]
     this.audit(table, id, 'insert', changes, now)
+    return id
+  }
+
+  /**
+   * Adds a row to an append-only event table (attendance). No change-history entry: the events
+   * themselves are the history, and they are never updated.
+   */
+  append(table: 'attendance_events', values: Row): string {
+    const id = randomUUID()
+    const now = this.now()
+    const row: Row = { id, ...values, created_at: now, updated_at: now, device_id: this.deviceId }
+    const cols = Object.keys(row)
+    cols.forEach(assertSafe)
+    this.db
+      .prepare(`INSERT INTO ${table} (${cols.join(', ')}) VALUES (${cols.map((c) => '@' + c).join(', ')})`)
+      .run(row)
     return id
   }
 

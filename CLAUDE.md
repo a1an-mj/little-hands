@@ -17,6 +17,8 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
 - Concessions are supported: standard fee − concession = agreed fee, with a reason.
 - Attendance (actual arrival / departure / absent) is in version 1, marked from the Students
   screen ("Mark attendance" mode) and from the dashboard's "Today's arrivals" list.
+  Attendance is per program per day (a child in LKG + Tuition is marked twice), stored as
+  append-only events with 'void' rows for corrections (`attendance_events`).
 - Receipts: NOT in version 1 (planned later).
 - Payments are append-only. Never edit or delete a saved payment; corrections are reversal entries.
 - Dashboard shows today's arrivals first, then fees to follow up.
@@ -33,6 +35,10 @@ Before building the payments module (step 4), ask the owner:
 - late fees, other charges (admission fee, books…), when fees go up;
 - academic year (designs assume June–May, "2026–27") and any terms;
 - who records payments, what the monthly collection report shows, receipts later.
+Attendance (step 5 is built with these defaults; change them once the owner answers):
+- late = any time after the expected arrival time;
+- no "school closed" (holiday) button yet;
+- Tuition attendance is marked like the kindergarten classes.
 
 ## Tech stack (agreed)
 - Electron (desktop shell) + React + TypeScript, bundled with Vite.

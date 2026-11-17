@@ -4,7 +4,7 @@ import { formatPhone } from '@shared/phone'
 import { PROGRAM_CODES, PROGRAM_NAME } from '@shared/enrollments'
 import { PAGE_SIZE, STATUS_LABEL, STUDENT_STATUSES, type StudentListRow } from '@shared/students'
 import { Avatar } from '../../components/Avatar'
-import { AddPersonIcon, CheckIcon, SearchIcon } from '../../components/icons'
+import { AddPersonIcon, AttendanceIcon, CheckIcon, SearchIcon } from '../../components/icons'
 import { ThemeSwitch } from '../../components/ThemeSwitch'
 import { useLoad } from '../../lib/api'
 import { formatDate } from '../../lib/format'
@@ -94,6 +94,10 @@ export function StudentsList({ theme, onToggleTheme, state, setState, navigate }
           ))}
         </div>
         <div style={{ flex: 1 }} />
+        <button type="button" className="btn tonal" onClick={() => navigate({ name: 'attendance' })}>
+          <AttendanceIcon />
+          Mark attendance
+        </button>
         <button type="button" className="btn filled" onClick={() => navigate({ name: 'admit' })}>
           <AddPersonIcon />
           New admission

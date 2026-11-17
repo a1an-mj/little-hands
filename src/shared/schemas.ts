@@ -228,3 +228,33 @@ export function fieldErrors(error: z.ZodError): Record<string, string> {
   }
   return out
 }
+
+// ---------- Attendance ----------
+
+/** A button on the dashboard: the time is taken from the laptop's clock in the main process. */
+export const attendanceTapSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('arrived') }),
+  z.object({ kind: z.literal('left') }),
+  z.object({ kind: z.literal('absent'), note: text(100).default('') })
+])
+export type AttendanceTap = z.input<typeof attendanceTapSchema>
+
+/** What a day should say, from the attendance screen or a correction on the profile. */
+export const attendanceDaySchema = z
+  .object({
+    status: z.enum(['none', 'present', 'absent']),
+    /** "HH:MM" or empty. */
+    arrived: z.union([timeSchema, z.literal('')]).default(''),
+    left: z.union([timeSchema, z.literal('')]).default(''),
+    note: text(100).default('')
+  })
+  .superRefine((d, ctx) => {
+    if (d.status !== 'present') return
+    if (d.left && !d.arrived) ctx.addIssue({ code: 'custom', path: ['arrived'], message: 'Enter the arrival time too' })
+    if (d.left && d.arrived && d.left < d.arrived) ctx.addIssue({ code: 'custom', path: ['left'], message: 'Leaving time must be after arrival' })
+  })
+export type AttendanceDayInput = z.input<typeof attendanceDaySchema>
+
+export const attendanceManySchema = z
+  .array(z.object({ enrollmentId: idSchema, day: attendanceDaySchema }))
+  .max(1000)

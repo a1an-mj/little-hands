@@ -13,6 +13,8 @@ import { EditDetailsDialog, GuardianDialog, NoteDialog } from './ProfileDialogs'
 import { AddProgramDialog, EditProgramDialog, EndProgramDialog, ProgramsCard, type ProgramDialog } from './EnrollmentDialogs'
 import { ProgramTag } from './ProgramFields'
 import { PROGRAM_NAME, type EnrollmentView } from '@shared/enrollments'
+import type { HistoryDay, ProgramHistory } from '@shared/attendance'
+import { AttendanceHistory, DayDialog, TodayCard } from './AttendanceParts'
 
 interface Props {
   theme: Theme
@@ -34,13 +36,18 @@ type Open =
   | { kind: 'guardian'; link: GuardianLink | null }
   | { kind: 'note'; note: StudentNote | null }
   | ProgramDialog
+  | { kind: 'day'; program: ProgramHistory; day: HistoryDay }
   | null
 
 export function StudentProfile({ theme, onToggleTheme, id, navigate }: Props) {
   const snack = useSnackbar()
   const [tab, setTab] = useState<Tab>('overview')
   const [open, setOpen] = useState<Open>(null)
-  const { data: p, error, reload } = useLoad(() => window.lh.students.profile(id), [id])
+  const { data: p, error, reload: reloadProfile } = useLoad(() => window.lh.students.profile(id), [id])
+  const { data: history, reload: reloadHistory } = useLoad(() => window.lh.attendance.history(id), [id])
+  const reload = async () => {
+    await Promise.all([reloadProfile(), reloadHistory()])
+  }
 
   const back = () => navigate({ name: 'students' })
 
@@ -166,11 +173,14 @@ export function StudentProfile({ theme, onToggleTheme, id, navigate }: Props) {
             onCopy={copy}
             onEditAddress={() => setOpen({ kind: 'details' })}
           />
+          {history && <TodayCard history={history} enrollments={p.enrollments} />}
         </div>
       )}
 
       {tab === 'fees' && <Soon step={4} text="Month-by-month fees and the full payment history for this child will appear here." />}
-      {tab === 'att' && <Soon step={5} text="Arrival and departure times for recent school days will appear here." />}
+      {tab === 'att' && history && (
+        <AttendanceHistory history={history} onEdit={(program, day) => setOpen({ kind: 'day', program, day })} />
+      )}
 
       {tab === 'notes' && (
         <section aria-labelledby="nt-h" className="card in" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -218,6 +228,7 @@ export function StudentProfile({ theme, onToggleTheme, id, navigate }: Props) {
           onEnd={() => setOpen({ kind: 'end', enrollment: open.enrollment })}
         />
       )}
+      {open?.kind === 'day' && <DayDialog program={open.program} day={open.day} onClose={() => setOpen(null)} onDone={done} />}
       {open?.kind === 'end' && <EndProgramDialog enrollment={open.enrollment} onClose={() => setOpen(null)} onDone={done} />}
     </>
   )
