@@ -11,7 +11,9 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
 - English only.
 - A child can be in a kindergarten class (Playgroup / LKG / UKG) AND Tuition at the same time.
   Each enrollment has its own days, arrival/departure times and fee agreement.
-- Fees are mostly monthly; term-wise or custom must be possible per enrollment.
+- Fees are agreed per child at admission: each program has its own fee, payment period
+  ("pays every" N months, or one-time) and due day of the month. The period choices are the
+  FEE_PERIODS list in `src/shared/enrollments.ts`; the owner will confirm the final list.
 - Concessions are supported: standard fee − concession = agreed fee, with a reason.
 - Attendance (actual arrival / departure / absent) is in version 1, marked from the Students
   screen ("Mark attendance" mode) and from the dashboard's "Today's arrivals" list.
@@ -22,9 +24,15 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
   but the data model must be sync-ready (see Data model rules).
 
 ## Still to confirm with the owner
-- Fee due day each month (designs assume the 10th).
-- Academic year (designs assume June–May, "2026–27").
-Ask about these before building the payments module (step 4), not before.
+Before building the payments module (step 4), ask the owner:
+- the list of payment periods (FEE_PERIODS);
+- whether each period is paid at the start or at the end;
+- how many days after the due day a fee counts as late;
+- joining or leaving mid-period (full period or part?), long absences;
+- payment methods, advance payments / overpayment, one payment for several programs or siblings;
+- late fees, other charges (admission fee, books…), when fees go up;
+- academic year (designs assume June–May, "2026–27") and any terms;
+- who records payments, what the monthly collection report shows, receipts later.
 
 ## Tech stack (agreed)
 - Electron (desktop shell) + React + TypeScript, bundled with Vite.
@@ -87,7 +95,7 @@ Ask about these before building the payments module (step 4), not before.
 - Show "Last backup: <date, time>" in the app; warn if older than 2 days.
 
 ## Way of working
-Work in small, reviewable steps on a git branch per module. Before writing code, propose the
+Work in small, reviewable steps, committed and pushed straight to `main` (no feature branches or PRs). Before writing code, propose the
 data model (tables, columns, relationships) and project structure and wait for approval.
 Build and demo one module at a time:
 1. Project setup + PIN lock + app shell (navigation rail, theme switch)

@@ -1,10 +1,9 @@
 import {
-  FEE_FREQUENCIES,
-  FREQUENCY_LABEL,
+  FEE_PERIODS,
   PROGRAM_NAME,
-  perLabel,
+  isKnownPeriod,
+  perText as periodText,
   type EnrollmentView,
-  type FeeFrequency,
   type ProgramCode,
   type ProgramDefaults
 } from '@shared/enrollments'
@@ -20,12 +19,22 @@ export interface ProgramForm {
   days: number
   arrives: string
   leaves: string
-  frequency: FeeFrequency
-  customLabel: string
+  /** 1 = monthly, 3 = every 3 months, 0 = one-time. */
+  periodMonths: number
+  /** Day of the month, as typed. */
+  dueDay: string
   standard: string
   concession: string
   concessionReason: string
   remarks: string
+}
+
+const dayOf = (iso: string) => (/^\d{4}-\d{2}-\d{2}$/.test(iso) ? String(Number(iso.slice(8, 10))) : '')
+
+/** A new start date. The due day follows the start day, unless the owner has already changed it. */
+export function withStartDate(f: ProgramForm, startDate: string): ProgramForm {
+  const dueDay = f.dueDay === dayOf(f.startDate) ? dayOf(startDate) || f.dueDay : f.dueDay
+  return { ...f, startDate, dueDay }
 }
 
 export function formFromDefaults(d: ProgramDefaults, startDate: string): ProgramForm {
@@ -34,8 +43,8 @@ export function formFromDefaults(d: ProgramDefaults, startDate: string): Program
     days: d.days,
     arrives: d.arrives,
     leaves: d.leaves,
-    frequency: 'monthly',
-    customLabel: '',
+    periodMonths: 1,
+    dueDay: dayOf(startDate),
     standard: d.lastStandardPaise === null ? '' : rupeesInput(d.lastStandardPaise),
     concession: '',
     concessionReason: '',
@@ -52,8 +61,8 @@ export function formFromEnrollment(e: EnrollmentView): ProgramForm {
     days: s.days,
     arrives: s.arrives,
     leaves: s.leaves,
-    frequency: f.frequency,
-    customLabel: f.customLabel,
+    periodMonths: f.periodMonths,
+    dueDay: String(f.dueDay),
     standard: rupeesInput(f.standardPaise),
     concession: f.concessionPaise ? rupeesInput(f.concessionPaise) : '',
     concessionReason: f.concessionReason,
@@ -62,8 +71,8 @@ export function formFromEnrollment(e: EnrollmentView): ProgramForm {
 }
 
 export const feeInput = (f: ProgramForm): FeeInput => ({
-  frequency: f.frequency,
-  customLabel: f.customLabel,
+  periodMonths: f.periodMonths,
+  dueDay: f.dueDay,
   standard: f.standard,
   concession: f.concession,
   concessionReason: f.concessionReason,
@@ -90,7 +99,8 @@ export const agreedText = (f: ProgramForm) => {
   return a === null ? '₹—' : formatRupees(a)
 }
 
-export const perText = (f: ProgramForm) => perLabel(f.frequency, f.customLabel)
+/** "/ month", "every 3 months", "one-time". */
+export const perText = (f: ProgramForm) => periodText(f.periodMonths)
 
 interface Props {
   program: ProgramCode
@@ -104,8 +114,11 @@ interface Props {
 }
 
 /** Days, timings, start date and fee for one program (design: AddStudent.html, "Programs, timings & fees"). */
-export function ProgramFields({ program, value: f, onChange, errors, startLabel = 'Starts on', showStart = true, showRemarks }: Props) {
+export function ProgramFields({ program, value: f, onChange: change, errors, startLabel = 'Starts on', showStart = true, showRemarks }: Props) {
   const name = PROGRAM_NAME[program]
+  const onChange = (patch: Partial<ProgramForm>) =>
+    change(patch.startDate !== undefined ? { ...patch, dueDay: withStartDate(f, patch.startDate).dueDay } : patch)
+  const day = Number(f.dueDay)
   const hasConcession = (parseRupees(f.concession) ?? 0) > 0 || f.concessionReason !== ''
   return (
     <div className="pbody">
@@ -140,39 +153,32 @@ export function ProgramFields({ program, value: f, onChange, errors, startLabel 
       </div>
 
       <div className="feebox">
-        <label className={errors['fee.frequency'] ? 'tf err' : 'tf'}>
-          <span className="lb">Charged</span>
-          <select aria-label={`${name} charged`} value={f.frequency} onChange={(e) => onChange({ frequency: e.target.value as FeeFrequency })}>
-            {FEE_FREQUENCIES.map((q) => (
-              <option key={q} value={q}>
-                {FREQUENCY_LABEL[q]}
+        <label className={errors['fee.periodMonths'] ? 'tf err' : 'tf'}>
+          <span className="lb">Pays every</span>
+          <select aria-label={`${name} pays every`} value={f.periodMonths} onChange={(e) => onChange({ periodMonths: Number(e.target.value) })}>
+            {!isKnownPeriod(f.periodMonths) && <option value={f.periodMonths}>Every {f.periodMonths} months</option>}
+            {FEE_PERIODS.map((p) => (
+              <option key={p.months} value={p.months}>
+                {p.label}
               </option>
             ))}
           </select>
         </label>
+        <TextField
+          label={`${name} due on day`}
+          inputMode="numeric"
+          value={f.dueDay}
+          onChange={(v) => onChange({ dueDay: v })}
+          error={errors['fee.dueDay']}
+          help={day > 28 && day <= 31 ? 'Last day in shorter months' : 'Day of the month, e.g. 10'}
+        />
         <TextField label={`${name} standard fee (₹)`} inputMode="decimal" value={f.standard} onChange={(v) => onChange({ standard: v })} error={errors['fee.standard']} />
         <TextField label={`${name} concession (₹)`} inputMode="decimal" value={f.concession} onChange={(v) => onChange({ concession: v })} error={errors['fee.concession']} placeholder="0" />
         <div aria-live="polite">
           <div className="small muted">Agreed fee</div>
           <div className="agreed" data-testid={`agreed-${program}`}>{agreedText(f)}</div>
-          <div className="small muted">per {perText(f)}</div>
+          <div className="small muted">{perText(f).replace(/^\/ /, 'per ')}</div>
         </div>
-        {f.frequency === 'custom' && (
-          <div style={{ gridColumn: '1 / -1' }}>
-            <TextField
-              label={`How ${name} is charged`}
-              value={f.customLabel}
-              onChange={(v) => onChange({ customLabel: v })}
-              error={errors['fee.customLabel']}
-              placeholder="e.g. One-time, Every 2 months"
-            />
-          </div>
-        )}
-        {f.frequency === 'term' && (
-          <div className="small muted" style={{ gridColumn: '1 / -1' }}>
-            The term dates will be set up with the payments module.
-          </div>
-        )}
       </div>
 
       <TextField

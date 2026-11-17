@@ -4,7 +4,6 @@ import {
   PROGRAM_NAME,
   enrollmentState,
   type EnrollmentView,
-  type FeeFrequency,
   type FeeVersion,
   type ProgramCode,
   type ProgramDefaults,
@@ -36,8 +35,8 @@ type EnrollmentRow = {
 type ScheduleFields = Omit<ScheduleVersion, 'id' | 'effectiveFrom'>
 
 const feeColumns = (f: Fee) => ({
-  frequency: f.frequency,
-  custom_label: f.frequency === 'custom' ? f.customLabel : '',
+  period_months: f.periodMonths,
+  due_day: f.dueDay,
   standard_paise: f.standard,
   concession_paise: f.concession,
   concession_reason: f.concession > 0 ? f.concessionReason : '',
@@ -51,8 +50,8 @@ const sameSchedule = (a: ScheduleFields, b: ScheduleFields) => a.days === b.days
 function sameFee(v: FeeVersion, f: Fee): boolean {
   const c = feeColumns(f)
   return (
-    v.frequency === c.frequency &&
-    v.customLabel === c.custom_label &&
+    v.periodMonths === c.period_months &&
+    v.dueDay === c.due_day &&
     v.standardPaise === c.standard_paise &&
     v.concessionPaise === c.concession_paise &&
     v.concessionReason === c.concession_reason &&
@@ -165,12 +164,12 @@ export class EnrollmentsRepo {
   private fees(enrollmentId: string): FeeVersion[] {
     return this.db
       .prepare(
-        `SELECT id, effective_from AS effectiveFrom, frequency, custom_label AS customLabel,
+        `SELECT id, effective_from AS effectiveFrom, period_months AS periodMonths, due_day AS dueDay,
                 standard_paise AS standardPaise, concession_paise AS concessionPaise, agreed_paise AS agreedPaise,
                 concession_reason AS concessionReason, remarks
          FROM fee_agreements WHERE enrollment_id = ? AND deleted_at IS NULL ORDER BY effective_from`
       )
-      .all(enrollmentId) as (FeeVersion & { frequency: FeeFrequency })[]
+      .all(enrollmentId) as FeeVersion[]
   }
 
   // ---------- Adding ----------

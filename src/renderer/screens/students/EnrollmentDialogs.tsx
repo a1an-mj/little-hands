@@ -4,7 +4,9 @@ import { shownVersions } from '@shared/effective'
 import {
   PROGRAM_NAME,
   isKindergarten,
-  perLabel,
+  ordinal,
+  dueDayText,
+  feeWithPeriod,
   type EnrollmentView,
   type FeeVersion,
   type ProgramCode,
@@ -36,7 +38,7 @@ export type ProgramDialog =
   | { kind: 'end'; enrollment: EnrollmentView }
 
 const timingsText = (s: ScheduleVersion) => `${formatDays(s.days)} · ${formatTimeRange(s.arrives, s.leaves)}`
-const feeText = (f: FeeVersion) => `${formatRupees(f.agreedPaise)} / ${perLabel(f.frequency, f.customLabel)}`
+const feeText = (f: FeeVersion) => feeWithPeriod(formatRupees(f.agreedPaise), f.periodMonths)
 
 function concessionText(f: FeeVersion): string {
   if (f.concessionPaise === 0) return 'No concession'
@@ -94,6 +96,7 @@ export function ProgramsCard({ p, onOpen, onResume }: { p: StudentProfile; onOpe
               <div>
                 <div className="small muted">Agreed fee</div>
                 <div className="t-lg">{feeText(f.current)}</div>
+                <div className="small muted">{dueDayText(f.current.dueDay, f.current.periodMonths)}</div>
                 <div className="small muted">
                   {concessionText(f.current)} · since {formatDate(f.current.effectiveFrom)}
                 </div>
@@ -109,7 +112,7 @@ export function ProgramsCard({ p, onOpen, onResume }: { p: StudentProfile; onOpe
                 )}
                 {f.next && (
                   <div>
-                    From {formatDate(f.next.effectiveFrom)}: {feeText(f.next)}
+                    From {formatDate(f.next.effectiveFrom)}: {feeText(f.next)}, due on the {ordinal(f.next.dueDay)}
                     {f.next.concessionPaise > 0 ? ` (${concessionText(f.next)})` : ''}
                   </div>
                 )}

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { academicYearOf } from '@shared/academic-year'
 import { weekdayOf } from '@shared/dates'
 import { shownVersions, versionOn } from '@shared/effective'
-import { enrollmentState, monthlyTotalPaise, perLabel } from '@shared/enrollments'
+import { dueDayText, enrollmentState, feeWithPeriod, monthlyTotalPaise, ordinal, perText } from '@shared/enrollments'
 import { formatRupees, parseRupees, rupeesInput } from '@shared/money'
 import { expectedOn, formatDays, formatTime, formatTimeRange, toggleDay } from '@shared/schedule'
 import { enrollmentEditSchema, feeInputSchema, scheduleInputSchema } from '@shared/schemas'
@@ -32,8 +32,8 @@ describe('money', () => {
 })
 
 describe('fee agreements', () => {
-  const fee = (o: Partial<Record<string, string>> = {}) =>
-    feeInputSchema.safeParse({ frequency: 'monthly', customLabel: '', standard: '1000', concession: '', concessionReason: '', remarks: '', ...o })
+  const fee = (o: Partial<Record<string, string | number>> = {}) =>
+    feeInputSchema.safeParse({ periodMonths: 1, dueDay: '10', standard: '1000', concession: '', concessionReason: '', remarks: '', ...o })
 
   it('agreed fee = standard − concession, in paise', () => {
     const r = fee({ concession: '200', concessionReason: 'Sibling' })
@@ -46,24 +46,33 @@ describe('fee agreements', () => {
     expect(issues(fee({ standard: 'abc' }))).toEqual(['standard: Enter an amount in rupees, e.g. 1500'])
     expect(issues(fee({ concession: '200' }))).toEqual(['concessionReason: Say why there is a concession'])
     expect(issues(fee({ concession: '1200', concessionReason: 'x' }))).toEqual(["concession: Can't be more than the standard fee"])
-    expect(issues(fee({ frequency: 'custom' }))).toEqual(['customLabel: Say how it is charged, e.g. One-time'])
+    expect(issues(fee({ periodMonths: 5 }))).toEqual(['periodMonths: Choose how often the fee is paid'])
+    for (const bad of ['', '0', '32', 'x', '1.5']) expect(issues(fee({ dueDay: bad }))).toEqual(['dueDay: Enter a day of the month, 1 to 31'])
+    const ok = fee({ periodMonths: 3, dueDay: ' 31 ' })
+    expect(ok.success && ok.data).toMatchObject({ periodMonths: 3, dueDay: 31 })
     expect(fee({ standard: '0' }).success).toBe(true) // free of charge is allowed
   })
 
   it('adds up only the monthly fees', () => {
     expect(
       monthlyTotalPaise([
-        { frequency: 'monthly', agreedPaise: 150000 },
-        { frequency: 'monthly', agreedPaise: 80000 },
-        { frequency: 'term', agreedPaise: 500000 }
+        { periodMonths: 1, agreedPaise: 150000 },
+        { periodMonths: 1, agreedPaise: 80000 },
+        { periodMonths: 3, agreedPaise: 500000 },
+        { periodMonths: 0, agreedPaise: 200000 }
       ])
     ).toBe(230000)
   })
 
-  it('names the period', () => {
-    expect(perLabel('monthly', '')).toBe('month')
-    expect(perLabel('term', 'x')).toBe('term')
-    expect(perLabel('custom', 'One-time')).toBe('One-time')
+  it('names the period and the due day', () => {
+    expect(feeWithPeriod('₹1,500', 1)).toBe('₹1,500 / month')
+    expect(feeWithPeriod('₹4,500', 3)).toBe('₹4,500 every 3 months')
+    expect(feeWithPeriod('₹2,000', 0)).toBe('₹2,000 one-time')
+    expect(perText(12)).toBe('/ year')
+    expect(perText(4)).toBe('every 4 months') // a length later dropped from the list still reads well
+    expect([1, 2, 3, 4, 11, 12, 13, 21, 22, 23, 31].map(ordinal)).toEqual(['1st', '2nd', '3rd', '4th', '11th', '12th', '13th', '21st', '22nd', '23rd', '31st'])
+    expect(dueDayText(10, 1)).toBe('Due on the 10th')
+    expect(dueDayText(31, 1)).toBe('Due on the 31st (last day in shorter months)')
   })
 })
 
@@ -138,7 +147,7 @@ describe('editing a program', () => {
   const base = {
     startDate: '2026-06-01',
     schedule: { days: 31, arrives: '08:45', leaves: '12:30' },
-    fee: { frequency: 'monthly', customLabel: '', standard: '1500', concession: '', concessionReason: '', remarks: '' }
+    fee: { periodMonths: 1, dueDay: '10', standard: '1500', concession: '', concessionReason: '', remarks: '' }
   } as const
   it('needs a start date for a change, but not for a fix', () => {
     expect(enrollmentEditSchema.safeParse({ ...base, mode: 'fix', from: '' }).success).toBe(true)

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { normalizePhone } from './phone'
-import { FEE_FREQUENCIES, PROGRAM_CODES } from './enrollments'
+import { PROGRAM_CODES, isKnownPeriod } from './enrollments'
 import { parseRupees } from './money'
 import { STUDENT_STATUSES } from './students'
 
@@ -105,8 +105,13 @@ const rupees = (required: boolean) =>
 
 export const feeInputSchema = z
   .object({
-    frequency: z.enum(FEE_FREQUENCIES),
-    customLabel: text(60),
+    periodMonths: z.number().int().refine(isKnownPeriod, 'Choose how often the fee is paid'),
+    dueDay: z
+      .string()
+      .trim()
+      .regex(/^\d{1,2}$/, 'Enter a day of the month, 1 to 31')
+      .transform(Number)
+      .refine((d) => d >= 1 && d <= 31, 'Enter a day of the month, 1 to 31'),
     standard: rupees(true),
     concession: rupees(false),
     concessionReason: text(100),
@@ -118,9 +123,6 @@ export const feeInputSchema = z
     }
     if (f.concession > 0 && !f.concessionReason) {
       ctx.addIssue({ code: 'custom', path: ['concessionReason'], message: 'Say why there is a concession' })
-    }
-    if (f.frequency === 'custom' && !f.customLabel) {
-      ctx.addIssue({ code: 'custom', path: ['customLabel'], message: 'Say how it is charged, e.g. One-time' })
     }
   })
 export type FeeInput = z.input<typeof feeInputSchema>

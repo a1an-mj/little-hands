@@ -14,7 +14,17 @@ import { ThemeSwitch } from '../../components/ThemeSwitch'
 import { call, messageOf, useLoad } from '../../lib/api'
 import { plural, todayIso } from '../../lib/format'
 import type { Navigate } from '../../shell/routes'
-import { ProgramFields, ProgramTag, agreedPaise, agreedText, enrollmentInput, formFromDefaults, perText, type ProgramForm } from './ProgramFields'
+import {
+  ProgramFields,
+  ProgramTag,
+  agreedPaise,
+  agreedText,
+  enrollmentInput,
+  formFromDefaults,
+  perText,
+  withStartDate,
+  type ProgramForm
+} from './ProgramFields'
 
 interface Props {
   theme: Theme
@@ -109,7 +119,7 @@ export function AdmissionForm({ theme, onToggleTheme, navigate }: Props) {
         next.programs = Object.fromEntries(
           Object.entries(s.programs).map(([c, p]) => [
             c,
-            p.form.startDate === s.joiningDate ? { ...p, form: { ...p.form, startDate: value as string } } : p
+            p.form.startDate === s.joiningDate ? { ...p, form: withStartDate(p.form, value as string) } : p
           ])
         )
       }
@@ -533,7 +543,7 @@ function ProgramsSection(props: {
               </span>
               {on && (
                 <span className="t-lg pop" style={{ color: 'var(--p)' }}>
-                  {agreedText(p.form)} / {perText(p.form)}
+                  {agreedText(p.form)} {perText(p.form)}
                 </span>
               )}
             </button>
@@ -555,8 +565,8 @@ function MonthlyTotal({ f }: { f: FormState }) {
     )
   }
   const forms = ticked.map((c) => f.programs[c]!.form)
-  const total = monthlyTotalPaise(forms.map((p) => ({ frequency: p.frequency, agreedPaise: agreedPaise(p) ?? 0 })))
-  const others = forms.filter((p) => p.frequency !== 'monthly').length
+  const total = monthlyTotalPaise(forms.map((p) => ({ periodMonths: p.periodMonths, agreedPaise: agreedPaise(p) ?? 0 })))
+  const others = forms.filter((p) => p.periodMonths !== 1).length
   return (
     <div style={{ flex: '1 1 200px' }}>
       <div className="small muted">Monthly total</div>

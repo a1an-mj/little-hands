@@ -6,7 +6,7 @@ export function lkgEnrollment(overrides: Partial<EnrollmentInput> = {}): Enrollm
     program: 'lk',
     startDate: '2026-06-03',
     schedule: { days: 31, arrives: '08:45', leaves: '12:30' },
-    fee: { frequency: 'monthly', customLabel: '', standard: '1500', concession: '', concessionReason: '', remarks: '' },
+    fee: { periodMonths: 1, dueDay: '3', standard: '1500', concession: '', concessionReason: '', remarks: '' },
     ...overrides
   }
 }
