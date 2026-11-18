@@ -13,7 +13,9 @@ export function registerAttendanceIpc(repo: AttendanceRepo, session: LockSession
     tap: (id, input) => repo.tap(idSchema.parse(id), input as never),
     undo: (eventId) => repo.undo(idSchema.parse(eventId)),
     setDay: (id, date, input) => repo.setDay(idSchema.parse(id), isoDateSchema.parse(date), input as never),
-    setMany: (date, items) => repo.setMany(isoDateSchema.parse(date), items as never)
+    setMany: (date, items) => repo.setMany(isoDateSchema.parse(date), items as never),
+    closeDay: (date, input) => repo.closeDay(isoDateSchema.parse(date), input as never),
+    reopenDay: (date) => repo.reopenDay(isoDateSchema.parse(date))
   }
   handleAll('attendance', impl, session)
 }

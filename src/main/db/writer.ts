@@ -13,6 +13,7 @@ export type SyncedTable =
   | 'schedules'
   | 'fee_agreements'
   | 'attendance_events'
+  | 'closed_days'
 
 type Row = Record<string, unknown>
 

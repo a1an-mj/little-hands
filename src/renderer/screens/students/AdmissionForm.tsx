@@ -526,7 +526,7 @@ function ProgramsSection(props: {
       )}
       {kgCount > 1 && (
         <div className="alert pop" role="alert">
-          <AlertIcon />A child is usually in only one of Playgroup, LKG or UKG. Please check.
+          <AlertIcon />A child is usually in only one of Playgroup, Nursery, LKG or UKG. Please check.
         </div>
       )}
       {!defaults && <div className="muted">Loading programs…</div>}
@@ -539,7 +539,11 @@ function ProgramsSection(props: {
               <span className="cbox">{on && <CheckIcon />}</span>
               <ProgramTag code={d.code} large />
               <span className="muted" style={{ flex: 1 }}>
-                {isKindergarten(d.code) ? 'Kindergarten class' : 'Can be added with a kindergarten class'}
+                {isKindergarten(d.code)
+                  ? 'Kindergarten class'
+                  : d.code === 'dc'
+                    ? 'Not schooling · can be added with a class'
+                    : 'Can be added with a kindergarten class'}
               </span>
               {on && (
                 <span className="t-lg pop" style={{ color: 'var(--p)' }}>

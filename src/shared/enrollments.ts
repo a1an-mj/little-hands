@@ -1,10 +1,21 @@
 // Types shared by the programs / enrollments module (main process ⇄ UI).
 
-export const PROGRAM_CODES = ['pg', 'lk', 'uk', 'tu'] as const
+/** Menu order: the kindergarten classes by age, then Daycare and Tuition (taken alongside a class). */
+export const PROGRAM_CODES = ['pg', 'nu', 'lk', 'uk', 'dc', 'tu'] as const
 export type ProgramCode = (typeof PROGRAM_CODES)[number]
 
-export const PROGRAM_NAME: Record<ProgramCode, string> = { pg: 'Playgroup', lk: 'LKG', uk: 'UKG', tu: 'Tuition' }
-export const isKindergarten = (code: ProgramCode) => code !== 'tu'
+export const PROGRAM_NAME: Record<ProgramCode, string> = {
+  pg: 'Playgroup',
+  nu: 'Nursery',
+  lk: 'LKG',
+  uk: 'UKG',
+  dc: 'Daycare',
+  tu: 'Tuition'
+}
+
+/** The school classes; a child is usually in only one. Daycare (not schooling) and Tuition are add-ons. */
+export const KINDERGARTEN_CODES: readonly ProgramCode[] = ['pg', 'nu', 'lk', 'uk']
+export const isKindergarten = (code: ProgramCode) => KINDERGARTEN_CODES.includes(code)
 
 /**
  * How often a child pays, chosen per child at admission. `months` is what the app calculates with

@@ -274,10 +274,57 @@ describe('history and summary', () => {
     const s = repo.summary()
     expect(s.activeStudents).toBe(2)
     expect(s.kgAndTuition).toBe(1)
-    expect(s.byProgram).toEqual({ pg: 0, lk: 2, uk: 0, tu: 1 })
+    expect(s.byProgram).toEqual({ pg: 0, nu: 0, lk: 2, uk: 0, dc: 0, tu: 1 })
     expect(s.recentAdmissions.map((r) => [r.fullName, r.programs])).toEqual([
       ['Dev Krishna', ['lk']],
       ['Aadhya Menon', ['lk', 'tu']]
     ])
+  })
+})
+
+describe('school closed days', () => {
+  it('a closed day has a reason, can be opened again, and shows in the history', () => {
+    const id = admit({ joiningDate: '2026-10-26', programs: [lkgEnrollment({ startDate: '2026-10-26' })] })
+    repo.closeDay('2026-10-28', { reason: 'Strike' })
+    expect(repo.day('2026-10-28').closed).toEqual({ reason: 'Strike' })
+    expect(repo.day('2026-10-27').closed).toBeNull()
+    const lkg = repo.history(id).programs[0]!
+    expect(lkg.days.find((d) => d.date === '2026-10-28')!.closed).toEqual({ reason: 'Strike' })
+
+    repo.closeDay('2026-10-28', { reason: 'Hartal' }) // closing again just changes the reason
+    expect(repo.day('2026-10-28').closed).toEqual({ reason: 'Hartal' })
+    repo.reopenDay('2026-10-28')
+    expect(repo.day('2026-10-28').closed).toBeNull()
+    repo.closeDay('2026-10-28', {})
+    expect(repo.day('2026-10-28').closed).toEqual({ reason: '' })
+    // Every change is in the change history.
+    expect(db.prepare(`SELECT action FROM audit_log WHERE table_name = 'closed_days' ORDER BY rowid`).pluck().all()).toEqual([
+      'insert',
+      'update',
+      'delete',
+      'insert'
+    ])
+  })
+})
+
+describe('Nursery and Daycare', () => {
+  it('Nursery is a kindergarten class; Daycare and Tuition are add-ons', async () => {
+    const { isKindergarten } = await import('@shared/enrollments')
+    expect(['pg', 'nu', 'lk', 'uk', 'dc', 'tu'].filter((c) => isKindergarten(c as never))).toEqual(['pg', 'nu', 'lk', 'uk'])
+  })
+
+  it('a child can be in Nursery and Daycare, each with their own times', () => {
+    const id = admit({
+      programs: [
+        lkgEnrollment({ program: 'nu', schedule: { days: 31, arrives: '09:30', leaves: '12:30' } }),
+        lkgEnrollment({ program: 'dc', schedule: { days: 21, arrives: '12:30', leaves: '17:00' } })
+      ]
+    })
+    expect(sessionsOf('2026-11-02').map((s) => [s.program, s.arrives])).toEqual([
+      ['nu', '09:30'],
+      ['dc', '12:30']
+    ])
+    expect(repo.summary().byProgram).toMatchObject({ nu: 1, dc: 1 })
+    expect(students.profile(id)!.enrollments.map((e) => e.program)).toEqual(['nu', 'dc'])
   })
 })

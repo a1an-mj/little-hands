@@ -11,7 +11,7 @@ import { call, messageOf, useLoad } from '../../lib/api'
 import { formatDate } from '../../lib/format'
 import type { Navigate } from '../../shell/routes'
 import { ProgramTag } from '../students/ProgramFields'
-import { isLater, statusTag } from '../attendance/parts'
+import { CloseDayDialog, ClosedBanner, isLater, statusTag } from '../attendance/parts'
 
 interface Props {
   theme: Theme
@@ -28,13 +28,21 @@ function greeting(d: Date): string {
   return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
 }
 
-const PROGRAM_BAR: Record<string, string> = { pg: 'var(--pgs)', lk: 'var(--lks)', uk: 'var(--uks)', tu: 'var(--tus)' }
+const PROGRAM_BAR: Record<string, string> = {
+  pg: 'var(--pgs)',
+  nu: 'var(--nus)',
+  lk: 'var(--lks)',
+  uk: 'var(--uks)',
+  dc: 'var(--dcs)',
+  tu: 'var(--tus)'
+}
 
 /** Home: today's arrivals first, then the school at a glance (design: Main.html). Fees arrive in step 4. */
 export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
   const snack = useSnackbar()
   const [filter, setFilter] = useState<Filter>('all')
   const [search, setSearch] = useState('')
+  const [closing, setClosing] = useState(false)
   const { data: day, error, reload } = useLoad(() => window.lh.attendance.day(), [])
   const { data: summary } = useLoad(() => window.lh.attendance.summary(), [])
 
@@ -65,6 +73,16 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
   }
 
   // The main process's clock, so the date, greeting and late notes all agree.
+  async function reopen() {
+    try {
+      await call(window.lh.attendance.reopenDay(day!.date))
+      snack('School is open today')
+      await reload()
+    } catch (e) {
+      snack(messageOf(e))
+    }
+  }
+
   const now = day ? new Date(`${day.today}T${day.now}:00`) : new Date()
   const sessions = day?.sessions ?? []
   const waiting = sessions.filter((s) => s.state.status === 'none')
@@ -110,15 +128,24 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
       <section aria-label="Today at a glance" className="glance">
         <div className="card in stat" style={{ animationDelay: '60ms', background: 'var(--pc)', color: 'var(--opc)' }} data-testid="arrived-today">
           <div style={{ fontWeight: 500 }}>Arrived today</div>
-          <div>
-            <span className="num">{counts.arrived}</span> <span className="t-lg">of {counts.expected}</span>
-          </div>
-          <div className="bar" style={{ background: 'color-mix(in srgb, var(--opc) 14%, transparent)' }}>
-            <i style={{ width: `${pct}%`, background: 'var(--opc)' }} />
-          </div>
-          <div className="small">
-            {counts.notYet} yet to arrive · {counts.absent} absent
-          </div>
+          {day?.closed ? (
+            <>
+              <div className="t-lg">School closed</div>
+              <div className="small">{day.closed.reason || 'Nobody is expected today'}</div>
+            </>
+          ) : (
+            <>
+              <div>
+                <span className="num">{counts.arrived}</span> <span className="t-lg">of {counts.expected}</span>
+              </div>
+              <div className="bar" style={{ background: 'color-mix(in srgb, var(--opc) 14%, transparent)' }}>
+                <i style={{ width: `${pct}%`, background: 'var(--opc)' }} />
+              </div>
+              <div className="small">
+                {counts.notYet} yet to arrive · {counts.absent} absent
+              </div>
+            </>
+          )}
         </div>
         <div className="card in stat" style={{ animationDelay: '120ms' }}>
           <div className="muted" style={{ fontWeight: 500 }}>Active students</div>
@@ -138,28 +165,33 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
         <section aria-labelledby="arr-h" className="card in" style={{ flex: '2 1 600px', minWidth: 0, animationDelay: '240ms' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
             <h2 id="arr-h" className="h-md">Today's arrivals</h2>
-            <div className="seg" role="group" aria-label="Filter arrivals">
-              {(
-                [
-                  ['all', 'All'],
-                  ['not', `Not yet · ${waiting.length}`],
-                  ['in', `Arrived · ${arrivedList.length}`]
-                ] as [Filter, string][]
-              ).map(([f, label]) => (
-                <button key={f} type="button" className="segb" aria-pressed={filter === f} onClick={() => setFilter(f)}>
-                  {filter === f && <CheckIcon />}
-                  {label}
-                </button>
-              ))}
-            </div>
+            {!day?.closed && (
+              <div className="seg" role="group" aria-label="Filter arrivals">
+                {(
+                  [
+                    ['all', 'All'],
+                    ['not', `Not yet · ${waiting.length}`],
+                    ['in', `Arrived · ${arrivedList.length}`]
+                  ] as [Filter, string][]
+                ).map(([f, label]) => (
+                  <button key={f} type="button" className="segb" aria-pressed={filter === f} onClick={() => setFilter(f)}>
+                    {filter === f && <CheckIcon />}
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           {error && <div className="empty" role="alert">{error}</div>}
-          <ul className="plain" aria-label="Arrivals">
-            {shown.map((s) => (
-              <ArrivalRow key={s.enrollmentId} s={s} now={day!.now} onTap={(k) => void tap(s, k)} onOpen={() => navigate({ name: 'student', id: s.studentId })} />
-            ))}
-          </ul>
-          {day && shown.length === 0 && (
+          {day?.closed && <ClosedBanner closed={day.closed} onReopen={() => void reopen()} />}
+          {!day?.closed && (
+            <ul className="plain" aria-label="Arrivals">
+              {shown.map((s) => (
+                <ArrivalRow key={s.enrollmentId} s={s} now={day!.now} onTap={(k) => void tap(s, k)} onOpen={() => navigate({ name: 'student', id: s.studentId })} />
+              ))}
+            </ul>
+          )}
+          {day && !day.closed && shown.length === 0 && (
             <p className="muted" style={{ margin: 0, padding: '24px 0', textAlign: 'center' }}>
               {sessions.length === 0
                 ? 'No one is expected today.'
@@ -168,11 +200,32 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
                   : 'Everyone expected today has been marked.'}
             </p>
           )}
-          <div className="row" style={{ paddingTop: 12 }}>
+          <div className="row" style={{ paddingTop: 12, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8 }}>
             <button type="button" className="btn textb" onClick={() => navigate({ name: 'attendance' })}>
               Open attendance for everyone
             </button>
+            {day && !day.closed && (
+              <button type="button" className="btn textb" onClick={() => setClosing(true)}>
+                School closed today
+              </button>
+            )}
           </div>
+          {closing && day && (
+            <CloseDayDialog
+              dateText="today"
+              onClose={() => setClosing(false)}
+              onConfirm={async (reason) => {
+                try {
+                  await call(window.lh.attendance.closeDay(day.date, { reason }))
+                  setClosing(false)
+                  snack('Marked as closed today')
+                  await reload()
+                } catch (e) {
+                  snack(messageOf(e))
+                }
+              }}
+            />
+          )}
         </section>
 
         <section className="card in soon-card" style={{ flex: '1 1 320px', minWidth: 0, animationDelay: '300ms' }} aria-labelledby="fee-h">

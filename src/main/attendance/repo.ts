@@ -18,7 +18,9 @@ import {
   attendanceDaySchema,
   attendanceManySchema,
   attendanceTapSchema,
+  closeDaySchema,
   isoDateSchema,
+  type CloseDayInput,
   type AttendanceDayInput,
   type AttendanceTap
 } from '@shared/schemas'
@@ -110,7 +112,7 @@ export class AttendanceRepo {
         a.studentName.localeCompare(b.studentName, 'en', { sensitivity: 'base' }) ||
         order.get(a.enrollmentId)! - order.get(b.enrollmentId)!
     )
-    return { date, today: this.w.today(), now: this.w.time(), sessions }
+    return { date, closed: this.closedOn(date), today: this.w.today(), now: this.w.time(), sessions }
   }
 
   /** The last school days for each of a child's programs, newest first. */
@@ -142,6 +144,7 @@ export class AttendanceRepo {
         byDate.set(r.date, [...(byDate.get(r.date) ?? []), toEvent(r)])
       }
       const last = e.end_date !== null && e.end_date < today ? e.end_date : today
+      const closed = this.closedBetween(addDays(last, -HISTORY_LOOKBACK_DAYS), last)
       const days: HistoryDay[] = []
       for (let i = 0; i < HISTORY_LOOKBACK_DAYS && days.length < HISTORY_DAYS; i++) {
         const date = addDays(last, -i)
@@ -153,6 +156,7 @@ export class AttendanceRepo {
         if (!expected && !evs) continue
         days.push({
           date,
+          closed: closed.get(date) ?? null,
           arrives: expected ? sched!.arrives : null,
           leaves: expected ? sched!.leaves : null,
           state: replay(evs ?? [])
@@ -255,7 +259,39 @@ export class AttendanceRepo {
     })
   }
 
+  /** "School closed today": nobody is expected that day. Closing again just updates the reason. */
+  closeDay(date: string, input: CloseDayInput): void {
+    isoDateSchema.parse(date)
+    const { reason } = closeDaySchema.parse(input)
+    this.w.transaction(() => {
+      const id = this.db.prepare('SELECT id FROM closed_days WHERE date = ? AND deleted_at IS NULL').pluck().get(date) as string | undefined
+      if (id) this.w.update('closed_days', id, { reason })
+      else this.w.insert('closed_days', { date, reason })
+    })
+  }
+
+  /** Opens a closed day again. */
+  reopenDay(date: string): void {
+    isoDateSchema.parse(date)
+    this.w.transaction(() => {
+      const id = this.db.prepare('SELECT id FROM closed_days WHERE date = ? AND deleted_at IS NULL').pluck().get(date) as string | undefined
+      if (id) this.w.softDelete('closed_days', id)
+    })
+  }
+
   // ---------- Internals ----------
+
+  private closedOn(date: string): { reason: string } | null {
+    const reason = this.db.prepare('SELECT reason FROM closed_days WHERE date = ? AND deleted_at IS NULL').pluck().get(date) as string | undefined
+    return reason === undefined ? null : { reason }
+  }
+
+  private closedBetween(from: string, to: string): Map<string, { reason: string }> {
+    const rows = this.db
+      .prepare('SELECT date, reason FROM closed_days WHERE date BETWEEN ? AND ? AND deleted_at IS NULL')
+      .all(from, to) as { date: string; reason: string }[]
+    return new Map(rows.map((r) => [r.date, { reason: r.reason }]))
+  }
 
   private applyDay(enrollmentId: string, date: string, input: AttendanceDayInput) {
     isoDateSchema.parse(date)

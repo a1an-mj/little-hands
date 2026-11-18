@@ -96,6 +96,8 @@ export interface SessionView {
 
 export interface DayView {
   date: string
+  /** Set when the school is closed that day (holiday): nobody is expected. */
+  closed: { reason: string } | null
   /** The laptop's date and time when this was loaded: "today" and "now" for the late notes. */
   today: string
   now: string
@@ -127,6 +129,8 @@ export function dayCounts(sessions: readonly SessionView[]): DayCounts {
 /** One day in a child's history for one program. */
 export interface HistoryDay {
   date: string
+  /** The school was closed that day, with the reason (e.g. "Onam"). */
+  closed: { reason: string } | null
   /** Expected arrival that day (null if it wasn't a scheduled day but something was recorded). */
   arrives: string | null
   leaves: string | null
@@ -139,6 +143,9 @@ export interface ProgramHistory {
   /** Newest first. */
   days: HistoryDay[]
 }
+
+/** "School closed · Onam" */
+export const closedText = (c: { reason: string }) => (c.reason ? `School closed · ${c.reason}` : 'School closed')
 
 /** How many past school days the profile shows per program. */
 export const HISTORY_DAYS = 10

@@ -70,7 +70,7 @@ test('admission: LKG and Tuition, each with its own timings and fee', async () =
 
   // Two kindergarten classes at once gets a warning, not a block.
   await page.getByRole('checkbox', { name: /UKG/ }).click()
-  await expect(page.getByText('A child is usually in only one of Playgroup, LKG or UKG. Please check.')).toBeVisible()
+  await expect(page.getByText('A child is usually in only one of Playgroup, Nursery, LKG or UKG. Please check.')).toBeVisible()
   await page.getByRole('checkbox', { name: /UKG/ }).click()
   await expect(page.getByText(/usually in only one/)).toHaveCount(0)
 

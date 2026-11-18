@@ -255,6 +255,9 @@ export const attendanceDaySchema = z
   })
 export type AttendanceDayInput = z.input<typeof attendanceDaySchema>
 
+export const closeDaySchema = z.object({ reason: text(100).default('') })
+export type CloseDayInput = z.input<typeof closeDaySchema>
+
 export const attendanceManySchema = z
   .array(z.object({ enrollmentId: idSchema, day: attendanceDaySchema }))
   .max(1000)

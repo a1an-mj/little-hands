@@ -58,9 +58,10 @@ const edit = (id: string, patch: Partial<EnrollmentEditInput>): EnrollmentEditIn
 }
 
 describe('programs', () => {
-  it('has the four programs with fixed IDs and default timings', () => {
+  it('has the six programs with fixed IDs and default timings', () => {
     const d = repo.defaults()
-    expect(d.map((p) => p.name)).toEqual(['Playgroup', 'LKG', 'UKG', 'Tuition'])
+    expect(d.map((p) => p.name)).toEqual(['Playgroup', 'Nursery', 'LKG', 'UKG', 'Daycare', 'Tuition'])
+    expect(d.find((p) => p.code === 'nu')).toMatchObject({ days: 31, arrives: '09:30', leaves: '12:30' })
     expect(d.find((p) => p.code === 'tu')).toMatchObject({ days: 21, arrives: '16:00', leaves: '17:30', lastStandardPaise: null })
     expect(db.prepare("SELECT id FROM programs WHERE code = 'lk'").pluck().get()).toBe('5a0e6b1c-3f4d-4c2a-9b7e-1d2c3a4b5c02')
   })
@@ -295,6 +296,9 @@ describe('migration 004: fee periods and due day', () => {
 
     runMigrations(old, migrations)
     const rows = old.prepare('SELECT effective_from, period_months, due_day, agreed_paise, remarks FROM fee_agreements ORDER BY effective_from').all()
+    // Migration 006 rebuilt the programs table: the enrollment still points at LKG.
+    expect(old.prepare('SELECT p.code FROM enrollments e JOIN programs p ON p.id = e.program_id').pluck().get()).toBe('lk')
+    expect(old.pragma('foreign_key_check')).toEqual([])
     expect(rows).toEqual([
       { effective_from: '2026-06-03', period_months: 1, due_day: 3, agreed_paise: 150000, remarks: '' },
       { effective_from: '2026-09-15', period_months: 3, due_day: 15, agreed_paise: 150000, remarks: '' },

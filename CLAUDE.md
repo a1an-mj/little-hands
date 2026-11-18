@@ -9,8 +9,10 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
 - Forgot PIN: a one-time recovery code (16 characters) is shown when the PIN is set; it lets the
   owner choose a new PIN and is then replaced by a new code. 5 wrong tries (PIN or code) → 30 s wait.
 - English only.
-- A child can be in a kindergarten class (Playgroup / LKG / UKG) AND Tuition at the same time.
-  Each enrollment has its own days, arrival/departure times and fee agreement.
+- Programs: kindergarten classes Playgroup → Nursery → LKG → UKG (a child is usually in one), plus
+  Daycare (not schooling) and Tuition, which can be taken alongside a class. Each enrollment has its
+  own days, arrival/departure times and fee agreement; Daycare times vary per child (no fixed
+  morning/evening sessions).
 - Fees are agreed per child at admission: each program has its own fee, payment period
   ("pays every" N months, or one-time) and due day of the month. The period choices are the
   FEE_PERIODS list in `src/shared/enrollments.ts`; the owner will confirm the final list.
@@ -25,20 +27,31 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
 - Cloud: version 1 has encrypted cloud BACKUPS only (see Backups). No multi-device sync yet,
   but the data model must be sync-ready (see Data model rules).
 
+## Owner's answers (Nov 2026) — use these for step 4 (payments)
+- Fees are mostly monthly, paid **in advance**. A child's month runs from their start day:
+  joining on 20 June → pays the full fee for 20 June–19 July, next due 20 July. No part-month fees.
+- Leaving mid-period after paying: **no refund**.
+- Long absence: **Daycare is not charged**; the kindergarten classes are still charged.
+- Payment methods: **Cash, UPI, Bank transfer**.
+- Parents pay the **exact amount** (no credit / advance-payment handling needed).
+- Siblings get a discount (= a concession with a reason, already supported).
+- **Late fine**: an option to add a fine to a child's fees (amount entered each time).
+- Other charges: a **one-time admission fee** before joining; **recurring** extras such as karate,
+  dance and transport.
+- Fee rises differ per class and year (e.g. Playgroup +₹100, LKG +₹250): no fixed rule.
+- **Teachers and the owner** record payments: for now, pick a name ("Recorded by") on each payment
+  (one PIN for the app).
+- Monthly report: total collected, per class, by payment method, who still owes, concessions.
+- Receipts: later, not in version 1.
+- Attendance: holidays need a "School closed" day (built); Tuition is marked too (built).
+
 ## Still to confirm with the owner
-Before building the payments module (step 4), ask the owner:
-- the list of payment periods (FEE_PERIODS);
-- whether each period is paid at the start or at the end;
-- how many days after the due day a fee counts as late;
-- joining or leaving mid-period (full period or part?), long absences;
-- payment methods, advance payments / overpayment, one payment for several programs or siblings;
-- late fees, other charges (admission fee, books…), when fees go up;
-- academic year (designs assume June–May, "2026–27") and any terms;
-- who records payments, what the monthly collection report shows, receipts later.
-Attendance (step 5 is built with these defaults; change them once the owner answers):
-- late = any time after the expected arrival time;
-- no "school closed" (holiday) button yet;
-- Tuition attendance is marked like the kindergarten classes.
+- How many days after the due date a fee shows under "Fees to follow up" (default: the day after).
+- One payment covering two children or two programs: how it is recorded.
+- Daycare fee: monthly like the classes, or per day used? How a skipped month is marked.
+- Academic year (designs assume June–May, "2026–27") and any terms.
+- When a child counts as "late" (owner: depends on the child's timing; ask again later).
+  Default for now: any time after the expected arrival time.
 
 ## Tech stack (agreed)
 - Electron (desktop shell) + React + TypeScript, bundled with Vite.
@@ -64,7 +77,8 @@ Attendance (step 5 is built with these defaults; change them once the owner answ
 - Colours match the logo: Material 3 "fidelity" scheme from #20ADE4, in `src/renderer/styles/tokens.css`
   (this replaced the designs' teal seed #9AE8EB). Token names are the same as the CSS variables in
   `design/` (`.lh{...}` = light, `.lh[data-theme="dark"]{...}` = dark); use the app's tokens.css values.
-- Program colours: Playgroup coral, LKG yellow, UKG blue, Tuition violet (tokens pg/lk/uk/tu).
+- Program colours: Playgroup coral, Nursery green, LKG yellow, UKG blue, Daycare rose, Tuition violet
+  (tokens pg/nu/lk/uk/dc/tu).
 - The design files are prototypes made in a design tool: the markup inside `<x-dc>` plus the
   `<style>` block show layout and styling; the `<script type="text/x-dc">` block shows intended
   interactions. Rebuild them as real components; don't try to run these files as-is.

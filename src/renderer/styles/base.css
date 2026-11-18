@@ -238,8 +238,8 @@ button{font-family:inherit}
    Rebuilt from design/AddStudent.html and Profile.html.
    ====================================================================== */
 
-/* Program colours (Playgroup coral, LKG yellow, UKG blue, Tuition violet) */
-.pg{background:var(--pgc);color:var(--pgo)}.lk{background:var(--lkc);color:var(--lko)}.uk{background:var(--ukc);color:var(--uko)}.tu{background:var(--tuc);color:var(--tuo)}
+/* Program colours (Playgroup coral, Nursery green, LKG yellow, UKG blue, Daycare rose, Tuition violet) */
+.pg{background:var(--pgc);color:var(--pgo)}.lk{background:var(--lkc);color:var(--lko)}.uk{background:var(--ukc);color:var(--uko)}.tu{background:var(--tuc);color:var(--tuo)}.nu{background:var(--nuc);color:var(--nuo)}.dc{background:var(--dcc);color:var(--dco)}
 
 /* Program cards on the admission form */
 .prog{border:1px solid var(--olv);border-radius:20px;overflow:hidden}
@@ -298,3 +298,5 @@ button{font-family:inherit}
 .segb[aria-pressed="true"].no{background:var(--ec);color:var(--oec)}
 .hist{display:flex;flex-wrap:wrap;gap:12px;padding:10px 0;align-items:center}
 @media (max-width:720px){.arrival-actions{flex:1 1 100%;justify-content:flex-start}}
+.closed-banner{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:16px 20px;border-radius:16px;background:var(--tc);color:var(--otc)}
+.closed-banner .btn.textb{color:inherit}

@@ -7,6 +7,7 @@ import type {
   AdmissionInput,
   AttendanceDayInput,
   AttendanceTap,
+  CloseDayInput,
   EndEnrollmentInput,
   EnrollmentEditInput,
   EnrollmentInput,
@@ -70,11 +71,14 @@ export interface AttendanceApi {
   undo(eventId: string): Promise<Result>
   /** Sets what one day says (a correction). */
   setDay(enrollmentId: string, date: string, input: AttendanceDayInput): Promise<Result>
+  /** "School closed" for a day (holiday), with an optional reason. */
+  closeDay(date: string, input: CloseDayInput): Promise<Result>
+  reopenDay(date: string): Promise<Result>
   /** The attendance screen's Save. */
   setMany(date: string, items: { enrollmentId: string; day: AttendanceDayInput }[]): Promise<Result>
 }
 
-export const ATTENDANCE_METHODS = ['day', 'history', 'summary', 'tap', 'undo', 'setDay', 'setMany'] as const satisfies readonly (keyof AttendanceApi)[]
+export const ATTENDANCE_METHODS = ['day', 'history', 'summary', 'tap', 'undo', 'setDay', 'setMany', 'closeDay', 'reopenDay'] as const satisfies readonly (keyof AttendanceApi)[]
 
 export type LockStatus =
   | { state: 'needs-setup' }

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { type SessionView } from '@shared/attendance'
-import { formatDayLong } from '@shared/dates'
+import { formatDate, formatDayLong } from '@shared/dates'
 import { PROGRAM_CODES, PROGRAM_NAME, type ProgramCode } from '@shared/enrollments'
 import type { Theme } from '@shared/ipc-contract'
 import { formatTimeRange } from '@shared/schedule'
@@ -12,7 +12,7 @@ import { ThemeSwitch } from '../../components/ThemeSwitch'
 import { call, messageOf, useLoad } from '../../lib/api'
 import type { Navigate } from '../../shell/routes'
 import { ProgramTag } from '../students/ProgramFields'
-import { statusTag } from './parts'
+import { CloseDayDialog, ClosedBanner, statusTag } from './parts'
 
 interface Props {
   theme: Theme
@@ -36,6 +36,7 @@ export function AttendanceScreen({ theme, onToggleTheme, navigate }: Props) {
   const [search, setSearch] = useState('')
   const [marks, setMarks] = useState<Record<string, Mark>>({})
   const [busy, setBusy] = useState(false)
+  const [closing, setClosing] = useState(false)
   const { data: day, error, reload } = useLoad(() => window.lh.attendance.day(date ?? undefined), [date])
 
   const sessions = useMemo(() => day?.sessions ?? [], [day])
@@ -79,6 +80,17 @@ export function AttendanceScreen({ theme, onToggleTheme, navigate }: Props) {
     }
   }
 
+  async function reopen() {
+    if (!day) return
+    try {
+      await call(window.lh.attendance.reopenDay(day.date))
+      snack(day.date === day.today ? 'School is open today' : `${formatDate(day.date)} is a school day again`)
+      await reload()
+    } catch (e) {
+      snack(messageOf(e))
+    }
+  }
+
   return (
     <>
       <header className="topbar in">
@@ -114,73 +126,101 @@ export function AttendanceScreen({ theme, onToggleTheme, navigate }: Props) {
             </button>
           ))}
         </div>
+        <div style={{ flex: 1 }} />
+        {day && !day.closed && !dirty && (
+          <button type="button" className="btn textb" onClick={() => setClosing(true)}>
+            {day.date === day.today ? 'School closed today' : 'School was closed this day'}
+          </button>
+        )}
       </div>
 
-      <section aria-labelledby="att-h" className="attbar in" style={{ animationDelay: '100ms' }}>
-        <AttendanceIcon />
-        <div style={{ flex: '1 1 220px' }}>
-          <h2 id="att-h" className="t-lg" style={{ margin: 0 }}>
-            Attendance · {day ? formatDayLong(day.date) : ''}
-          </h2>
-          <div data-testid="att-counts">
-            {nPresent} present · {nAbsent} absent · {nLeft} not marked yet
-          </div>
-        </div>
-        <button type="button" className="btn on-pc" onClick={restPresent} disabled={shown.every((s) => markFor(s) !== 'none')}>
-          Mark the rest present
-        </button>
-        <button
-          type="button"
-          className="btn textb"
-          style={{ color: 'inherit' }}
-          onClick={() => (dirty ? setMarks({}) : navigate({ name: 'students' }))}
-        >
-          {dirty ? 'Cancel' : 'Close'}
-        </button>
-        <button type="button" className="btn filled" onClick={() => void save()} disabled={!dirty || busy}>
-          <CheckIcon />
-          Save
-        </button>
-      </section>
+      {day?.closed && <ClosedBanner closed={day.closed} onReopen={() => void reopen()} />}
+      {closing && day && (
+        <CloseDayDialog
+          dateText={day.date === day.today ? 'today' : `on ${formatDate(day.date)}`}
+          onClose={() => setClosing(false)}
+          onConfirm={async (reason) => {
+            try {
+              await call(window.lh.attendance.closeDay(day.date, { reason }))
+              setClosing(false)
+              snack('Marked as closed')
+              await reload()
+            } catch (e) {
+              snack(messageOf(e))
+            }
+          }}
+        />
+      )}
 
-      <section aria-label="Mark attendance" className="card in" style={{ animationDelay: '140ms' }}>
-        {error && <div className="empty" role="alert">{error}</div>}
-        {shown.map((s) => {
-          const m = markFor(s)
-          const saved = marks[s.enrollmentId] === undefined || marks[s.enrollmentId] === markOf(s)
-          const tag = saved ? statusTag(s.state, s.arrives, { isToday: day!.date === day!.today, now: day!.now }) : null
-          return (
-            <div key={s.enrollmentId} className="arow" data-testid="att-row">
-              <span style={{ flex: '2 1 240px', display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
-                <Avatar name={s.studentName} />
-                <span style={{ minWidth: 0 }}>
-                  <span className="t-lg" style={{ display: 'block' }}>{s.studentName}</span>
-                  <span className="small muted">{tag ? tag.text : m === 'none' ? 'Not marked yet' : 'Not saved yet'}</span>
-                </span>
-              </span>
-              <span style={{ flex: '1 1 200px', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                <ProgramTag code={s.program} />
-                <span className="small muted">{s.arrives && s.leaves ? formatTimeRange(s.arrives, s.leaves) : 'Not a usual day'}</span>
-              </span>
-              <span className="seg" role="group" aria-label={`Attendance for ${s.studentName}, ${PROGRAM_NAME[s.program]}`}>
-                <button type="button" className="segb yes" aria-pressed={m === 'present'} onClick={() => set(s, 'present')}>
-                  {m === 'present' && <CheckIcon />}
-                  Present
-                </button>
-                <button type="button" className="segb no" aria-pressed={m === 'absent'} onClick={() => set(s, 'absent')}>
-                  {m === 'absent' && <CheckIcon />}
-                  Absent
-                </button>
-              </span>
+      {!day?.closed && (
+        <>
+          <section aria-labelledby="att-h" className="attbar in" style={{ animationDelay: '100ms' }}>
+            <AttendanceIcon />
+            <div style={{ flex: '1 1 220px' }}>
+              <h2 id="att-h" className="t-lg" style={{ margin: 0 }}>
+                Attendance · {day ? formatDayLong(day.date) : ''}
+              </h2>
+              <div data-testid="att-counts">
+                {nPresent} present · {nAbsent} absent · {nLeft} not marked yet
+              </div>
             </div>
-          )
-        })}
-        {day && shown.length === 0 && (
-          <div className="empty">
-            {sessions.length === 0 ? 'No one is expected on this day.' : 'No students match. Try another name or clear the filters.'}
-          </div>
-        )}
-      </section>
+            <button type="button" className="btn on-pc" onClick={restPresent} disabled={shown.every((s) => markFor(s) !== 'none')}>
+              Mark the rest present
+            </button>
+            <button
+              type="button"
+              className="btn textb"
+              style={{ color: 'inherit' }}
+              onClick={() => (dirty ? setMarks({}) : navigate({ name: 'students' }))}
+            >
+              {dirty ? 'Cancel' : 'Close'}
+            </button>
+            <button type="button" className="btn filled" onClick={() => void save()} disabled={!dirty || busy}>
+              <CheckIcon />
+              Save
+            </button>
+          </section>
+
+          <section aria-label="Mark attendance" className="card in" style={{ animationDelay: '140ms' }}>
+            {error && <div className="empty" role="alert">{error}</div>}
+            {shown.map((s) => {
+              const m = markFor(s)
+              const saved = marks[s.enrollmentId] === undefined || marks[s.enrollmentId] === markOf(s)
+              const tag = saved ? statusTag(s.state, s.arrives, { isToday: day!.date === day!.today, now: day!.now }) : null
+              return (
+                <div key={s.enrollmentId} className="arow" data-testid="att-row">
+                  <span style={{ flex: '2 1 240px', display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
+                    <Avatar name={s.studentName} />
+                    <span style={{ minWidth: 0 }}>
+                      <span className="t-lg" style={{ display: 'block' }}>{s.studentName}</span>
+                      <span className="small muted">{tag ? tag.text : m === 'none' ? 'Not marked yet' : 'Not saved yet'}</span>
+                    </span>
+                  </span>
+                  <span style={{ flex: '1 1 200px', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <ProgramTag code={s.program} />
+                    <span className="small muted">{s.arrives && s.leaves ? formatTimeRange(s.arrives, s.leaves) : 'Not a usual day'}</span>
+                  </span>
+                  <span className="seg" role="group" aria-label={`Attendance for ${s.studentName}, ${PROGRAM_NAME[s.program]}`}>
+                    <button type="button" className="segb yes" aria-pressed={m === 'present'} onClick={() => set(s, 'present')}>
+                      {m === 'present' && <CheckIcon />}
+                      Present
+                    </button>
+                    <button type="button" className="segb no" aria-pressed={m === 'absent'} onClick={() => set(s, 'absent')}>
+                      {m === 'absent' && <CheckIcon />}
+                      Absent
+                    </button>
+                  </span>
+                </div>
+              )
+            })}
+            {day && shown.length === 0 && (
+              <div className="empty">
+                {sessions.length === 0 ? 'No one is expected on this day.' : 'No students match. Try another name or clear the filters.'}
+              </div>
+            )}
+          </section>
+        </>
+      )}
     </>
   )
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { inOutText, type HistoryDay, type ProgramHistory } from '@shared/attendance'
+import { closedText, inOutText, type HistoryDay, type ProgramHistory } from '@shared/attendance'
 import { formatDayShort } from '@shared/dates'
 import { PROGRAM_NAME, type EnrollmentView } from '@shared/enrollments'
 import { formatDays, formatTime } from '@shared/schedule'
@@ -28,6 +28,9 @@ export function TodayCard({ history, enrollments }: { history: History; enrollme
           return <Line key={e.id} label={name} value={<span>Not today{days ? ` · ${formatDays(days)}` : ''}</span>} />
         }
         const s = day.state
+        if (day.closed && s.status === 'none') {
+          return <Line key={e.id} label={name} value={<span className="tag nt">{closedText(day.closed)}</span>} />
+        }
         if (s.status === 'in' || s.status === 'out') {
           return (
             <div key={e.id}>
@@ -93,7 +96,9 @@ export function AttendanceHistory({ history, onEdit }: { history: History; onEdi
           {p.days.map((d) => {
             const isToday = d.date === history.today
             const tag =
-              d.state.status === 'absent' || d.state.status === 'none'
+              d.closed && d.state.status === 'none'
+                ? { text: closedText(d.closed), cls: 'tag nt' }
+                : d.state.status === 'absent' || d.state.status === 'none'
                 ? statusTag(d.state, d.arrives, { isToday, now: history.now })
                 : (punctualityTag(d.state, d.arrives) ?? { text: 'Present', cls: 'tag ok' })
             return (

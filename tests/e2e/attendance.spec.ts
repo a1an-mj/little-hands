@@ -175,3 +175,44 @@ test('home search opens the students list', async () => {
   await expect(page.getByRole('region', { name: 'Student list' }).getByText('Dev Krishna', { exact: true })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Student list' }).getByText('Aadhya Menon', { exact: true })).toHaveCount(0)
 })
+
+test('school closed today, then open again', async () => {
+  await page.getByRole('navigation', { name: 'Main menu' }).getByRole('button', { name: 'Home' }).click()
+  await page.getByRole('button', { name: 'School closed today' }).click()
+  await page.getByRole('dialog').getByLabel('Reason').fill('Onam')
+  await page.getByRole('dialog').getByRole('button', { name: 'Mark as closed' }).click()
+  await expect(page.getByTestId('closed-banner')).toContainText('School closed · Onam')
+  await expect(arrivedCard()).toContainText('School closed')
+  await expect(page.getByRole('list', { name: 'Arrivals' })).toHaveCount(0)
+
+  await page.getByTestId('closed-banner').getByRole('button', { name: 'Open again' }).click()
+  await expect(page.getByTestId('closed-banner')).toHaveCount(0)
+  await expect(arrivals()).toHaveCount(3)
+})
+
+test('a past day marked closed shows on the profile', async () => {
+  await page.getByRole('navigation', { name: 'Main menu' }).getByRole('button', { name: 'Attendance' }).click()
+  await page.getByLabel('Day', { exact: true }).fill('2026-10-27')
+  await page.getByRole('button', { name: 'School was closed this day' }).click()
+  await page.getByRole('dialog').getByLabel('Reason').fill('Strike')
+  await page.getByRole('dialog').getByRole('button', { name: 'Mark as closed' }).click()
+  await expect(page.getByTestId('closed-banner')).toContainText('School closed · Strike')
+  await expect(page.getByTestId('att-row')).toHaveCount(0)
+
+  await page.getByRole('navigation', { name: 'Main menu' }).getByRole('button', { name: 'Students' }).click()
+  await page.getByRole('region', { name: 'Student list' }).getByText('Dev Krishna', { exact: true }).click()
+  await page.getByRole('tab', { name: 'Attendance' }).click()
+  await expect(page.getByTestId('history-lk').getByTestId('history-day').filter({ hasText: 'Tue 27 Oct' })).toContainText('School closed · Strike')
+})
+
+test('admission offers Nursery and Daycare', async () => {
+  await page.getByRole('navigation', { name: 'Main menu' }).getByRole('button', { name: 'Students' }).click()
+  await page.getByRole('button', { name: 'New admission' }).click()
+  await page.getByRole('checkbox', { name: /Nursery/ }).click()
+  await expect(page.getByLabel('Nursery arrives')).toHaveValue('09:30')
+  await page.getByRole('checkbox', { name: /Daycare/ }).click()
+  await expect(page.getByRole('checkbox', { name: /Daycare/ })).toContainText('Not schooling')
+  await expect(page.getByText(/usually in only one/)).toHaveCount(0) // Daycare is not a class
+  await page.getByRole('checkbox', { name: /LKG/ }).click()
+  await expect(page.getByText('A child is usually in only one of Playgroup, Nursery, LKG or UKG. Please check.')).toBeVisible()
+})
