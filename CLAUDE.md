@@ -44,14 +44,15 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
 - Monthly report: total collected, per class, by payment method, who still owes, concessions.
 - Receipts: later, not in version 1.
 - Attendance: holidays need a "School closed" day (built); Tuition is marked too (built).
+- Daycare is paid **monthly**, like the classes.
+- **One payment per child** (siblings are never combined in one payment).
+- "Fees to follow up": a fee shows **from its due day**, then "due for 1 day", "due for 2 days"…
+- School year: **June to March** (April–May break counts with the year that ended; label "2026–27").
+- **No expected times and no "late"**: the app only records when a child actually arrived and left.
 
 ## Still to confirm with the owner
-- How many days after the due date a fee shows under "Fees to follow up" (default: the day after).
-- One payment covering two children or two programs: how it is recorded.
-- Daycare fee: monthly like the classes, or per day used? How a skipped month is marked.
-- Academic year (designs assume June–May, "2026–27") and any terms.
-- When a child counts as "late" (owner: depends on the child's timing; ask again later).
-  Default for now: any time after the expected arrival time.
+- How a Daycare month is waived during a long absence (default: the owner waives that month by hand).
+- Whether each program keeps its **days** (Mon–Fri…) once times are removed (proposed: keep days).
 
 ## Tech stack (agreed)
 - Electron (desktop shell) + React + TypeScript, bundled with Vite.

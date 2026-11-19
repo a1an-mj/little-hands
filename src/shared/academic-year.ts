@@ -1,7 +1,8 @@
-// The academic year is worked out from dates, never stored, so confirming it with the owner
-// (still pending, see CLAUDE.md) only means changing this constant.
+// The academic year is worked out from dates, never stored, so changing it only means changing
+// this constant. Owner (Nov 2026): the school year runs June to March; April and May are the
+// summer break and count with the year that just ended.
 
-/** Month the academic year starts (1 = January). Assumed June until the owner confirms. */
+/** Month the academic year starts (1 = January). */
 export const ACADEMIC_YEAR_START_MONTH: number = 6
 
 /** "2026-11-02" → "2026–27"; "2027-03-10" → "2026–27". */
