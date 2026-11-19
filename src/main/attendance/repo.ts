@@ -48,7 +48,7 @@ type EnrollmentRow = {
   end_date: string | null
 }
 
-type Schedule = { effective_from: string; days: number; arrives: string; leaves: string }
+type Schedule = { effective_from: string; days: number }
 
 const toEvent = (r: EventRow): AttendanceEvent => ({
   id: r.id,
@@ -100,15 +100,13 @@ export class AttendanceRepo {
         studentName: e.full_name,
         studentCode: e.student_code,
         program: e.code,
-        arrives: expected ? sched!.arrives : null,
-        leaves: expected ? sched!.leaves : null,
+        expected,
         state: replay(evs)
       })
     }
     const order = new Map(enrollments.map((e) => [e.id, e.sort_order]))
     sessions.sort(
       (a, b) =>
-        (a.arrives ?? '99').localeCompare(b.arrives ?? '99') ||
         a.studentName.localeCompare(b.studentName, 'en', { sensitivity: 'base' }) ||
         order.get(a.enrollmentId)! - order.get(b.enrollmentId)!
     )
@@ -130,7 +128,7 @@ export class AttendanceRepo {
     for (const e of enrollments) {
       const schedules = this.db
         .prepare(
-          `SELECT effective_from, days, arrives, leaves FROM schedules
+          `SELECT effective_from, days FROM schedules
            WHERE enrollment_id = ? AND deleted_at IS NULL ORDER BY effective_from`
         )
         .all(e.id) as Schedule[]
@@ -157,8 +155,7 @@ export class AttendanceRepo {
         days.push({
           date,
           closed: closed.get(date) ?? null,
-          arrives: expected ? sched!.arrives : null,
-          leaves: expected ? sched!.leaves : null,
+          expected,
           state: replay(evs ?? [])
         })
       }
@@ -375,7 +372,7 @@ export class AttendanceRepo {
   private scheduleOn(enrollmentId: string, date: string): Schedule | undefined {
     return this.db
       .prepare(
-        `SELECT effective_from, days, arrives, leaves FROM schedules
+        `SELECT effective_from, days FROM schedules
          WHERE enrollment_id = ? AND deleted_at IS NULL AND effective_from <= ?
          ORDER BY effective_from DESC LIMIT 1`
       )

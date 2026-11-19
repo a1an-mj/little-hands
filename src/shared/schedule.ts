@@ -1,4 +1,4 @@
-// Expected timings: which weekdays, and when the child arrives and leaves.
+// Which weekdays a child comes for a program, and how times of day are shown.
 import { weekdayOf } from './dates'
 
 export const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
@@ -38,11 +38,4 @@ function parts(hhmm: string) {
 export function formatTime(hhmm: string): string {
   const t = parts(hhmm)
   return `${t.h12}:${t.m} ${t.ap}`
-}
-
-/** "8:45 AM – 12:30 PM", or "4:00 – 5:30 PM" when both are in the same half of the day. */
-export function formatTimeRange(arrives: string, leaves: string): string {
-  const a = parts(arrives)
-  const l = parts(leaves)
-  return a.ap === l.ap ? `${a.h12}:${a.m} – ${formatTime(leaves)}` : `${formatTime(arrives)} – ${formatTime(leaves)}`
 }

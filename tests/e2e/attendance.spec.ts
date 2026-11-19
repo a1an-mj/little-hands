@@ -10,10 +10,10 @@ let page: Page
 
 test.describe.configure({ mode: 'serial' })
 
-const program = (code: string, days: number, arrives: string, leaves: string) => ({
+const program = (code: string, days: number) => ({
   program: code,
   startDate: '2026-06-01',
-  schedule: { days, arrives, leaves },
+  schedule: { days },
   fee: { periodMonths: 1, dueDay: '1', standard: '1500', concession: '', concessionReason: '', remarks: '' }
 })
 const admission = (fullName: string, phone: string, programs: unknown[]) => ({
@@ -42,8 +42,8 @@ test.beforeAll(async () => {
   await page.waitForLoadState('domcontentloaded')
   await page.evaluate(() => window.lh.lock.setup('2468'))
   const children = [
-    admission('Aadhya Menon', '90000 00014', [program('lk', 31, '08:45', '12:30'), program('tu', 21, '16:00', '17:30')]),
-    admission('Dev Krishna', '90000 00061', [program('lk', 31, '08:45', '12:30')])
+    admission('Aadhya Menon', '90000 00014', [program('lk', 31), program('tu', 21)]),
+    admission('Dev Krishna', '90000 00061', [program('lk', 31)])
   ]
   for (const c of children) {
     const r = await page.evaluate((input) => window.lh.students.admit(input as never), c)
@@ -62,15 +62,14 @@ const row = (name: string, prog: string) => arrivals().filter({ hasText: name })
 const arrivedCard = () => page.getByTestId('arrived-today')
 const snack = () => page.getByRole('status')
 
-test("dashboard: today's arrivals, late notes and counts", async () => {
+test("dashboard: today's arrivals and counts, no expected times or 'late'", async () => {
   await expect(arrivals()).toHaveCount(3)
   await expect(arrivedCard()).toContainText('0 of 2')
   await expect(arrivedCard()).toContainText('2 yet to arrive · 0 absent')
-  await expect(row('Aadhya Menon', 'lk')).toContainText(/1 hr 3\d min late/)
-  await expect(row('Aadhya Menon', 'lk')).toContainText('8:45 AM – 12:30 PM')
-  // Tuition is at 4 PM: "Later today", and no Absent button yet.
-  await expect(row('Aadhya Menon', 'tu')).toContainText('Later today')
-  await expect(page.getByRole('button', { name: 'Absent: Aadhya Menon, Tuition' })).toHaveCount(0)
+  await expect(row('Aadhya Menon', 'lk')).toContainText('Not marked yet')
+  await expect(row('Aadhya Menon', 'tu')).toContainText('Not marked yet')
+  await expect(page.getByRole('button', { name: 'Absent: Aadhya Menon, Tuition' })).toBeVisible()
+  await expect(page.getByRole('list', { name: 'Arrivals' })).not.toContainText(/late|Expected|\d [AP]M/)
   await expect(page.getByTestId('by-program-lk')).toContainText('2')
   await expect(page.getByTestId('by-program-tu')).toContainText('1')
   await expect(page.getByText('1 attend kindergarten + Tuition')).toBeVisible()
@@ -83,7 +82,7 @@ test('arrived, undo, arrived again, then left', async () => {
   await expect(arrivedCard()).toContainText('1 of 2')
 
   await snack().getByRole('button', { name: 'Undo' }).click()
-  await expect(row('Aadhya Menon', 'lk')).toContainText(/min late/)
+  await expect(row('Aadhya Menon', 'lk')).toContainText('Not marked yet')
   await expect(arrivedCard()).toContainText('0 of 2')
 
   await page.getByRole('button', { name: 'Arrived: Aadhya Menon, LKG' }).click()
@@ -100,7 +99,7 @@ test('absent, and the filters', async () => {
 
   await page.getByRole('group', { name: 'Filter arrivals' }).getByRole('button', { name: /Not yet/ }).click()
   await expect(arrivals()).toHaveCount(1)
-  await expect(arrivals()).toContainText('Later today')
+  await expect(arrivals()).toContainText('Tuition')
   await page.getByRole('group', { name: 'Filter arrivals' }).getByRole('button', { name: /Arrived/ }).click()
   await expect(arrivals()).toHaveCount(1)
   await expect(arrivals()).toContainText('Aadhya Menon')
@@ -135,7 +134,8 @@ test('profile: today, the last school days, and a correction', async () => {
   await page.getByRole('navigation', { name: 'Main menu' }).getByRole('button', { name: 'Students' }).click()
   await page.getByRole('region', { name: 'Student list' }).getByText('Aadhya Menon', { exact: true }).click()
   const today = page.getByTestId('today-card')
-  await expect(today).toContainText(/LKG arrived\s*10:1\d AM · expected 8:45 AM/)
+  await expect(today).toContainText(/LKG arrived\s*10:1\d AM/)
+  await expect(today).not.toContainText('expected')
   await expect(today).toContainText(/LKG left\s*10:1\d AM/)
   await expect(today).toContainText('Tuition arrivedPresent')
 
@@ -150,7 +150,8 @@ test('profile: today, the last school days, and a correction', async () => {
   await page.getByRole('dialog').getByLabel('Left at').fill('12:35')
   await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click()
   await expect(fri).toContainText('In 8:50 AM · out 12:35 PM')
-  await expect(fri).toContainText('5 min late')
+  await expect(fri).toContainText('Present')
+  await expect(fri).not.toContainText('late')
 
   await page.getByRole('button', { name: 'Change Thu 29 Oct, LKG' }).click()
   await page.getByRole('dialog').getByRole('radio', { name: 'Absent' }).check()
@@ -209,7 +210,8 @@ test('admission offers Nursery and Daycare', async () => {
   await page.getByRole('navigation', { name: 'Main menu' }).getByRole('button', { name: 'Students' }).click()
   await page.getByRole('button', { name: 'New admission' }).click()
   await page.getByRole('checkbox', { name: /Nursery/ }).click()
-  await expect(page.getByLabel('Nursery arrives')).toHaveValue('09:30')
+  await expect(page.getByLabel('Nursery arrives')).toHaveCount(0) // no fixed times
+  await expect(page.getByRole('group', { name: 'Nursery days' }).getByRole('button', { pressed: true })).toHaveText(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'])
   await page.getByRole('checkbox', { name: /Daycare/ }).click()
   await expect(page.getByRole('checkbox', { name: /Daycare/ })).toContainText('Not schooling')
   await expect(page.getByText(/usually in only one/)).toHaveCount(0) // Daycare is not a class

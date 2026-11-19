@@ -43,9 +43,9 @@ const feeColumns = (f: Fee) => ({
   remarks: f.remarks
 })
 
-const scheduleColumns = (s: ScheduleFields) => ({ days: s.days, arrives: s.arrives, leaves: s.leaves })
+const scheduleColumns = (s: ScheduleFields) => ({ days: s.days })
 
-const sameSchedule = (a: ScheduleFields, b: ScheduleFields) => a.days === b.days && a.arrives === b.arrives && a.leaves === b.leaves
+const sameSchedule = (a: ScheduleFields, b: ScheduleFields) => a.days === b.days
 
 function sameFee(v: FeeVersion, f: Fee): boolean {
   const c = feeColumns(f)
@@ -76,7 +76,7 @@ export class EnrollmentsRepo {
   defaults(): ProgramDefaults[] {
     const rows = this.db
       .prepare(
-        `SELECT p.code, p.name, p.default_days, p.default_arrives, p.default_leaves,
+        `SELECT p.code, p.name, p.default_days,
                 (SELECT f.standard_paise FROM fee_agreements f JOIN enrollments e ON e.id = f.enrollment_id
                  JOIN students s ON s.id = e.student_id
                  WHERE e.program_id = p.id AND f.deleted_at IS NULL AND e.deleted_at IS NULL AND s.deleted_at IS NULL
@@ -87,16 +87,12 @@ export class EnrollmentsRepo {
       code: ProgramCode
       name: string
       default_days: number
-      default_arrives: string
-      default_leaves: string
       last_std: number | null
     }[]
     return rows.map((r) => ({
       code: r.code,
       name: r.name,
       days: r.default_days,
-      arrives: r.default_arrives,
-      leaves: r.default_leaves,
       lastStandardPaise: r.last_std
     }))
   }
@@ -155,7 +151,7 @@ export class EnrollmentsRepo {
   private schedules(enrollmentId: string): ScheduleVersion[] {
     return this.db
       .prepare(
-        `SELECT id, effective_from AS effectiveFrom, days, arrives, leaves FROM schedules
+        `SELECT id, effective_from AS effectiveFrom, days FROM schedules
          WHERE enrollment_id = ? AND deleted_at IS NULL ORDER BY effective_from`
       )
       .all(enrollmentId) as ScheduleVersion[]

@@ -33,7 +33,7 @@ const admit = (overrides: Partial<AdmissionInput> = {}) => students.admit(admiss
 const enrollments = (studentId: string) => students.profile(studentId)!.enrollments
 const tuition = lkgEnrollment({
   program: 'tu',
-  schedule: { days: 21, arrives: '16:00', leaves: '17:30' },
+  schedule: { days: 21 },
   fee: { periodMonths: 1, dueDay: '3', standard: '1000', concession: '200', concessionReason: 'Sibling', remarks: '' }
 })
 const edit = (id: string, patch: Partial<EnrollmentEditInput>): EnrollmentEditInput => {
@@ -42,7 +42,7 @@ const edit = (id: string, patch: Partial<EnrollmentEditInput>): EnrollmentEditIn
   const f = e.fees.at(-1)!
   return {
     startDate: e.startDate,
-    schedule: { days: s.days, arrives: s.arrives, leaves: s.leaves },
+    schedule: { days: s.days },
     fee: {
       periodMonths: f.periodMonths,
       dueDay: String(f.dueDay),
@@ -58,11 +58,11 @@ const edit = (id: string, patch: Partial<EnrollmentEditInput>): EnrollmentEditIn
 }
 
 describe('programs', () => {
-  it('has the six programs with fixed IDs and default timings', () => {
+  it('has the six programs with fixed IDs and default days', () => {
     const d = repo.defaults()
     expect(d.map((p) => p.name)).toEqual(['Playgroup', 'Nursery', 'LKG', 'UKG', 'Daycare', 'Tuition'])
-    expect(d.find((p) => p.code === 'nu')).toMatchObject({ days: 31, arrives: '09:30', leaves: '12:30' })
-    expect(d.find((p) => p.code === 'tu')).toMatchObject({ days: 21, arrives: '16:00', leaves: '17:30', lastStandardPaise: null })
+    expect(d.find((p) => p.code === 'nu')).toMatchObject({ days: 31 })
+    expect(d.find((p) => p.code === 'tu')).toMatchObject({ days: 21, lastStandardPaise: null })
     expect(db.prepare("SELECT id FROM programs WHERE code = 'lk'").pluck().get()).toBe('5a0e6b1c-3f4d-4c2a-9b7e-1d2c3a4b5c02')
   })
 
@@ -75,11 +75,13 @@ describe('programs', () => {
 })
 
 describe('admission with programs', () => {
-  it('saves each program with its own timings and fee', () => {
+  it('saves each program with its own days and fee', () => {
     const id = admit({ programs: [lkgEnrollment(), tuition] })
     const [lkg, tu] = enrollments(id)
     expect(lkg).toMatchObject({ program: 'lk', startDate: '2026-06-03', endDate: null, state: 'current' })
-    expect(lkg!.schedules).toEqual([expect.objectContaining({ effectiveFrom: '2026-06-03', days: 31, arrives: '08:45', leaves: '12:30' })])
+    expect(lkg!.schedules).toEqual([expect.objectContaining({ effectiveFrom: '2026-06-03', days: 31 })])
+    // No times are stored any more.
+    expect(db.prepare('SELECT arrives, leaves FROM schedules').get()).toEqual({ arrives: null, leaves: null })
     expect(lkg!.fees[0]).toMatchObject({ periodMonths: 1, dueDay: 3, standardPaise: 150000, concessionPaise: 0, agreedPaise: 150000 })
     expect(tu!.fees[0]).toMatchObject({ standardPaise: 100000, concessionPaise: 20000, agreedPaise: 80000, concessionReason: 'Sibling' })
     expect(students.list({ search: '', status: 'active', page: 0 }).rows[0]!.programs).toEqual(['lk', 'tu'])
@@ -99,7 +101,7 @@ describe('admission with programs', () => {
     expect(db.prepare('SELECT count(*) FROM students').pluck().get()).toBe(0)
   })
 
-  it('the database itself refuses bad fees and timings', () => {
+  it('the database itself refuses bad fees and days', () => {
     const id = admit()
     const eid = enrollments(id)[0]!.id
     const sync = `'2026-01-01', '2026-01-01', 'x'`
@@ -108,11 +110,11 @@ describe('admission with programs', () => {
         `INSERT INTO fee_agreements (id, enrollment_id, effective_from, period_months, due_day, standard_paise, concession_paise, concession_reason, created_at, updated_at, device_id)
          VALUES (lower(hex(randomblob(16))), ?, '2027-01-01', 1, 10, ?, ?, ?, ${sync})`
       ).run(eid, std, conc, reason)
-    const schedule = (days: number, arrives: string, leaves: string) => () =>
+    const schedule = (days: number) => () =>
       db.prepare(
-        `INSERT INTO schedules (id, enrollment_id, effective_from, days, arrives, leaves, created_at, updated_at, device_id)
-         VALUES (lower(hex(randomblob(16))), ?, '2027-01-01', ?, ?, ?, ${sync})`
-      ).run(eid, days, arrives, leaves)
+        `INSERT INTO schedules (id, enrollment_id, effective_from, days, created_at, updated_at, device_id)
+         VALUES (lower(hex(randomblob(16))), ?, '2027-01-01', ?, ${sync})`
+      ).run(eid, days)
     expect(fee(100, 200, 'x')).toThrow(/CHECK/) // concession more than the fee
     expect(fee(200, 100)).toThrow(/CHECK/) // concession without a reason
     expect(fee(-1, 0)).toThrow(/CHECK/)
@@ -122,8 +124,8 @@ describe('admission with programs', () => {
          VALUES ('z', ?, '2028-01-01', 1, 32, 100, ${sync})`
       ).run(eid)
     ).toThrow(/CHECK/) // no 32nd day
-    expect(schedule(31, '12:00', '09:00')).toThrow(/CHECK/)
-    expect(schedule(0, '09:00', '12:00')).toThrow(/CHECK/)
+    expect(schedule(0)).toThrow(/CHECK/)
+    expect(schedule(128)).toThrow(/CHECK/)
     fee(200, 100, 'Sibling')()
     expect(db.prepare("SELECT agreed_paise FROM fee_agreements WHERE effective_from = '2027-01-01'").pluck().get()).toBe(100)
   })
@@ -151,25 +153,25 @@ describe('adding a program later', () => {
   })
 })
 
-describe('changing timings and fees', () => {
+describe('changing days and fees', () => {
   it('a change from a date keeps the old version', () => {
     const id = admit()
     const lkg = enrollments(id)[0]!.id
     repo.edit(lkg, edit(lkg, { from: '2026-12-01', fee: { ...edit(lkg, {}).fee, standard: '1800' } }))
     const e = enrollments(id)[0]!
     expect(e.fees.map((f) => [f.effectiveFrom, f.standardPaise])).toEqual([['2026-06-03', 150000], ['2026-12-01', 180000]])
-    expect(e.schedules).toHaveLength(1) // timings didn't change, so no new version
+    expect(e.schedules).toHaveLength(1) // days didn't change, so no new version
   })
 
   it('a fix corrects the current version in place, and the history records it', () => {
     const id = admit()
     const lkg = enrollments(id)[0]!.id
-    repo.edit(lkg, edit(lkg, { mode: 'fix', schedule: { days: 31, arrives: '09:00', leaves: '12:30' } }))
+    repo.edit(lkg, edit(lkg, { mode: 'fix', schedule: { days: 21 } }))
     const e = enrollments(id)[0]!
-    expect(e.schedules).toEqual([expect.objectContaining({ effectiveFrom: '2026-06-03', arrives: '09:00' })])
+    expect(e.schedules).toEqual([expect.objectContaining({ effectiveFrom: '2026-06-03', days: 21 })])
     const last = db.prepare("SELECT action, changes FROM audit_log WHERE table_name = 'schedules' ORDER BY rowid DESC LIMIT 1").get() as { action: string; changes: string }
     expect(last.action).toBe('update')
-    expect(JSON.parse(last.changes)).toEqual({ arrives: ['08:45', '09:00'] })
+    expect(JSON.parse(last.changes)).toEqual({ days: [31, 21] })
   })
 
   it('a change on the same date as the latest version replaces it', () => {
@@ -187,12 +189,12 @@ describe('changing timings and fees', () => {
     expect(() => repo.edit(lkg, edit(lkg, { from: '2026-11-15', fee: { ...edit(lkg, {}).fee, standard: '1900' } }))).toThrow(
       'The fee already changes on 1 Dec 2026. Choose that date or later, or fix that change instead.'
     )
-    expect(() => repo.edit(lkg, edit(lkg, { from: '2026-01-01', schedule: { days: 1, arrives: '09:00', leaves: '10:00' } }))).toThrow(
+    expect(() => repo.edit(lkg, edit(lkg, { from: '2026-01-01', schedule: { days: 1 } }))).toThrow(
       /before the program started \(3 Jun 2026\)/
     )
   })
 
-  it('moving the start date moves the first timings and fee with it', () => {
+  it('moving the start date moves the first days and fee with it', () => {
     const id = admit()
     const lkg = enrollments(id)[0]!.id
     repo.edit(lkg, edit(lkg, { startDate: '2026-06-10', mode: 'fix' }))
@@ -283,6 +285,7 @@ describe('migration 004: fee periods and due day', () => {
     const w = new Writer(old, 'device-1', () => today)
     const s = w.insert('students', { student_code: 'LH-2026-001', code_year: 2026, code_seq: 1, full_name: 'A', joining_date: '2026-06-03', status: 'active', home_address: '' })
     const e = w.insert('enrollments', { student_id: s, program_id: '5a0e6b1c-3f4d-4c2a-9b7e-1d2c3a4b5c02', start_date: '2026-06-03', end_date: null, end_reason: '' })
+    w.insert('schedules', { enrollment_id: e, effective_from: '2026-06-03', days: 31, arrives: '08:45', leaves: '12:30' })
     const fee = (from: string, frequency: string, label = '', remarks = '') =>
       old
         .prepare(
@@ -299,6 +302,8 @@ describe('migration 004: fee periods and due day', () => {
     // Migration 006 rebuilt the programs table: the enrollment still points at LKG.
     expect(old.prepare('SELECT p.code FROM enrollments e JOIN programs p ON p.id = e.program_id').pluck().get()).toBe('lk')
     expect(old.pragma('foreign_key_check')).toEqual([])
+    // Migration 007: days kept, old times kept in the history, new rows need no times.
+    expect(old.prepare('SELECT days, arrives FROM schedules').get()).toEqual({ days: 31, arrives: '08:45' })
     expect(rows).toEqual([
       { effective_from: '2026-06-03', period_months: 1, due_day: 3, agreed_paise: 150000, remarks: '' },
       { effective_from: '2026-09-15', period_months: 3, due_day: 15, agreed_paise: 150000, remarks: '' },

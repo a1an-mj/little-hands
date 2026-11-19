@@ -8,7 +8,7 @@ import { Dialog } from '../../components/Dialog'
 import { EditIcon } from '../../components/icons'
 import { TextField } from '../../components/TextField'
 import { call } from '../../lib/api'
-import { punctualityTag, statusTag } from '../attendance/parts'
+import { statusTag } from '../attendance/parts'
 import { useSubmit } from './ProfileDialogs'
 
 export type History = { today: string; now: string; programs: ProgramHistory[] }
@@ -23,7 +23,7 @@ export function TodayCard({ history, enrollments }: { history: History; enrollme
       {current.map((e) => {
         const name = PROGRAM_NAME[e.program]
         const day = history.programs.find((p) => p.enrollmentId === e.id)?.days.find((d) => d.date === history.today)
-        if (!day || !day.arrives) {
+        if (!day || !day.expected) {
           const days = e.schedules.at(-1)?.days
           return <Line key={e.id} label={name} value={<span>Not today{days ? ` · ${formatDays(days)}` : ''}</span>} />
         }
@@ -34,34 +34,13 @@ export function TodayCard({ history, enrollments }: { history: History; enrollme
         if (s.status === 'in' || s.status === 'out') {
           return (
             <div key={e.id}>
-              <Line
-                label={`${name} arrived`}
-                value={
-                  <span>
-                    <span className="t-lg">{s.arrived ? formatTime(s.arrived) : 'Present'}</span>{' '}
-                    <span className="muted">· expected {formatTime(day.arrives)}</span>
-                  </span>
-                }
-              />
-              <Line
-                label={s.status === 'out' ? `${name} left` : `${name} leaves`}
-                value={<span className="t-lg">{formatTime(s.status === 'out' ? s.left! : day.leaves!)}</span>}
-              />
+              <Line label={`${name} arrived`} value={<span className="t-lg">{s.arrived ? formatTime(s.arrived) : 'Present'}</span>} />
+              {s.status === 'out' && <Line label={`${name} left`} value={<span className="t-lg">{formatTime(s.left!)}</span>} />}
             </div>
           )
         }
-        const tag = statusTag(s, day.arrives, { isToday: true, now: history.now })
-        return (
-          <Line
-            key={e.id}
-            label={name}
-            value={
-              <span>
-                <span className={tag.cls}>{tag.text}</span> <span className="muted">· expected {formatTime(day.arrives)}</span>
-              </span>
-            }
-          />
-        )
+        const tag = statusTag(s, { isToday: true })
+        return <Line key={e.id} label={name} value={<span className={tag.cls}>{tag.text}</span>} />
       })}
     </section>
   )
@@ -99,8 +78,8 @@ export function AttendanceHistory({ history, onEdit }: { history: History; onEdi
               d.closed && d.state.status === 'none'
                 ? { text: closedText(d.closed), cls: 'tag nt' }
                 : d.state.status === 'absent' || d.state.status === 'none'
-                ? statusTag(d.state, d.arrives, { isToday, now: history.now })
-                : (punctualityTag(d.state, d.arrives) ?? { text: 'Present', cls: 'tag ok' })
+                  ? statusTag(d.state, { isToday })
+                  : { text: 'Present', cls: 'tag ok' }
             return (
               <div key={d.date} className="row hist" data-testid="history-day">
                 <span className="t-lg" style={{ flex: '0 0 120px' }}>
@@ -159,7 +138,7 @@ export function DayDialog({ program, day, onClose, onDone }: { program: ProgramH
         </div>
         {v.status === 'present' && (
           <div className="grid">
-            <TextField label="Arrived at" type="time" value={v.arrived} onChange={(x) => setV({ ...v, arrived: x })} error={errors.arrived} help={day.arrives ? `Expected ${formatTime(day.arrives)}` : undefined} />
+            <TextField label="Arrived at" type="time" value={v.arrived} onChange={(x) => setV({ ...v, arrived: x })} error={errors.arrived} />
             <TextField label="Left at" type="time" value={v.left} onChange={(x) => setV({ ...v, left: x })} error={errors.left} help="Leave empty if not yet" />
           </div>
         )}

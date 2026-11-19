@@ -56,12 +56,11 @@ export function dueDayText(day: number, periodMonths: number): string {
   return `Due on the ${ordinal(day)}${day > 28 ? ' (last day in shorter months)' : ''}`
 }
 
+/** The days a child comes for a program (no fixed times). */
 export interface ScheduleVersion {
   id: string
   effectiveFrom: string
   days: number
-  arrives: string
-  leaves: string
 }
 
 export interface FeeVersion {
@@ -102,8 +101,6 @@ export interface ProgramDefaults {
   code: ProgramCode
   name: string
   days: number
-  arrives: string
-  leaves: string
   /** The standard fee most recently agreed for this program, to pre-fill the form. */
   lastStandardPaise: number | null
 }

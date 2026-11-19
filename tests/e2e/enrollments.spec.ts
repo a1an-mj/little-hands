@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { _electron as electron, expect, test, type ElectronApplication, type Page } from '@playwright/test'
 
-// Programs, timings and fees, in the order the owner would meet them.
+// Programs, days and fees, in the order the owner would meet them.
 const userData = mkdtempSync(join(tmpdir(), 'little-hands-e2e-enrollments-'))
 let app: ElectronApplication
 let page: Page
@@ -38,7 +38,7 @@ const dialog = () => page.getByRole('dialog')
 const lkg = () => page.getByTestId('program-lk')
 const tuition = () => page.getByTestId('program-tu')
 
-test('admission: LKG and Tuition, each with its own timings and fee', async () => {
+test('admission: LKG and Tuition, each with its own days and fee', async () => {
   await page.getByRole('navigation', { name: 'Main menu' }).getByRole('button', { name: 'Students' }).click()
   await page.getByRole('button', { name: 'New admission' }).click()
   await field('Full name').fill('Aadhya Menon')
@@ -48,8 +48,8 @@ test('admission: LKG and Tuition, each with its own timings and fee', async () =
   await field('Emergency phone').fill('90000 00016')
 
   await page.getByRole('checkbox', { name: /LKG/ }).click()
-  await expect(field('LKG arrives')).toHaveValue('08:45')
-  await expect(field('LKG leaves')).toHaveValue('12:30')
+  await expect(field('LKG arrives')).toHaveCount(0) // no fixed times (owner)
+  await expect(field('LKG leaves')).toHaveCount(0)
   await expect(field('LKG starts on')).toHaveValue(iso(joined))
   await expect(field('LKG pays every')).toHaveValue('1') // Monthly
   await expect(field('LKG due on day')).toHaveValue('1') // follows the start date…
@@ -61,7 +61,6 @@ test('admission: LKG and Tuition, each with its own timings and fee', async () =
 
   await page.getByRole('checkbox', { name: /Tuition/ }).click()
   await expect(page.getByRole('group', { name: 'Tuition days' }).getByRole('button', { pressed: true })).toHaveText(['Mon', 'Wed', 'Fri'])
-  await field('Tuition arrives').fill('16:30')
   await field('Tuition standard fee (₹)').fill('1,000')
   await field('Tuition concession (₹)').fill('200')
   await field('Tuition due on day').fill('10') // …until the owner sets it
@@ -80,12 +79,12 @@ test('admission: LKG and Tuition, each with its own timings and fee', async () =
   await page.getByRole('button', { name: 'Save student' }).click()
 
   await expect(page.getByRole('heading', { level: 1, name: 'Aadhya Menon' })).toBeVisible()
-  await expect(lkg()).toContainText('Mon–Fri · 8:45 AM – 12:30 PM')
+  await expect(lkg()).toContainText('Mon–Fri')
   await expect(lkg()).toContainText('₹1,500 / month')
   await expect(lkg()).toContainText(`No concession · since ${show(joined)}`)
   await expect(lkg()).toContainText('Due on the 1st')
   await expect(tuition()).toContainText('Due on the 10th')
-  await expect(tuition()).toContainText('Mon, Wed, Fri · 4:30 – 5:30 PM')
+  await expect(tuition()).toContainText('Mon, Wed, Fri')
   await expect(tuition()).toContainText('₹800 / month')
   await expect(tuition()).toContainText('₹1,000 − ₹200 concession (Sibling)')
 })
@@ -115,12 +114,13 @@ test('a fee rise from next month keeps the current fee until then', async () => 
   await expect(lkg()).toContainText(`From ${show(nextMonth)}: ₹1,800 / month`)
 })
 
-test('fixing a mistake corrects the timings in place', async () => {
+test('fixing a mistake corrects the days in place', async () => {
   await page.getByRole('button', { name: 'Edit Tuition' }).click()
   await dialog().getByRole('radio', { name: /Fix a mistake/ }).check()
-  await dialog().getByLabel('Tuition leaves').fill('18:00')
+  await dialog().getByRole('group', { name: 'Tuition days' }).getByRole('button', { name: 'Fri' }).click()
   await dialog().getByRole('button', { name: 'Save' }).click()
-  await expect(tuition()).toContainText('Mon, Wed, Fri · 4:30 – 6:00 PM')
+  await expect(tuition()).toContainText('Mon, Wed')
+  await expect(tuition()).not.toContainText('Fri')
   await expect(tuition()).not.toContainText('From ')
 })
 

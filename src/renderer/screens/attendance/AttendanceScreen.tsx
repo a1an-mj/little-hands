@@ -3,7 +3,6 @@ import { type SessionView } from '@shared/attendance'
 import { formatDate, formatDayLong } from '@shared/dates'
 import { PROGRAM_CODES, PROGRAM_NAME, type ProgramCode } from '@shared/enrollments'
 import type { Theme } from '@shared/ipc-contract'
-import { formatTimeRange } from '@shared/schedule'
 import { Avatar } from '../../components/Avatar'
 import { AttendanceIcon, CheckIcon, SearchIcon } from '../../components/icons'
 import { useSnackbar } from '../../components/Snackbar'
@@ -186,7 +185,7 @@ export function AttendanceScreen({ theme, onToggleTheme, navigate }: Props) {
             {shown.map((s) => {
               const m = markFor(s)
               const saved = marks[s.enrollmentId] === undefined || marks[s.enrollmentId] === markOf(s)
-              const tag = saved ? statusTag(s.state, s.arrives, { isToday: day!.date === day!.today, now: day!.now }) : null
+              const tag = saved ? statusTag(s.state, { isToday: day!.date === day!.today }) : null
               return (
                 <div key={s.enrollmentId} className="arow" data-testid="att-row">
                   <span style={{ flex: '2 1 240px', display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }}>
@@ -198,7 +197,7 @@ export function AttendanceScreen({ theme, onToggleTheme, navigate }: Props) {
                   </span>
                   <span style={{ flex: '1 1 200px', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                     <ProgramTag code={s.program} />
-                    <span className="small muted">{s.arrives && s.leaves ? formatTimeRange(s.arrives, s.leaves) : 'Not a usual day'}</span>
+                    {!s.expected && <span className="small muted">Not a usual day</span>}
                   </span>
                   <span className="seg" role="group" aria-label={`Attendance for ${s.studentName}, ${PROGRAM_NAME[s.program]}`}>
                     <button type="button" className="segb yes" aria-pressed={m === 'present'} onClick={() => set(s, 'present')}>

@@ -139,7 +139,7 @@ export function EditDetailsDialog(props: {
             <AlertIcon />
             <span>
               {openPrograms.map((e) => PROGRAM_NAME[e.program]).join(' and ')} will end today. You can change the last day afterwards
-              under "Programs, timings &amp; fees".
+              under "Programs, days &amp; fees".
             </span>
           </div>
         )}

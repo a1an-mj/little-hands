@@ -263,7 +263,7 @@ export function AdmissionForm({ theme, onToggleTheme, navigate }: Props) {
           <TextField label="Home address" multiline name="homeAddress" value={f.homeAddress} onChange={(v) => set('homeAddress', v)} error={err('homeAddress')} />
         </section>
 
-        {/* ---------- Programs, timings & fees ---------- */}
+        {/* ---------- Programs, days & fees ---------- */}
         <ProgramsSection
           f={f}
           setF={setF}
@@ -474,7 +474,7 @@ function SiblingPicker({ onClose, onPick }: { onClose: () => void; onPick: (s: {
   )
 }
 
-// ---------- Programs, timings & fees ----------
+// ---------- Programs, days & fees ----------
 
 function ProgramsSection(props: {
   f: FormState
@@ -512,10 +512,10 @@ function ProgramsSection(props: {
     <section aria-labelledby="s3" className="card in" style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 28, animationDelay: '180ms' }}>
       <div>
         <h2 id="s3" className="h-md">
-          Programs, timings &amp; fees *
+          Programs, days &amp; fees *
         </h2>
         <p className="muted" style={{ margin: '4px 0 0' }}>
-          Tick every program the child joins. Each one keeps its own timings and agreed fee.
+          Tick every program the child joins. Each one keeps its own days and agreed fee.
         </p>
       </div>
       {errors.programs && (

@@ -17,8 +17,6 @@ import { TextField } from '../../components/TextField'
 export interface ProgramForm {
   startDate: string
   days: number
-  arrives: string
-  leaves: string
   /** 1 = monthly, 3 = every 3 months, 0 = one-time. */
   periodMonths: number
   /** Day of the month, as typed. */
@@ -41,8 +39,6 @@ export function formFromDefaults(d: ProgramDefaults, startDate: string): Program
   return {
     startDate,
     days: d.days,
-    arrives: d.arrives,
-    leaves: d.leaves,
     periodMonths: 1,
     dueDay: dayOf(startDate),
     standard: d.lastStandardPaise === null ? '' : rupeesInput(d.lastStandardPaise),
@@ -52,15 +48,13 @@ export function formFromDefaults(d: ProgramDefaults, startDate: string): Program
   }
 }
 
-/** The latest timings and fee of an existing program, ready to edit. */
+/** The latest days and fee of an existing program, ready to edit. */
 export function formFromEnrollment(e: EnrollmentView): ProgramForm {
   const s = e.schedules.at(-1)!
   const f = e.fees.at(-1)!
   return {
     startDate: e.startDate,
     days: s.days,
-    arrives: s.arrives,
-    leaves: s.leaves,
     periodMonths: f.periodMonths,
     dueDay: String(f.dueDay),
     standard: rupeesInput(f.standardPaise),
@@ -82,7 +76,7 @@ export const feeInput = (f: ProgramForm): FeeInput => ({
 export const enrollmentInput = (program: ProgramCode, f: ProgramForm): EnrollmentInput => ({
   program,
   startDate: f.startDate,
-  schedule: { days: f.days, arrives: f.arrives, leaves: f.leaves },
+  schedule: { days: f.days },
   fee: feeInput(f)
 })
 
@@ -106,14 +100,14 @@ interface Props {
   program: ProgramCode
   value: ProgramForm
   onChange: (patch: Partial<ProgramForm>) => void
-  /** Errors keyed like the schema: "startDate", "schedule.leaves", "fee.standard"… */
+  /** Errors keyed like the schema: "startDate", "schedule.days", "fee.standard"… */
   errors: Record<string, string | undefined>
   startLabel?: string
   showStart?: boolean
   showRemarks?: boolean
 }
 
-/** Days, timings, start date and fee for one program (design: AddStudent.html, "Programs, timings & fees"). */
+/** Days, start date and fee for one program (design: AddStudent.html, "Programs, days & fees"). */
 export function ProgramFields({ program, value: f, onChange: change, errors, startLabel = 'Starts on', showStart = true, showRemarks }: Props) {
   const name = PROGRAM_NAME[program]
   const onChange = (patch: Partial<ProgramForm>) =>
@@ -145,8 +139,6 @@ export function ProgramFields({ program, value: f, onChange: change, errors, sta
       </div>
 
       <div className="grid">
-        <TextField label={`${name} arrives`} type="time" value={f.arrives} onChange={(v) => onChange({ arrives: v })} error={errors['schedule.arrives']} />
-        <TextField label={`${name} leaves`} type="time" value={f.leaves} onChange={(v) => onChange({ leaves: v })} error={errors['schedule.leaves']} />
         {showStart && (
           <TextField label={`${name} ${startLabel.toLowerCase()}`} type="date" value={f.startDate} onChange={(v) => onChange({ startDate: v })} error={errors.startDate} />
         )}

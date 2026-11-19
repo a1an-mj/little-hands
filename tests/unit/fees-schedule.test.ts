@@ -4,7 +4,7 @@ import { weekdayOf } from '@shared/dates'
 import { shownVersions, versionOn } from '@shared/effective'
 import { dueDayText, enrollmentState, feeWithPeriod, monthlyTotalPaise, ordinal, perText } from '@shared/enrollments'
 import { formatRupees, parseRupees, rupeesInput } from '@shared/money'
-import { expectedOn, formatDays, formatTime, formatTimeRange, toggleDay } from '@shared/schedule'
+import { expectedOn, formatDays, formatTime, toggleDay } from '@shared/schedule'
 import { enrollmentEditSchema, feeInputSchema, scheduleInputSchema } from '@shared/schemas'
 
 describe('money', () => {
@@ -76,7 +76,7 @@ describe('fee agreements', () => {
   })
 })
 
-describe('timings', () => {
+describe('days and times', () => {
   it('describes days in plain words', () => {
     expect(formatDays(31)).toBe('Mon–Fri')
     expect(formatDays(21)).toBe('Mon, Wed, Fri')
@@ -90,8 +90,6 @@ describe('timings', () => {
     expect(formatTime('08:45')).toBe('8:45 AM')
     expect(formatTime('12:30')).toBe('12:30 PM')
     expect(formatTime('00:15')).toBe('12:15 AM')
-    expect(formatTimeRange('08:45', '12:30')).toBe('8:45 AM – 12:30 PM')
-    expect(formatTimeRange('16:00', '17:30')).toBe('4:00 – 5:30 PM')
   })
 
   it('knows which dates a child is expected', () => {
@@ -101,11 +99,9 @@ describe('timings', () => {
     expect(expectedOn(31, '2026-11-08')).toBe(false) // Sunday
   })
 
-  it('needs at least one day and leaving after arriving', () => {
-    expect(scheduleInputSchema.safeParse({ days: 0, arrives: '09:00', leaves: '12:00' }).success).toBe(false)
-    expect(scheduleInputSchema.safeParse({ days: 1, arrives: '12:00', leaves: '09:00' }).success).toBe(false)
-    expect(scheduleInputSchema.safeParse({ days: 1, arrives: '9:00', leaves: '12:00' }).success).toBe(false)
-    expect(scheduleInputSchema.safeParse({ days: 1, arrives: '09:00', leaves: '12:00' }).success).toBe(true)
+  it('needs at least one day, and no times (owner: no fixed times)', () => {
+    expect(scheduleInputSchema.safeParse({ days: 0 }).success).toBe(false)
+    expect(scheduleInputSchema.safeParse({ days: 21 }).success).toBe(true)
   })
 })
 
@@ -146,7 +142,7 @@ describe('academic year (June–May until confirmed)', () => {
 describe('editing a program', () => {
   const base = {
     startDate: '2026-06-01',
-    schedule: { days: 31, arrives: '08:45', leaves: '12:30' },
+    schedule: { days: 31 },
     fee: { periodMonths: 1, dueDay: '10', standard: '1500', concession: '', concessionReason: '', remarks: '' }
   } as const
   it('needs a start date for a change, but not for a fix', () => {

@@ -4,11 +4,8 @@ import { join } from 'node:path'
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
   dayCounts,
-  durationText,
   inOutText,
-  minutesLate,
   replay,
-  waitingNote,
   type AttendanceEvent,
   type SessionView
 } from '@shared/attendance'
@@ -58,22 +55,6 @@ describe('replaying a day', () => {
   })
 })
 
-describe('late notes', () => {
-  it('minutes late and how they read', () => {
-    expect(minutesLate('08:45', '08:50')).toBe(5)
-    expect(minutesLate('08:45', '08:40')).toBe(0)
-    expect(durationText(5)).toBe('5 min')
-    expect(durationText(90)).toBe('1 hr 30 min')
-    expect(durationText(120)).toBe('2 hr')
-  })
-
-  it('still to come, soon, or late', () => {
-    expect(waitingNote('16:00', '10:15')).toEqual({ kind: 'later' })
-    expect(waitingNote('09:30', '09:00')).toEqual({ kind: 'soon' })
-    expect(waitingNote('08:45', '10:15')).toEqual({ kind: 'late', mins: 90 })
-  })
-})
-
 describe('day counts (per child)', () => {
   const s = (studentId: string, status: 'none' | 'in' | 'out' | 'absent'): SessionView => ({
     enrollmentId: studentId + status,
@@ -81,8 +62,7 @@ describe('day counts (per child)', () => {
     studentName: studentId,
     studentCode: '',
     program: 'lk',
-    arrives: '08:45',
-    leaves: '12:30',
+    expected: true,
     state: { status, arrived: null, left: null, note: '', lastEventId: null }
   })
 
@@ -118,7 +98,7 @@ beforeEach(() => {
   repo = new AttendanceRepo(w)
 })
 
-const tuition = lkgEnrollment({ program: 'tu', schedule: { days: 21, arrives: '16:00', leaves: '17:30' } })
+const tuition = lkgEnrollment({ program: 'tu', schedule: { days: 21 } })
 const admit = (overrides: Partial<AdmissionInput> = {}) => students.admit(admissionSchema.parse(newFamilyAdmission(overrides)), null)
 const sessionsOf = (date: string) => repo.day(date).sessions
 const enrollmentOf = (studentId: string, code: string) => students.profile(studentId)!.enrollments.find((e) => e.program === code)!.id
@@ -129,20 +109,25 @@ const at = (h: number, m: number) => {
 describe('who is expected', () => {
   it('uses each program’s days: LKG Mon–Fri, Tuition Mon/Wed/Fri', () => {
     const id = admit({ programs: [lkgEnrollment(), tuition] })
-    expect(sessionsOf('2026-11-02').map((s) => [s.program, s.arrives])).toEqual([
-      ['lk', '08:45'],
-      ['tu', '16:00']
+    expect(sessionsOf('2026-11-02').map((s) => [s.program, s.expected])).toEqual([
+      ['lk', true],
+      ['tu', true]
     ])
     expect(sessionsOf('2026-11-03').map((s) => s.program)).toEqual(['lk']) // Tuesday
     expect(sessionsOf('2026-11-01')).toEqual([]) // Sunday
     expect(sessionsOf('2026-11-02')[0]!.studentId).toBe(id)
   })
 
-  it('sorted by expected arrival, then name', () => {
-    admit({ fullName: 'Zara', programs: [lkgEnrollment()] })
+  it('sorted by name, then program', () => {
+    admit({ fullName: 'Zara', programs: [lkgEnrollment(), tuition] })
     admit({ fullName: 'Anna', family: { ...newFamilyAdmission().family, father: { name: 'X', phone: '90000 00099' } } as never, programs: [tuition] })
     admit({ fullName: 'Bala', family: { ...newFamilyAdmission().family, father: { name: 'Y', phone: '90000 00098' } } as never, programs: [lkgEnrollment()] })
-    expect(sessionsOf('2026-11-02').map((s) => s.studentName)).toEqual(['Bala', 'Zara', 'Anna'])
+    expect(sessionsOf('2026-11-02').map((s) => [s.studentName, s.program])).toEqual([
+      ['Anna', 'tu'],
+      ['Bala', 'lk'],
+      ['Zara', 'lk'],
+      ['Zara', 'tu']
+    ])
   })
 
   it('not before the start date or after the last day', () => {
@@ -153,18 +138,19 @@ describe('who is expected', () => {
     expect(sessionsOf('2026-11-05')).toEqual([])
   })
 
-  it('uses the timings in force that day', () => {
+  it('uses the days in force that day', () => {
     const id = admit()
     const e = students.profile(id)!.enrollments[0]!
     students.enrollments.edit(e.id, {
       mode: 'change',
       from: '2026-11-03',
       startDate: e.startDate,
-      schedule: { days: 31, arrives: '09:00', leaves: '12:30' },
+      schedule: { days: 21 }, // Mon, Wed, Fri from Tue 3 Nov
       fee: { periodMonths: 1, dueDay: '3', standard: '1500', concession: '', concessionReason: '', remarks: '' }
     })
-    expect(sessionsOf('2026-11-02')[0]!.arrives).toBe('08:45')
-    expect(sessionsOf('2026-11-03')[0]!.arrives).toBe('09:00')
+    expect(sessionsOf('2026-11-02')).toHaveLength(1) // Monday
+    expect(sessionsOf('2026-11-03')).toHaveLength(0) // Tuesday: no longer one of the days
+    expect(sessionsOf('2026-11-04')).toHaveLength(1) // Wednesday
   })
 })
 
@@ -245,7 +231,7 @@ describe('setting a day (attendance screen and corrections)', () => {
   it('a child marked on a day they were not expected still shows that day', () => {
     const id = admit({ programs: [tuition] })
     repo.setDay(enrollmentOf(id, 'tu'), '2026-10-27', { status: 'present', arrived: '16:05' }) // a Tuesday
-    expect(repo.day('2026-10-27').sessions).toMatchObject([{ program: 'tu', arrives: null, state: { arrived: '16:05' } }])
+    expect(repo.day('2026-10-27').sessions).toMatchObject([{ program: 'tu', expected: false, state: { arrived: '16:05' } }])
   })
 })
 
@@ -313,17 +299,14 @@ describe('Nursery and Daycare', () => {
     expect(['pg', 'nu', 'lk', 'uk', 'dc', 'tu'].filter((c) => isKindergarten(c as never))).toEqual(['pg', 'nu', 'lk', 'uk'])
   })
 
-  it('a child can be in Nursery and Daycare, each with their own times', () => {
+  it('a child can be in Nursery and Daycare, each with their own days', () => {
     const id = admit({
       programs: [
-        lkgEnrollment({ program: 'nu', schedule: { days: 31, arrives: '09:30', leaves: '12:30' } }),
-        lkgEnrollment({ program: 'dc', schedule: { days: 21, arrives: '12:30', leaves: '17:00' } })
+        lkgEnrollment({ program: 'nu', schedule: { days: 31 } }),
+        lkgEnrollment({ program: 'dc', schedule: { days: 21 } })
       ]
     })
-    expect(sessionsOf('2026-11-02').map((s) => [s.program, s.arrives])).toEqual([
-      ['nu', '09:30'],
-      ['dc', '12:30']
-    ])
+    expect(sessionsOf('2026-11-02').map((s) => s.program)).toEqual(['nu', 'dc'])
     expect(repo.summary().byProgram).toMatchObject({ nu: 1, dc: 1 })
     expect(students.profile(id)!.enrollments.map((e) => e.program)).toEqual(['nu', 'dc'])
   })

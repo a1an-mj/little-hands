@@ -79,13 +79,10 @@ const newFamily = z
 
 export const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Choose a time')
 
-export const scheduleInputSchema = z
-  .object({
-    days: z.number().int().min(1, 'Choose at least one day').max(127),
-    arrives: timeSchema,
-    leaves: timeSchema
-  })
-  .refine((s) => s.leaves > s.arrives, { path: ['leaves'], message: 'Must be after the arrival time' })
+/** The days a child comes for a program. There are no fixed times (owner, Nov 2026). */
+export const scheduleInputSchema = z.object({
+  days: z.number().int().min(1, 'Choose at least one day').max(127)
+})
 
 /** Rupees as typed ("1,500") → paise. Empty is 0 unless the amount is required. */
 const rupees = (required: boolean) =>

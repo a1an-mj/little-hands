@@ -13,7 +13,7 @@ import {
   type ScheduleVersion
 } from '@shared/enrollments'
 import { formatRupees } from '@shared/money'
-import { formatDays, formatTimeRange } from '@shared/schedule'
+import { formatDays } from '@shared/schedule'
 import { endEnrollmentSchema, enrollmentEditSchema, enrollmentInputSchema, type EndEnrollmentInput } from '@shared/schemas'
 import type { StudentProfile } from '@shared/students'
 import { ConfirmDialog, Dialog } from '../../components/Dialog'
@@ -37,7 +37,7 @@ export type ProgramDialog =
   | { kind: 'edit'; enrollment: EnrollmentView }
   | { kind: 'end'; enrollment: EnrollmentView }
 
-const timingsText = (s: ScheduleVersion) => `${formatDays(s.days)} · ${formatTimeRange(s.arrives, s.leaves)}`
+const daysText = (s: ScheduleVersion) => formatDays(s.days)
 const feeText = (f: FeeVersion) => feeWithPeriod(formatRupees(f.agreedPaise), f.periodMonths)
 
 function concessionText(f: FeeVersion): string {
@@ -57,7 +57,7 @@ export function ProgramsCard({ p, onOpen, onResume }: { p: StudentProfile; onOpe
     <section aria-labelledby="enr-h" className="card in" style={{ animationDelay: '180ms', display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <h2 id="enr-h" className="h-md">
-          Programs, timings &amp; fees
+          Programs, days &amp; fees
         </h2>
         {canAdd && (
           <button type="button" className="btn tonal" onClick={() => onOpen({ kind: 'add' })}>
@@ -90,8 +90,8 @@ export function ProgramsCard({ p, onOpen, onResume }: { p: StudentProfile; onOpe
             </div>
             <div className="enr-grid">
               <div>
-                <div className="small muted">Timings</div>
-                <div className="t-lg">{timingsText(s.current)}</div>
+                <div className="small muted">Days</div>
+                <div className="t-lg">{daysText(s.current)}</div>
               </div>
               <div>
                 <div className="small muted">Agreed fee</div>
@@ -107,7 +107,7 @@ export function ProgramsCard({ p, onOpen, onResume }: { p: StudentProfile; onOpe
               <div className="next small">
                 {s.next && (
                   <div>
-                    From {formatDate(s.next.effectiveFrom)}: {timingsText(s.next)}
+                    From {formatDate(s.next.effectiveFrom)}: {daysText(s.next)}
                   </div>
                 )}
                 {f.next && (
@@ -219,7 +219,7 @@ export function AddProgramDialog({ p, onClose, onDone }: { p: StudentProfile; on
   )
 }
 
-// ---------- Edit timings / fee ----------
+// ---------- Edit days / fee ----------
 
 export function EditProgramDialog(props: {
   enrollment: EnrollmentView
@@ -244,7 +244,7 @@ export function EditProgramDialog(props: {
         title={`Remove ${name}?`}
         message={
           <>
-            Only do this if {name} was added by mistake. Its timings and fees disappear from the profile. When a child stops coming,
+            Only do this if {name} was added by mistake. Its days and fees disappear from the profile. When a child stops coming,
             use <strong>End program</strong> instead, so the history is kept.
           </>
         }
@@ -265,7 +265,7 @@ export function EditProgramDialog(props: {
 
   const input = {
     startDate: form.startDate,
-    schedule: { days: form.days, arrives: form.arrives, leaves: form.leaves },
+    schedule: { days: form.days },
     fee: feeInput(form),
     mode,
     from
@@ -295,7 +295,7 @@ export function EditProgramDialog(props: {
 
         <fieldset style={{ border: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <legend className="t-lg" style={{ padding: 0, marginBottom: 8 }}>
-            Changes to timings or fee
+            Changes to days or fee
           </legend>
           <label className="choice">
             <input type="radio" name="mode" checked={mode === 'change'} onChange={() => setMode('change')} />
@@ -303,7 +303,7 @@ export function EditProgramDialog(props: {
               <span className="t-lg" style={{ display: 'block' }}>
                 A change from a date
               </span>
-              <span className="small muted">The old timings and fee stay for the days before it.</span>
+              <span className="small muted">The old days and fee stay for the days before it.</span>
             </span>
           </label>
           {mode === 'change' && (
@@ -374,7 +374,7 @@ export function EndProgramDialog({ enrollment: e, onClose, onDone }: { enrollmen
         }}
       >
         <p className="muted" style={{ margin: 0 }}>
-          The timings and fees stay in the history. To move up a class (e.g. LKG → UKG), end this one and then add the new class.
+          The days and fees stay in the history. To move up a class (e.g. LKG → UKG), end this one and then add the new class.
         </p>
         <div className="grid">
           <TextField label="Last day" required type="date" value={v.endDate} onChange={(x) => setV({ ...v, endDate: x })} error={errors.endDate} />

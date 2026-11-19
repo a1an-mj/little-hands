@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { dayCounts, type SessionView } from '@shared/attendance'
 import { PROGRAM_CODES, PROGRAM_NAME } from '@shared/enrollments'
 import type { Theme } from '@shared/ipc-contract'
-import { formatTimeRange, formatTime } from '@shared/schedule'
+import { formatTime } from '@shared/schedule'
 import { Avatar } from '../../components/Avatar'
 import { AddPersonIcon, CheckIcon, FeesIcon, SearchIcon } from '../../components/icons'
 import { useSnackbar } from '../../components/Snackbar'
@@ -11,7 +11,7 @@ import { call, messageOf, useLoad } from '../../lib/api'
 import { formatDate } from '../../lib/format'
 import type { Navigate } from '../../shell/routes'
 import { ProgramTag } from '../students/ProgramFields'
-import { CloseDayDialog, ClosedBanner, isLater, statusTag } from '../attendance/parts'
+import { CloseDayDialog, ClosedBanner, statusTag } from '../attendance/parts'
 
 interface Props {
   theme: Theme
@@ -187,7 +187,7 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
           {!day?.closed && (
             <ul className="plain" aria-label="Arrivals">
               {shown.map((s) => (
-                <ArrivalRow key={s.enrollmentId} s={s} now={day!.now} onTap={(k) => void tap(s, k)} onOpen={() => navigate({ name: 'student', id: s.studentId })} />
+                <ArrivalRow key={s.enrollmentId} s={s} onTap={(k) => void tap(s, k)} onOpen={() => navigate({ name: 'student', id: s.studentId })} />
               ))}
             </ul>
           )}
@@ -283,9 +283,9 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
   )
 }
 
-function ArrivalRow({ s, now, onTap, onOpen }: { s: SessionView; now: string; onTap: (k: 'arrived' | 'left' | 'absent') => void; onOpen: () => void }) {
+function ArrivalRow({ s, onTap, onOpen }: { s: SessionView; onTap: (k: 'arrived' | 'left' | 'absent') => void; onOpen: () => void }) {
   const who = `${s.studentName}, ${PROGRAM_NAME[s.program]}`
-  const tag = statusTag(s.state, s.arrives, { isToday: true, now })
+  const tag = statusTag(s.state, { isToday: true })
   return (
     <li className="row arrival" data-testid="arrival">
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: '2 1 200px', minWidth: 0 }}>
@@ -294,16 +294,13 @@ function ArrivalRow({ s, now, onTap, onOpen }: { s: SessionView; now: string; on
           <button type="button" className="linkish t-lg" onClick={onOpen}>
             {s.studentName}
           </button>
-          <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
             <ProgramTag code={s.program} />
+            {!s.expected && <span className="small muted">Not a usual day</span>}
           </div>
         </div>
       </div>
-      <div style={{ flex: '1 1 130px' }}>
-        <div className="small muted">Expected</div>
-        <div>{s.arrives && s.leaves ? formatTimeRange(s.arrives, s.leaves) : 'Not a usual day'}</div>
-      </div>
-      <div style={{ flex: '1 1 120px' }}>
+      <div style={{ flex: '1 1 140px' }}>
         <span className={`${tag.cls} pop`}>{tag.text}</span>
       </div>
       <div className="arrival-actions">
@@ -313,7 +310,7 @@ function ArrivalRow({ s, now, onTap, onOpen }: { s: SessionView; now: string; on
             Arrived
           </button>
         )}
-        {s.state.status === 'none' && !isLater(s.state, s.arrives, now) && (
+        {s.state.status === 'none' && (
           <button type="button" className="btn outlined pop" aria-label={`Absent: ${who}`} onClick={() => onTap('absent')}>
             Absent
           </button>

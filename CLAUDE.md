@@ -11,8 +11,8 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
 - English only.
 - Programs: kindergarten classes Playgroup → Nursery → LKG → UKG (a child is usually in one), plus
   Daycare (not schooling) and Tuition, which can be taken alongside a class. Each enrollment has its
-  own days, arrival/departure times and fee agreement; Daycare times vary per child (no fixed
-  morning/evening sessions).
+  own days (e.g. Mon–Fri) and fee agreement. There are no fixed arrival/leaving times and nobody
+  is "late": attendance records only the actual times (schedules.arrives/leaves are legacy, unused).
 - Fees are agreed per child at admission: each program has its own fee, payment period
   ("pays every" N months, or one-time) and due day of the month. The period choices are the
   FEE_PERIODS list in `src/shared/enrollments.ts`; the owner will confirm the final list.
@@ -52,7 +52,6 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
 
 ## Still to confirm with the owner
 - How a Daycare month is waived during a long absence (default: the owner waives that month by hand).
-- Whether each program keeps its **days** (Mon–Fri…) once times are removed (proposed: keep days).
 
 ## Tech stack (agreed)
 - Electron (desktop shell) + React + TypeScript, bundled with Vite.
