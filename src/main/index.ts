@@ -12,6 +12,8 @@ import { registerStudentsIpc } from './ipc/students'
 import { registerEnrollmentsIpc } from './ipc/enrollments'
 import { registerAttendanceIpc } from './ipc/attendance'
 import { AttendanceRepo } from './attendance/repo'
+import { registerPaymentsIpc } from './ipc/payments'
+import { PaymentsRepo } from './payments/repo'
 import { Writer } from './db/writer'
 import { StudentsRepo } from './students/repo'
 
@@ -91,6 +93,7 @@ app.whenReady().then(() => {
   registerStudentsIpc(students, session)
   registerEnrollmentsIpc(students.enrollments, session)
   registerAttendanceIpc(new AttendanceRepo(writer), session)
+  registerPaymentsIpc(new PaymentsRepo(writer), session)
 
   // Lock when the laptop sleeps or Windows locks the screen.
   powerMonitor.on('suspend', () => session.lock())

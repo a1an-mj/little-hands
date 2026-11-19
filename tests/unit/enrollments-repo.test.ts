@@ -58,9 +58,10 @@ const edit = (id: string, patch: Partial<EnrollmentEditInput>): EnrollmentEditIn
 }
 
 describe('programs', () => {
-  it('has the six programs with fixed IDs and default days', () => {
+  it('has the programs and extras with fixed IDs and default days', () => {
     const d = repo.defaults()
-    expect(d.map((p) => p.name)).toEqual(['Playgroup', 'Nursery', 'LKG', 'UKG', 'Daycare', 'Tuition'])
+    expect(d.map((p) => p.name)).toEqual(['Playgroup', 'Nursery', 'LKG', 'UKG', 'Daycare', 'Tuition', 'Karate', 'Dance', 'Transport'])
+    expect(d.find((p) => p.code === 'tr')).toMatchObject({ days: 0 }) // extras: no days
     expect(d.find((p) => p.code === 'nu')).toMatchObject({ days: 31 })
     expect(d.find((p) => p.code === 'tu')).toMatchObject({ days: 21, lastStandardPaise: null })
     expect(db.prepare("SELECT id FROM programs WHERE code = 'lk'").pluck().get()).toBe('5a0e6b1c-3f4d-4c2a-9b7e-1d2c3a4b5c02')

@@ -14,6 +14,9 @@ export type SyncedTable =
   | 'fee_agreements'
   | 'attendance_events'
   | 'closed_days'
+  | 'charges'
+  | 'fee_waivers'
+  | 'payments'
 
 type Row = Record<string, unknown>
 
@@ -69,10 +72,10 @@ export class Writer {
   }
 
   /**
-   * Adds a row to an append-only event table (attendance). No change-history entry: the events
-   * themselves are the history, and they are never updated.
+   * Adds a row to an append-only event table (attendance, payments). No change-history entry: the
+   * events themselves are the history, and they are never updated.
    */
-  append(table: 'attendance_events', values: Row): string {
+  append(table: 'attendance_events' | 'payments', values: Row): string {
     const id = randomUUID()
     const now = this.now()
     const row: Row = { id, ...values, created_at: now, updated_at: now, device_id: this.deviceId }

@@ -5,6 +5,14 @@
 /** Month the academic year starts (1 = January). */
 export const ACADEMIC_YEAR_START_MONTH: number = 6
 
+/** The first day of the academic year `iso` falls in: "2027-03-10" → "2026-06-01". */
+export function academicYearStart(iso: string): string {
+  const y = Number(iso.slice(0, 4))
+  const m = Number(iso.slice(5, 7))
+  const start = m >= ACADEMIC_YEAR_START_MONTH ? y : y - 1
+  return `${start}-${String(ACADEMIC_YEAR_START_MONTH).padStart(2, '0')}-01`
+}
+
 /** "2026-11-02" → "2026–27"; "2027-03-10" → "2026–27". */
 export function academicYearOf(iso: string): string {
   const y = Number(iso.slice(0, 4))

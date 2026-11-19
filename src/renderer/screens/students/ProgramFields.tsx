@@ -1,6 +1,7 @@
 import {
   FEE_PERIODS,
   PROGRAM_NAME,
+  isExtra,
   isKnownPeriod,
   perText as periodText,
   type EnrollmentView,
@@ -50,11 +51,11 @@ export function formFromDefaults(d: ProgramDefaults, startDate: string): Program
 
 /** The latest days and fee of an existing program, ready to edit. */
 export function formFromEnrollment(e: EnrollmentView): ProgramForm {
-  const s = e.schedules.at(-1)!
+  const s = e.schedules.at(-1) // none for extras
   const f = e.fees.at(-1)!
   return {
     startDate: e.startDate,
-    days: s.days,
+    days: s?.days ?? 0,
     periodMonths: f.periodMonths,
     dueDay: String(f.dueDay),
     standard: rupeesInput(f.standardPaise),
@@ -76,7 +77,7 @@ export const feeInput = (f: ProgramForm): FeeInput => ({
 export const enrollmentInput = (program: ProgramCode, f: ProgramForm): EnrollmentInput => ({
   program,
   startDate: f.startDate,
-  schedule: { days: f.days },
+  schedule: isExtra(program) ? undefined : { days: f.days },
   fee: feeInput(f)
 })
 
@@ -116,27 +117,29 @@ export function ProgramFields({ program, value: f, onChange: change, errors, sta
   const hasConcession = (parseRupees(f.concession) ?? 0) > 0 || f.concessionReason !== ''
   return (
     <div className="pbody">
-      <div role="group" aria-label={`${name} days`} data-error={errors['schedule.days'] ? 'true' : undefined} tabIndex={-1}>
-        <div className="small muted" style={{ marginBottom: 8 }}>
-          Days
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {DAY_LABELS.slice(0, SCHOOL_DAYS).map((label, i) => {
-            const on = hasDay(f.days, i)
-            return (
-              <button key={label} type="button" className="chip" aria-pressed={on} onClick={() => onChange({ days: toggleDay(f.days, i) })}>
-                {on && <CheckIcon />}
-                {label}
-              </button>
-            )
-          })}
-        </div>
-        {errors['schedule.days'] && (
-          <div className="field-error" role="alert" style={{ marginTop: 6 }}>
-            {errors['schedule.days']}
+      {!isExtra(program) && (
+        <div role="group" aria-label={`${name} days`} data-error={errors['schedule.days'] ? 'true' : undefined} tabIndex={-1}>
+          <div className="small muted" style={{ marginBottom: 8 }}>
+            Days
           </div>
-        )}
-      </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {DAY_LABELS.slice(0, SCHOOL_DAYS).map((label, i) => {
+              const on = hasDay(f.days, i)
+              return (
+                <button key={label} type="button" className="chip" aria-pressed={on} onClick={() => onChange({ days: toggleDay(f.days, i) })}>
+                  {on && <CheckIcon />}
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+          {errors['schedule.days'] && (
+            <div className="field-error" role="alert" style={{ marginTop: 6 }}>
+              {errors['schedule.days']}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid">
         {showStart && (

@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { PROGRAM_CODES, isKindergarten, monthlyTotalPaise, type ProgramCode, type ProgramDefaults } from '@shared/enrollments'
+import { Fragment, useMemo, useState } from 'react'
+import { PROGRAM_CODES, isExtra, isKindergarten, monthlyTotalPaise, type ProgramCode, type ProgramDefaults } from '@shared/enrollments'
 import type { Theme } from '@shared/ipc-contract'
 import { formatRupees } from '@shared/money'
 import { formatPhone } from '@shared/phone'
@@ -54,6 +54,8 @@ interface FormState {
   sibling: Sibling | null
   /** Filled in the first time a program is ticked; kept (but not sent) if it's unticked again. */
   programs: Partial<Record<ProgramCode, { on: boolean; form: ProgramForm }>>
+  /** One-time admission fee in rupees, as typed. */
+  admissionFee: string
 }
 
 const blank = (): FormState => ({
@@ -68,7 +70,8 @@ const blank = (): FormState => ({
   extra: [],
   feeContact: 'father',
   sibling: null,
-  programs: {}
+  programs: {},
+  admissionFee: ''
 })
 
 const tickedPrograms = (f: FormState) => PROGRAM_CODES.filter((c) => f.programs[c]?.on)
@@ -83,7 +86,8 @@ function toInput(f: FormState): AdmissionInput {
     family: f.sibling
       ? { kind: 'sibling', siblingId: f.sibling.id }
       : { kind: 'new', father: f.father, mother: f.mother, emergency: f.emergency, extra: f.extra, feeContact: f.feeContact },
-    programs: tickedPrograms(f).map((c) => enrollmentInput(c, f.programs[c]!.form))
+    programs: tickedPrograms(f).map((c) => enrollmentInput(c, f.programs[c]!.form)),
+    admissionFee: f.admissionFee
   }
 }
 
@@ -530,31 +534,55 @@ function ProgramsSection(props: {
         </div>
       )}
       {!defaults && <div className="muted">Loading programs…</div>}
-      {defaults?.map((d) => {
+      {defaults?.map((d, i) => {
         const p = f.programs[d.code]
         const on = !!p?.on
+        const firstExtra = isExtra(d.code) && !isExtra(defaults[i - 1]?.code ?? 'pg')
         return (
-          <div key={d.code} className={on ? 'prog on' : 'prog'}>
-            <button type="button" className="phead" role="checkbox" aria-checked={on} onClick={() => toggle(d)}>
-              <span className="cbox">{on && <CheckIcon />}</span>
-              <ProgramTag code={d.code} large />
-              <span className="muted" style={{ flex: 1 }}>
-                {isKindergarten(d.code)
-                  ? 'Kindergarten class'
-                  : d.code === 'dc'
-                    ? 'Not schooling · can be added with a class'
-                    : 'Can be added with a kindergarten class'}
-              </span>
-              {on && (
-                <span className="t-lg pop" style={{ color: 'var(--p)' }}>
-                  {agreedText(p.form)} {perText(p.form)}
+          <Fragment key={d.code}>
+            {firstExtra && (
+              <h3 className="t-lg" style={{ margin: '8px 0 0' }}>
+                Extras <span className="muted small">· a fee only, no days or attendance</span>
+              </h3>
+            )}
+            <div className={on ? 'prog on' : 'prog'}>
+              <button type="button" className="phead" role="checkbox" aria-checked={on} onClick={() => toggle(d)}>
+                <span className="cbox">{on && <CheckIcon />}</span>
+                <ProgramTag code={d.code} large />
+                <span className="muted" style={{ flex: 1 }}>
+                  {isKindergarten(d.code)
+                    ? 'Kindergarten class'
+                    : d.code === 'dc'
+                      ? 'Not schooling · can be added with a class'
+                      : isExtra(d.code)
+                        ? 'Extra'
+                        : 'Can be added with a kindergarten class'}
                 </span>
-              )}
-            </button>
-            {on && <ProgramFields program={d.code} value={p.form} onChange={(patch) => change(d.code, patch)} errors={errorsFor(d.code)} />}
-          </div>
+                {on && (
+                  <span className="t-lg pop" style={{ color: 'var(--p)' }}>
+                    {agreedText(p.form)} {perText(p.form)}
+                  </span>
+                )}
+              </button>
+              {on && <ProgramFields program={d.code} value={p.form} onChange={(patch) => change(d.code, patch)} errors={errorsFor(d.code)} />}
+            </div>
+          </Fragment>
         )
       })}
+      <div style={{ maxWidth: 320, marginTop: 8 }}>
+        <TextField
+          label="Admission fee (₹)"
+          inputMode="decimal"
+          value={f.admissionFee}
+          onChange={(v) => {
+            clearErrors('admissionFee')
+            setF((s) => ({ ...s, admissionFee: v }))
+          }}
+          error={errors.admissionFee}
+          placeholder="0"
+          help="One-time, paid before joining. Leave empty if none."
+        />
+      </div>
     </section>
   )
 }

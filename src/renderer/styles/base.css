@@ -239,7 +239,7 @@ button{font-family:inherit}
    ====================================================================== */
 
 /* Program colours (Playgroup coral, Nursery green, LKG yellow, UKG blue, Daycare rose, Tuition violet) */
-.pg{background:var(--pgc);color:var(--pgo)}.lk{background:var(--lkc);color:var(--lko)}.uk{background:var(--ukc);color:var(--uko)}.tu{background:var(--tuc);color:var(--tuo)}.nu{background:var(--nuc);color:var(--nuo)}.dc{background:var(--dcc);color:var(--dco)}
+.pg{background:var(--pgc);color:var(--pgo)}.lk{background:var(--lkc);color:var(--lko)}.uk{background:var(--ukc);color:var(--uko)}.tu{background:var(--tuc);color:var(--tuo)}.nu{background:var(--nuc);color:var(--nuo)}.dc{background:var(--dcc);color:var(--dco)}.ka,.da,.tr{background:var(--c3);color:var(--os);box-shadow:inset 0 0 0 1px var(--olv)}
 
 /* Program cards on the admission form */
 .prog{border:1px solid var(--olv);border-radius:20px;overflow:hidden}
@@ -300,3 +300,33 @@ button{font-family:inherit}
 @media (max-width:720px){.arrival-actions{flex:1 1 100%;justify-content:flex-start}}
 .closed-banner{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:16px 20px;border-radius:16px;background:var(--tc);color:var(--otc)}
 .closed-banner .btn.textb{color:inherit}
+
+/* ---------------------------------------------------------------
+   Step 4: payments (design: Payment.html, Profile.html fees tab).
+   --------------------------------------------------------------- */
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.opts.three{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.opt{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:1px solid var(--olv);background:transparent;color:var(--os);text-align:left;font:inherit;cursor:pointer;width:100%;box-sizing:border-box}
+.opt::after{content:"";position:absolute;inset:0;background:currentColor;opacity:0;transition:opacity .2s var(--ease);pointer-events:none}
+.opt:hover::after{opacity:.08}.opt:active::after{opacity:.12}
+.opt:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+.opt[aria-pressed="true"]{border:2px solid var(--p);padding:13px 15px;background:color-mix(in srgb,var(--p) 8%,transparent)}
+.opts[data-error="true"] .opt{border-color:var(--e)}
+.radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--osv);box-sizing:border-box;display:flex;align-items:center;justify-content:center;flex:none}
+.opt[aria-pressed="true"] .radio{border-color:var(--p)}
+.radio i{width:10px;height:10px;border-radius:50%;background:var(--p)}
+.who{display:flex;align-items:center;gap:16px;padding:12px 8px 12px 16px;border-radius:16px;background:var(--c3)}
+.sumcard{flex:2 1 300px;min-width:0;display:flex;flex-direction:column;gap:14px;position:sticky;top:16px}
+.sumline{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.sumline.total{border-top:1px solid var(--olv);padding-top:12px}
+.big{font-size:45px;line-height:52px;font-weight:400}
+.ftable{width:100%;border-collapse:collapse}
+.ftable th{font-size:12px;line-height:16px;font-weight:500;color:var(--osv);text-align:left;padding:8px}
+.ftable td{padding:10px 8px;border-top:1px solid var(--olv);vertical-align:middle}
+.ftable td.rt,.ftable th.rt{text-align:right;white-space:nowrap}
+.ftable tr.reversed td{color:var(--osv)}
+.ftable tr.reversed .amt{text-decoration:line-through}
+.stat-owe{background:var(--ec);color:var(--oec)}
+.owe-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px 0}
+.owe-row.compact{cursor:pointer}
+.fees-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:16px;align-items:start}

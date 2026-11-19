@@ -214,6 +214,17 @@ export class StudentsRepo {
       }
       if (photo) this.w.insert('student_photos', { student_id: studentId, image: photo, mime: 'image/jpeg' })
       for (const p of a.programs) this.enrollments.insert(studentId, p)
+      // One-time admission fee, due on the joining date (owner: paid before joining).
+      if (a.admissionFee) {
+        this.w.insert('charges', {
+          student_id: studentId,
+          kind: 'admission',
+          label: 'Admission fee',
+          amount_paise: a.admissionFee,
+          due_date: a.joiningDate,
+          reason: ''
+        })
+      }
       return studentId
     })
   }
@@ -317,7 +328,9 @@ export class StudentsRepo {
   remove(id: string): void {
     this.w.transaction(() => {
       this.requireStudent(id)
-      // From step 4: refuse if the student has any payment.
+      if (this.db.prepare('SELECT 1 FROM payments WHERE student_id = ? AND deleted_at IS NULL').get(id)) {
+        throw new UserError('Payments are recorded for this child, so they can\'t be removed. Mark them Inactive instead.')
+      }
       for (const link of this.guardians(id)) this.w.softDelete('student_guardians', link.linkId)
       this.enrollments.removeAllForStudent(id)
       this.w.softDelete('students', id)

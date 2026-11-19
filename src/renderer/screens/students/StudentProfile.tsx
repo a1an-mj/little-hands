@@ -3,12 +3,13 @@ import type { Theme } from '@shared/ipc-contract'
 import { formatPhone } from '@shared/phone'
 import { STATUS_LABEL, type GuardianLink, type StudentNote, type StudentProfile as Profile } from '@shared/students'
 import { Avatar } from '../../components/Avatar'
-import { BackIcon, CameraIcon, CopyIcon, EditIcon } from '../../components/icons'
+import { BackIcon, CameraIcon, CopyIcon, EditIcon, FeesIcon } from '../../components/icons'
 import { useSnackbar } from '../../components/Snackbar'
 import { ThemeSwitch } from '../../components/ThemeSwitch'
 import { call, messageOf, useLoad } from '../../lib/api'
 import { formatDateLong } from '../../lib/format'
-import type { Navigate } from '../../shell/routes'
+import type { Navigate, ProfileTab } from '../../shell/routes'
+import { FeesTab } from './FeesTab'
 import { EditDetailsDialog, GuardianDialog, NoteDialog } from './ProfileDialogs'
 import { AddProgramDialog, EditProgramDialog, EndProgramDialog, ProgramsCard, type ProgramDialog } from './EnrollmentDialogs'
 import { ProgramTag } from './ProgramFields'
@@ -21,9 +22,10 @@ interface Props {
   onToggleTheme: () => void
   id: string
   navigate: Navigate
+  tab?: ProfileTab
 }
 
-type Tab = 'overview' | 'fees' | 'att' | 'notes'
+type Tab = ProfileTab
 const TABS: [Tab, string][] = [
   ['overview', 'Overview'],
   ['fees', 'Fees & payments'],
@@ -39,9 +41,9 @@ type Open =
   | { kind: 'day'; program: ProgramHistory; day: HistoryDay }
   | null
 
-export function StudentProfile({ theme, onToggleTheme, id, navigate }: Props) {
+export function StudentProfile({ theme, onToggleTheme, id, navigate, tab: initialTab }: Props) {
   const snack = useSnackbar()
-  const [tab, setTab] = useState<Tab>('overview')
+  const [tab, setTab] = useState<Tab>(initialTab ?? 'overview')
   const [open, setOpen] = useState<Open>(null)
   const { data: p, error, reload: reloadProfile } = useLoad(() => window.lh.students.profile(id), [id])
   const { data: history, reload: reloadHistory } = useLoad(() => window.lh.attendance.history(id), [id])
@@ -150,6 +152,10 @@ export function StudentProfile({ theme, onToggleTheme, id, navigate }: Props) {
             <EditIcon />
             Edit
           </button>
+          <button type="button" className="btn filled" onClick={() => navigate({ name: 'pay', studentId: id })}>
+            <FeesIcon />
+            Record payment
+          </button>
         </div>
       </section>
 
@@ -177,7 +183,7 @@ export function StudentProfile({ theme, onToggleTheme, id, navigate }: Props) {
         </div>
       )}
 
-      {tab === 'fees' && <Soon step={4} text="Month-by-month fees and the full payment history for this child will appear here." />}
+      {tab === 'fees' && <FeesTab studentId={id} onPay={(target) => navigate({ name: 'pay', studentId: id, target })} />}
       {tab === 'att' && history && (
         <AttendanceHistory history={history} onEdit={(program, day) => setOpen({ kind: 'day', program, day })} />
       )}
@@ -285,15 +291,6 @@ function Guardians(props: {
           <EditIcon size={20} />
         </button>
       </div>
-    </section>
-  )
-}
-
-function Soon({ step, text }: { step: number; text: string }) {
-  return (
-    <section className="card soon-card in">
-      <span className="step-chip">Coming in step {step}</span>
-      <p className="muted" style={{ margin: 0 }}>{text}</p>
     </section>
   )
 }

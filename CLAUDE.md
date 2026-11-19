@@ -23,6 +23,13 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
   append-only events with 'void' rows for corrections (`attendance_events`).
 - Receipts: NOT in version 1 (planned later).
 - Payments are append-only. Never edit or delete a saved payment; corrections are reversal entries.
+- What is owed is **worked out, not stored** (`src/shared/periods.ts`): periods come from the fee
+  agreements (first period due on the start date, then every N months on the due day). Stored are
+  only `payments` (PAY-0001…, one child + one period or charge each, `recorded_by` name),
+  `charges` (admission fee, late fine, other) and `fee_waivers` ("don't charge this period").
+  Partial payments are allowed; paying more than the balance is refused. Start date, due day and
+  period length can't be changed under paid periods.
+- Extras (Karate, Dance, Transport) are programs of kind `extra`: a fee only, no days, no attendance.
 - Dashboard shows today's arrivals first, then fees to follow up.
 - Cloud: version 1 has encrypted cloud BACKUPS only (see Backups). No multi-device sync yet,
   but the data model must be sync-ready (see Data model rules).

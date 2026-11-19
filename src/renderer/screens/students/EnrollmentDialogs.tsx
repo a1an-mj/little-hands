@@ -3,6 +3,7 @@ import { academicYearOf } from '@shared/academic-year'
 import { shownVersions } from '@shared/effective'
 import {
   PROGRAM_NAME,
+  isExtra,
   isKindergarten,
   ordinal,
   dueDayText,
@@ -73,7 +74,7 @@ export function ProgramsCard({ p, onOpen, onResume }: { p: StudentProfile; onOpe
       )}
 
       {open.map((e) => {
-        const s = shownVersions(e.schedules, today)
+        const s = e.schedules.length ? shownVersions(e.schedules, today) : null // extras have no days
         const f = shownVersions(e.fees, today)
         const name = PROGRAM_NAME[e.program]
         return (
@@ -89,10 +90,12 @@ export function ProgramsCard({ p, onOpen, onResume }: { p: StudentProfile; onOpe
               </button>
             </div>
             <div className="enr-grid">
-              <div>
-                <div className="small muted">Days</div>
-                <div className="t-lg">{daysText(s.current)}</div>
-              </div>
+              {s && (
+                <div>
+                  <div className="small muted">Days</div>
+                  <div className="t-lg">{daysText(s.current)}</div>
+                </div>
+              )}
               <div>
                 <div className="small muted">Agreed fee</div>
                 <div className="t-lg">{feeText(f.current)}</div>
@@ -103,9 +106,9 @@ export function ProgramsCard({ p, onOpen, onResume }: { p: StudentProfile; onOpe
                 {f.current.remarks && <div className="small muted">{f.current.remarks}</div>}
               </div>
             </div>
-            {(s.next || f.next) && (
+            {(s?.next || f.next) && (
               <div className="next small">
-                {s.next && (
+                {s?.next && (
                   <div>
                     From {formatDate(s.next.effectiveFrom)}: {daysText(s.next)}
                   </div>
@@ -265,7 +268,7 @@ export function EditProgramDialog(props: {
 
   const input = {
     startDate: form.startDate,
-    schedule: { days: form.days },
+    schedule: isExtra(e.program) ? undefined : { days: form.days },
     fee: feeInput(form),
     mode,
     from

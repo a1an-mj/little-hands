@@ -1,7 +1,10 @@
 // Types shared by the programs / enrollments module (main process ⇄ UI).
 
-/** Menu order: the kindergarten classes by age, then Daycare and Tuition (taken alongside a class). */
-export const PROGRAM_CODES = ['pg', 'nu', 'lk', 'uk', 'dc', 'tu'] as const
+/**
+ * Menu order: the kindergarten classes by age, then Daycare and Tuition (taken alongside a class),
+ * then the extras (karate, dance, transport: a fee only, no days and no attendance).
+ */
+export const PROGRAM_CODES = ['pg', 'nu', 'lk', 'uk', 'dc', 'tu', 'ka', 'da', 'tr'] as const
 export type ProgramCode = (typeof PROGRAM_CODES)[number]
 
 export const PROGRAM_NAME: Record<ProgramCode, string> = {
@@ -10,12 +13,22 @@ export const PROGRAM_NAME: Record<ProgramCode, string> = {
   lk: 'LKG',
   uk: 'UKG',
   dc: 'Daycare',
-  tu: 'Tuition'
+  tu: 'Tuition',
+  ka: 'Karate',
+  da: 'Dance',
+  tr: 'Transport'
 }
 
 /** The school classes; a child is usually in only one. Daycare (not schooling) and Tuition are add-ons. */
 export const KINDERGARTEN_CODES: readonly ProgramCode[] = ['pg', 'nu', 'lk', 'uk']
 export const isKindergarten = (code: ProgramCode) => KINDERGARTEN_CODES.includes(code)
+
+/** Extras: only a fee (no days, no attendance). */
+export const EXTRA_CODES: readonly ProgramCode[] = ['ka', 'da', 'tr']
+export const isExtra = (code: ProgramCode) => EXTRA_CODES.includes(code)
+
+/** Programs a child comes to on given days, and whose attendance is marked. */
+export const ATTENDED_CODES = PROGRAM_CODES.filter((c) => !EXTRA_CODES.includes(c))
 
 /**
  * How often a child pays, chosen per child at admission. `months` is what the app calculates with
@@ -91,7 +104,7 @@ export interface EnrollmentView {
   endDate: string | null
   endReason: string
   state: EnrollmentState
-  /** Oldest first. Never empty. */
+  /** Oldest first. Never empty, except for extras (no days). */
   schedules: ScheduleVersion[]
   /** Oldest first. Never empty. */
   fees: FeeVersion[]

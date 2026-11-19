@@ -3,11 +3,16 @@
 
 import type { DashboardSummary, DayView, ProgramHistory } from './attendance'
 import type { ProgramDefaults } from './enrollments'
+import type { FeesOverview, MonthReport, StudentFees } from './payments'
 import type {
   AdmissionInput,
   AttendanceDayInput,
   AttendanceTap,
+  ChargeInput,
   CloseDayInput,
+  PaymentInput,
+  ReversalInput,
+  WaiverInput,
   EndEnrollmentInput,
   EnrollmentEditInput,
   EnrollmentInput,
@@ -80,6 +85,28 @@ export interface AttendanceApi {
 
 export const ATTENDANCE_METHODS = ['day', 'history', 'summary', 'tap', 'undo', 'setDay', 'setMany', 'closeDay', 'reopenDay'] as const satisfies readonly (keyof AttendanceApi)[]
 
+/** Payments (append-only), charges and waivers. Same rules as StudentsApi. */
+export interface PaymentsApi {
+  /** A child's periods, charges and payment history. */
+  forStudent(studentId: string): Promise<Result<StudentFees>>
+  /** This month's money and everyone who owes (dashboard, Fees screen). */
+  overview(): Promise<Result<FeesOverview>>
+  /** "YYYY-MM" */
+  monthReport(month: string): Promise<Result<MonthReport>>
+  /** Names that recorded payments before ("Recorded by"). */
+  recorders(): Promise<Result<string[]>>
+  record(input: PaymentInput): Promise<Result<{ id: string; no: string }>>
+  reverse(paymentId: string, input: ReversalInput): Promise<Result<{ id: string; no: string }>>
+  addCharge(studentId: string, input: ChargeInput): Promise<Result<string>>
+  cancelCharge(chargeId: string): Promise<Result>
+  waive(enrollmentId: string, periodStart: string, input: WaiverInput): Promise<Result>
+  unwaive(enrollmentId: string, periodStart: string): Promise<Result>
+}
+
+export const PAYMENTS_METHODS = [
+  'forStudent', 'overview', 'monthReport', 'recorders', 'record', 'reverse', 'addCharge', 'cancelCharge', 'waive', 'unwaive'
+] as const satisfies readonly (keyof PaymentsApi)[]
+
 export type LockStatus =
   | { state: 'needs-setup' }
   | { state: 'locked'; triesLeft: number; waitUntil: number | null }
@@ -118,6 +145,7 @@ export interface LhApi {
   students: StudentsApi
   enrollments: EnrollmentsApi
   attendance: AttendanceApi
+  payments: PaymentsApi
 }
 
 export const IPC = {

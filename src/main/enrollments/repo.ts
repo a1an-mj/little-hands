@@ -1,8 +1,9 @@
 import type Database from 'better-sqlite3'
-import { formatDate } from '@shared/dates'
+import { addDays, formatDate } from '@shared/dates'
 import {
   PROGRAM_NAME,
   enrollmentState,
+  isExtra,
   type EnrollmentView,
   type FeeVersion,
   type ProgramCode,
@@ -86,13 +87,13 @@ export class EnrollmentsRepo {
       .all() as {
       code: ProgramCode
       name: string
-      default_days: number
+      default_days: number | null
       last_std: number | null
     }[]
     return rows.map((r) => ({
       code: r.code,
       name: r.name,
-      days: r.default_days,
+      days: r.default_days ?? 0,
       lastStandardPaise: r.last_std
     }))
   }
@@ -201,7 +202,10 @@ export class EnrollmentsRepo {
       end_date: null,
       end_reason: ''
     })
-    this.w.insert('schedules', { enrollment_id: id, effective_from: e.startDate, ...scheduleColumns(e.schedule) })
+    if (!isExtra(e.program)) {
+      if (!e.schedule) throw new UserError('Choose at least one day')
+      this.w.insert('schedules', { enrollment_id: id, effective_from: e.startDate, ...scheduleColumns(e.schedule) })
+    }
     this.w.insert('fee_agreements', { enrollment_id: id, effective_from: e.startDate, ...feeColumns(e.fee) })
     return id
   }
@@ -217,18 +221,33 @@ export class EnrollmentsRepo {
         throw new UserError('This program has ended. Choose "Continue" first if the child is coming back.')
       }
 
+      // Payments are tied to periods; changing when periods start would leave them unmatched.
+      const lastFeeNow = this.fees(enrollmentId).at(-1)!
+      const cadenceChanged = lastFeeNow.periodMonths !== e.fee.periodMonths || lastFeeNow.dueDay !== e.fee.dueDay
+      const paidFrom = e.mode === 'fix' ? lastFeeNow.effectiveFrom : e.from
+      if (e.startDate !== row.start_date && this.hasPayments(enrollmentId)) {
+        throw new UserError("Payments are already recorded for this program, so its start date can't be changed.")
+      }
+      if (cadenceChanged && this.hasPayments(enrollmentId, paidFrom)) {
+        throw new UserError(
+          'Payments are already recorded for these periods. To change how often or the due day, use "A change from a date" starting after the last paid period.'
+        )
+      }
+
       if (e.startDate !== row.start_date) this.moveStart(row, e.startDate)
       const start = e.startDate
 
       const schedules = this.schedules(enrollmentId)
       const fees = this.fees(enrollmentId)
-      const lastSchedule = schedules.at(-1)!
+      // Extras have no days: only the fee can change.
+      const lastSchedule = isExtra(row.code) ? undefined : schedules.at(-1)
+      if (lastSchedule && !e.schedule) throw new UserError('Choose at least one day')
       const lastFee = fees.at(-1)!
-      const scheduleChanged = !sameSchedule(lastSchedule, e.schedule)
+      const scheduleChanged = !!lastSchedule && !!e.schedule && !sameSchedule(lastSchedule, e.schedule)
       const feeChanged = !sameFee(lastFee, e.fee)
 
       if (e.mode === 'fix') {
-        if (scheduleChanged) this.w.update('schedules', lastSchedule.id, scheduleColumns(e.schedule))
+        if (scheduleChanged) this.w.update('schedules', lastSchedule!.id, scheduleColumns(e.schedule!))
         if (feeChanged) this.w.update('fee_agreements', lastFee.id, feeColumns(e.fee))
         return
       }
@@ -238,7 +257,7 @@ export class EnrollmentsRepo {
       if (row.end_date && from > row.end_date) {
         throw new UserError(`The change can't start after the program ends (${formatDate(row.end_date)}).`)
       }
-      if (scheduleChanged) this.applyChange('schedules', enrollmentId, lastSchedule, from, scheduleColumns(e.schedule), 'timings')
+      if (scheduleChanged) this.applyChange('schedules', enrollmentId, lastSchedule!, from, scheduleColumns(e.schedule!), 'days')
       if (feeChanged) this.applyChange('fee_agreements', enrollmentId, lastFee, from, feeColumns(e.fee), 'fee')
     })
   }
@@ -270,6 +289,7 @@ export class EnrollmentsRepo {
     if (start < joining) throw new UserError(`The start date can't be before the joining date (${formatDate(joining)}).`)
     for (const table of ['schedules', 'fee_agreements'] as const) {
       const versions = table === 'schedules' ? this.schedules(row.id) : this.fees(row.id)
+      if (versions.length === 0) continue // extras have no days
       const second = versions[1]
       if (second && start >= second.effectiveFrom) {
         throw new UserError(
@@ -297,6 +317,9 @@ export class EnrollmentsRepo {
       if (e.endDate < row.start_date) {
         throw new UserError(`The last day can't be before the program started (${formatDate(row.start_date)}).`)
       }
+      if (this.hasPayments(enrollmentId, addDays(e.endDate, 1))) {
+        throw new UserError('A period after that day is already paid. Choose a later last day, or reverse that payment first.')
+      }
       this.w.update('enrollments', enrollmentId, { end_date: e.endDate, end_reason: e.reason })
     })
   }
@@ -323,7 +346,9 @@ export class EnrollmentsRepo {
   remove(enrollmentId: string): void {
     this.w.transaction(() => {
       this.require(enrollmentId)
-      // From step 4: refuse if any payment was recorded against this program.
+      if (this.hasPayments(enrollmentId)) {
+        throw new UserError('Payments are recorded for this program, so it can\'t be removed. End it instead.')
+      }
       this.softDeleteWithVersions(enrollmentId)
     })
   }
@@ -359,6 +384,18 @@ export class EnrollmentsRepo {
       .pluck()
       .all(studentId) as string[]
     for (const id of ids) this.softDeleteWithVersions(id)
+  }
+
+  /** Any payment (net, not reversed) for this program, optionally only for periods starting on/after `from`. */
+  private hasPayments(enrollmentId: string, from = '0000-00-00'): boolean {
+    const net = this.db
+      .prepare(
+        `SELECT coalesce(sum(amount_paise), 0) FROM payments
+         WHERE enrollment_id = ? AND period_start >= ? AND deleted_at IS NULL`
+      )
+      .pluck()
+      .get(enrollmentId, from) as number
+    return net > 0
   }
 
   private require(enrollmentId: string): EnrollmentRow {

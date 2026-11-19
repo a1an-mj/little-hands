@@ -6,7 +6,7 @@ interface Props {
   onChange: (value: string) => void
   error?: string
   help?: ReactNode
-  type?: 'text' | 'tel' | 'date' | 'time'
+  type?: 'text' | 'tel' | 'date' | 'time' | 'datetime-local' | 'month'
   /** Shows a number keypad on touch screens, e.g. 'decimal' for money. */
   inputMode?: 'decimal' | 'numeric'
   multiline?: boolean
@@ -17,6 +17,8 @@ interface Props {
   autoFocus?: boolean
   name?: string
   max?: string
+  /** Suggestions shown while typing (names used before…). */
+  suggestions?: string[]
 }
 
 /** Outlined text field from the designs. Shows the error under the field when there is one. */
@@ -44,7 +46,24 @@ export function TextField(p: Props) {
       {p.multiline ? (
         <textarea rows={p.rows ?? 2} {...common} />
       ) : (
-        <input type={p.type ?? 'text'} max={p.max} inputMode={p.inputMode} autoComplete="off" spellCheck={p.type === 'text' || !p.type} {...common} />
+        <>
+          <input
+            type={p.type ?? 'text'}
+            max={p.max}
+            inputMode={p.inputMode}
+            autoComplete="off"
+            spellCheck={p.type === 'text' || !p.type}
+            list={p.suggestions?.length ? `${helpId}-list` : undefined}
+            {...common}
+          />
+          {p.suggestions?.length ? (
+            <datalist id={`${helpId}-list`}>
+              {p.suggestions.map((s) => (
+                <option key={s} value={s} />
+              ))}
+            </datalist>
+          ) : null}
+        </>
       )}
       {(p.error || p.help) && (
         <span className="help" id={helpId} role={p.error ? 'alert' : undefined}>

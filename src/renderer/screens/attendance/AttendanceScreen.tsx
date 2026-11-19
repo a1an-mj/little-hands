@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { type SessionView } from '@shared/attendance'
 import { formatDate, formatDayLong } from '@shared/dates'
-import { PROGRAM_CODES, PROGRAM_NAME, type ProgramCode } from '@shared/enrollments'
+import { ATTENDED_CODES, PROGRAM_NAME, type ProgramCode } from '@shared/enrollments'
 import type { Theme } from '@shared/ipc-contract'
 import { Avatar } from '../../components/Avatar'
 import { AttendanceIcon, CheckIcon, SearchIcon } from '../../components/icons'
@@ -118,7 +118,7 @@ export function AttendanceScreen({ theme, onToggleTheme, navigate }: Props) {
           />
         </div>
         <div role="group" aria-label="Program" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {(['all', ...PROGRAM_CODES] as const).map((c) => (
+          {(['all', ...ATTENDED_CODES] as const).map((c) => (
             <button key={c} type="button" className="chip" aria-pressed={program === c} onClick={() => setProgram(c)}>
               {program === c && <CheckIcon />}
               {c === 'all' ? 'All programs' : PROGRAM_NAME[c]}

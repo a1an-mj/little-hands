@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { normalizePhone } from './phone'
-import { PROGRAM_CODES, isKnownPeriod } from './enrollments'
+import { PROGRAM_CODES, isExtra, isKnownPeriod } from './enrollments'
 import { parseRupees } from './money'
 import { STUDENT_STATUSES } from './students'
 
@@ -125,12 +125,17 @@ export const feeInputSchema = z
 export type FeeInput = z.input<typeof feeInputSchema>
 export type Fee = z.output<typeof feeInputSchema>
 
-export const enrollmentInputSchema = z.object({
-  program: z.enum(PROGRAM_CODES),
-  startDate: isoDateSchema,
-  schedule: scheduleInputSchema,
-  fee: feeInputSchema
-})
+export const enrollmentInputSchema = z
+  .object({
+    program: z.enum(PROGRAM_CODES),
+    startDate: isoDateSchema,
+    /** The days the child comes. Not used for extras (karate, dance, transport). */
+    schedule: scheduleInputSchema.optional(),
+    fee: feeInputSchema
+  })
+  .superRefine((e, ctx) => {
+    if (!isExtra(e.program) && !e.schedule) ctx.addIssue({ code: 'custom', path: ['schedule', 'days'], message: 'Choose at least one day' })
+  })
 export type EnrollmentInput = z.input<typeof enrollmentInputSchema>
 export type Enrollment = z.output<typeof enrollmentInputSchema>
 
@@ -141,7 +146,8 @@ export type Enrollment = z.output<typeof enrollmentInputSchema>
 export const enrollmentEditSchema = z
   .object({
     startDate: isoDateSchema,
-    schedule: scheduleInputSchema,
+    /** Left out for extras (no days). */
+    schedule: scheduleInputSchema.optional(),
     fee: feeInputSchema,
     mode: z.enum(['fix', 'change']),
     from: z.string()
@@ -170,7 +176,9 @@ export const admissionSchema = z.object({
   /** JPEG data URL from the photo picker, or null. */
   photo: z.string().max(2_000_000).nullable(),
   family: z.discriminatedUnion('kind', [newFamily, siblingFamily]),
-  programs: z.array(enrollmentInputSchema).min(1, 'Tick at least one program').max(PROGRAM_CODES.length)
+  programs: z.array(enrollmentInputSchema).min(1, 'Tick at least one program').max(PROGRAM_CODES.length),
+  /** One-time admission fee in rupees, paid before joining (owner). Empty = none. */
+  admissionFee: rupees(false).optional()
 }).superRefine((a, ctx) => {
   const seen = new Set<string>()
   a.programs.forEach((p, i) => {
@@ -258,3 +266,61 @@ export type CloseDayInput = z.input<typeof closeDaySchema>
 export const attendanceManySchema = z
   .array(z.object({ enrollmentId: idSchema, day: attendanceDaySchema }))
   .max(1000)
+
+// ---------- Payments ----------
+
+/** A positive amount in rupees, as typed. */
+const amount = (missing: string) =>
+  z.string().transform((s, ctx) => {
+    const paise = s.trim() ? parseRupees(s) : null
+    if (paise === null || paise <= 0) {
+      ctx.addIssue({ code: 'custom', message: s.trim() ? 'Enter an amount in rupees, e.g. 1500' : missing })
+      return z.NEVER
+    }
+    return paise
+  })
+
+export const PAYMENT_METHODS = ['cash', 'upi', 'bank'] as const
+
+/** What a payment is for: one period of a program, or one extra charge. */
+export const paymentTargetSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('period'), enrollmentId: idSchema, periodStart: isoDateSchema }),
+  z.object({ kind: z.literal('charge'), chargeId: idSchema })
+])
+export type PaymentTarget = z.infer<typeof paymentTargetSchema>
+
+export const paymentInputSchema = z.object({
+  studentId: idSchema,
+  target: paymentTargetSchema,
+  amount: amount('Enter the amount received'),
+  method: z.enum(PAYMENT_METHODS, { message: 'Choose how it was paid' }),
+  reference: text(40),
+  /** Local date and time, "YYYY-MM-DDTHH:MM". */
+  paidAt: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/, 'Choose the date and time')
+    .refine((s) => isoDateSchema.safeParse(s.slice(0, 10)).success, 'Choose a valid date'),
+  recordedBy: text(60).min(1, 'Choose who received the money'),
+  remarks: text(200)
+})
+export type PaymentInput = z.input<typeof paymentInputSchema>
+
+export const reversalSchema = z.object({
+  reason: text(200).min(1, 'Say why this payment is being reversed'),
+  recordedBy: text(60).min(1, 'Choose who is doing this')
+})
+export type ReversalInput = z.input<typeof reversalSchema>
+
+export const CHARGE_KINDS = ['admission', 'fine', 'other'] as const
+
+export const chargeInputSchema = z.object({
+  kind: z.enum(CHARGE_KINDS),
+  label: text(60).min(1, 'Say what the charge is for'),
+  amount: amount('Enter the amount'),
+  dueDate: isoDateSchema,
+  reason: text(200)
+})
+export type ChargeInput = z.input<typeof chargeInputSchema>
+
+export const waiverSchema = z.object({ reason: text(200).min(1, 'Say why this period is not charged') })
+export type WaiverInput = z.input<typeof waiverSchema>

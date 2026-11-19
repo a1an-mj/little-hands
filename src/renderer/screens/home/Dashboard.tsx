@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { dayCounts, type SessionView } from '@shared/attendance'
-import { PROGRAM_CODES, PROGRAM_NAME } from '@shared/enrollments'
+import { ATTENDED_CODES, PROGRAM_NAME } from '@shared/enrollments'
 import type { Theme } from '@shared/ipc-contract'
 import { formatTime } from '@shared/schedule'
+import { formatRupees } from '@shared/money'
+import { METHOD_LABEL } from '@shared/payments'
 import { Avatar } from '../../components/Avatar'
 import { AddPersonIcon, CheckIcon, FeesIcon, SearchIcon } from '../../components/icons'
 import { useSnackbar } from '../../components/Snackbar'
@@ -12,6 +14,7 @@ import { formatDate } from '../../lib/format'
 import type { Navigate } from '../../shell/routes'
 import { ProgramTag } from '../students/ProgramFields'
 import { CloseDayDialog, ClosedBanner, statusTag } from '../attendance/parts'
+import { OwedRow } from '../fees/FeesScreen'
 
 interface Props {
   theme: Theme
@@ -37,6 +40,8 @@ const PROGRAM_BAR: Record<string, string> = {
   tu: 'var(--tus)'
 }
 
+const monthOf = (iso: string) => new Intl.DateTimeFormat('en-IN', { month: 'long', timeZone: 'UTC' }).format(new Date(`${iso}T00:00:00Z`))
+
 /** Home: today's arrivals first, then the school at a glance (design: Main.html). Fees arrive in step 4. */
 export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
   const snack = useSnackbar()
@@ -45,6 +50,7 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
   const [closing, setClosing] = useState(false)
   const { data: day, error, reload } = useLoad(() => window.lh.attendance.day(), [])
   const { data: summary } = useLoad(() => window.lh.attendance.summary(), [])
+  const { data: fees } = useLoad(() => window.lh.payments.overview(), [])
 
   // Keep the "late" notes up to date while the dashboard is open.
   useEffect(() => {
@@ -84,13 +90,14 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
   }
 
   const now = day ? new Date(`${day.today}T${day.now}:00`) : new Date()
+  const monthName = monthOf(day?.today ?? new Date().toISOString().slice(0, 10))
   const sessions = day?.sessions ?? []
   const waiting = sessions.filter((s) => s.state.status === 'none')
   const arrivedList = sessions.filter((s) => s.state.status === 'in' || s.state.status === 'out')
   const shown = filter === 'not' ? waiting : filter === 'in' ? arrivedList : sessions
   const counts = dayCounts(sessions)
   const pct = counts.expected ? Math.round((counts.arrived / counts.expected) * 100) : 0
-  const maxProgram = summary ? Math.max(1, ...PROGRAM_CODES.map((c) => summary.byProgram[c])) : 1
+  const maxProgram = summary ? Math.max(1, ...ATTENDED_CODES.map((c) => summary.byProgram[c])) : 1
 
   return (
     <>
@@ -154,10 +161,22 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
             {summary ? `${summary.kgAndTuition} attend kindergarten + Tuition` : ' '}
           </div>
         </div>
-        <div className="card in stat soon-stat" style={{ animationDelay: '180ms' }}>
-          <span className="step-chip" style={{ alignSelf: 'flex-start' }}>Coming in step 4</span>
-          <div className="muted" style={{ fontWeight: 500 }}>Fees collected and outstanding</div>
-          <div className="small muted">This month's collection, and balances from earlier months.</div>
+        <div className="card in stat" style={{ animationDelay: '180ms' }} data-testid="collected-month">
+          <div className="muted" style={{ fontWeight: 500 }}>Collected in {monthName}</div>
+          <div className="num">{fees ? formatRupees(fees.collectedThisMonthPaise) : '—'}</div>
+          <div className="bar">
+            <i style={{ width: `${fees && fees.dueThisMonthPaise ? Math.min(100, Math.round((fees.collectedThisMonthPaise / fees.dueThisMonthPaise) * 100)) : 0}%` }} />
+          </div>
+          <div className="small muted">{fees ? `of ${formatRupees(fees.dueThisMonthPaise)} due this month` : ' '}</div>
+        </div>
+        <div className="card in stat stat-owe" style={{ animationDelay: '240ms' }} data-testid="outstanding-earlier">
+          <div style={{ fontWeight: 500 }}>Outstanding from earlier</div>
+          <div className="num">{fees ? formatRupees(fees.outstandingEarlierPaise) : '—'}</div>
+          <div className="small">
+            {fees && fees.outstandingStudents > 0
+              ? `${fees.outstandingStudents} ${fees.outstandingStudents === 1 ? 'student' : 'students'} · oldest from ${monthOf(fees.oldestDue!)}`
+              : 'Nothing from earlier months'}
+          </div>
         </div>
       </section>
 
@@ -228,17 +247,66 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
           )}
         </section>
 
-        <section className="card in soon-card" style={{ flex: '1 1 320px', minWidth: 0, animationDelay: '300ms' }} aria-labelledby="fee-h">
-          <span className="step-chip">Coming in step 4</span>
-          <h2 id="fee-h" className="h-md">Fees to follow up</h2>
-          <p className="muted" style={{ margin: 0 }}>Children with unpaid or partly paid fees, and recent payments, will appear here.</p>
+        <section className="card in" style={{ flex: '1 1 320px', minWidth: 0, animationDelay: '300ms' }} aria-labelledby="fee-h" data-testid="follow-up">
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 4 }}>
+            <h2 id="fee-h" className="h-md">Fees to follow up</h2>
+            <span className="muted">{fees ? formatRupees(fees.owed.reduce((s, x) => s + x.balancePaise, 0)) : ''}</span>
+          </div>
+          {fees && fees.owed.length === 0 && <p className="muted">Nobody owes anything today.</p>}
+          <ul className="plain">
+            {fees?.owed.slice(0, 5).map((x) => (
+              <OwedRow
+                key={`${x.studentId}|${x.forText}`}
+                x={x}
+                onOpen={() => navigate({ name: 'student', id: x.studentId, tab: 'fees' })}
+              />
+            ))}
+          </ul>
+          <div className="row" style={{ paddingTop: 12, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+            <button type="button" className="btn textb" onClick={() => navigate({ name: 'pay' })}>
+              Collect a payment
+            </button>
+            {fees && fees.owed.length > 5 && (
+              <button type="button" className="btn textb" onClick={() => navigate({ name: 'fees' })}>
+                See all {fees.owed.length}
+              </button>
+            )}
+          </div>
         </section>
       </div>
+
+      <section aria-labelledby="pay-h" className="card in" style={{ animationDelay: '330ms' }} data-testid="recent-payments">
+        <h2 id="pay-h" className="h-md" style={{ marginBottom: 12 }}>Recent payments</h2>
+        {fees && fees.recent.length === 0 && <p className="muted" style={{ margin: 0 }}>No payments yet.</p>}
+        <ul className="plain">
+          {fees?.recent.map((p) => (
+            <li key={p.id} className="row owe-row">
+              <div className="small muted" style={{ flex: '0 0 96px' }}>
+                {p.paidAt.slice(0, 10) === day?.today ? 'Today' : formatDate(p.paidAt.slice(0, 10))}
+                <br />
+                {formatTime(p.paidAt.slice(11))}
+              </div>
+              <div style={{ flex: '1 1 160px', minWidth: 0 }}>
+                <button type="button" className="linkish t-lg" onClick={() => navigate({ name: 'student', id: p.studentId, tab: 'fees' })}>
+                  {p.studentName}
+                </button>
+                <div className="small muted">
+                  {p.no} · {p.forText}
+                </div>
+              </div>
+              {p.kind === 'payment' && <span className="tag nt">{METHOD_LABEL[p.method]}</span>}
+              <div className="t-lg" style={{ flex: '0 0 100px', textAlign: 'right' }}>
+                {formatRupees(p.amountPaise)}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <div className="dash-row">
         <section aria-labelledby="cls-h" className="card in" style={{ flex: '2 1 300px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16, animationDelay: '360ms' }}>
           <h2 id="cls-h" className="h-md">Students by program</h2>
-          {PROGRAM_CODES.map((c) => (
+          {ATTENDED_CODES.map((c) => (
             <div key={c} data-testid={`by-program-${c}`}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                 <span>{PROGRAM_NAME[c]}</span>

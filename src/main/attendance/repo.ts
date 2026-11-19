@@ -120,7 +120,7 @@ export class AttendanceRepo {
       .prepare(
         `SELECT e.id, e.student_id, '' AS full_name, '' AS student_code, p.code, p.sort_order, e.start_date, e.end_date
          FROM enrollments e JOIN programs p ON p.id = e.program_id
-         WHERE e.student_id = ? AND e.deleted_at IS NULL AND e.start_date <= ?
+         WHERE e.student_id = ? AND e.deleted_at IS NULL AND e.start_date <= ? AND p.kind <> 'extra'
          ORDER BY (e.end_date IS NOT NULL AND e.end_date < ?), p.sort_order, e.start_date DESC`
       )
       .all(studentId, today, today) as EnrollmentRow[]

@@ -21,11 +21,14 @@ export function useSubmit() {
       setErrors(fieldErrors(parsed.error))
       return
     }
+    setErrors({})
     setBusy(true)
     try {
       await action()
     } catch (e) {
       snack(messageOf(e))
+    } finally {
+      // Dialogs close on success; forms that stay open (Record payment) can be used again.
       setBusy(false)
     }
   }
