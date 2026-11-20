@@ -2,9 +2,10 @@
 
 /**
  * Menu order: the kindergarten classes by age, then Daycare and Tuition (taken alongside a class),
- * then the extras (karate, dance, transport: a fee only, no days and no attendance).
+ * the summer-vacation programs (Preparatory class = vacation tuition, Summer camp), then the extras
+ * (karate, dance, transport: a fee only, no days and no attendance).
  */
-export const PROGRAM_CODES = ['pg', 'nu', 'lk', 'uk', 'dc', 'tu', 'ka', 'da', 'tr'] as const
+export const PROGRAM_CODES = ['pg', 'nu', 'lk', 'uk', 'dc', 'tu', 'pc', 'sm', 'ka', 'da', 'tr'] as const
 export type ProgramCode = (typeof PROGRAM_CODES)[number]
 
 export const PROGRAM_NAME: Record<ProgramCode, string> = {
@@ -14,6 +15,8 @@ export const PROGRAM_NAME: Record<ProgramCode, string> = {
   uk: 'UKG',
   dc: 'Daycare',
   tu: 'Tuition',
+  pc: 'Preparatory class',
+  sm: 'Summer camp',
   ka: 'Karate',
   da: 'Dance',
   tr: 'Transport'
@@ -26,6 +29,12 @@ export const isKindergarten = (code: ProgramCode) => KINDERGARTEN_CODES.includes
 /** Extras: only a fee (no days, no attendance). */
 export const EXTRA_CODES: readonly ProgramCode[] = ['ka', 'da', 'tr']
 export const isExtra = (code: ProgramCode) => EXTRA_CODES.includes(code)
+
+/** The class a child moves up to at the new school year (UKG is the last: the child graduates). */
+export const NEXT_CLASS: Partial<Record<ProgramCode, ProgramCode>> = { pg: 'nu', nu: 'lk', lk: 'uk' }
+
+/** An "afterschool" child (studies at another school) must be in one of these (owner). */
+export const AFTERSCHOOL_CODES: readonly ProgramCode[] = ['tu', 'dc']
 
 /** Programs a child comes to on given days, and whose attendance is marked. */
 export const ATTENDED_CODES = PROGRAM_CODES.filter((c) => !EXTRA_CODES.includes(c))

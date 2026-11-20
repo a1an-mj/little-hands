@@ -20,7 +20,7 @@ const fee = (standard: string, dueDay: string, concession = '', concessionReason
 })
 const admission = (fullName: string, phone: string, programs: unknown[], admissionFee = '') => ({
   fullName,
-  joiningDate: '2026-08-20',
+  joiningDate: '2026-08-01',
   notes: '',
   homeAddress: '',
   photo: null,
@@ -49,12 +49,12 @@ test.beforeAll(async () => {
       'Aadhya Menon',
       '90000 00014',
       [
-        { program: 'lk', startDate: '2026-08-20', schedule: { days: 31 }, fee: fee('1500', '20') },
+        { program: 'lk', startDate: '2026-08-01', schedule: { days: 31 }, fee: fee('1500', '5') },
         { program: 'tr', startDate: '2026-10-01', fee: fee('600', '1') }
       ],
       '2000'
     ),
-    admission('Dev Krishna', '90000 00061', [{ program: 'lk', startDate: '2026-08-20', schedule: { days: 31 }, fee: fee('1500', '20', '200', 'Sibling') }])
+    admission('Dev Krishna', '90000 00061', [{ program: 'lk', startDate: '2026-08-01', schedule: { days: 31 }, fee: fee('1500', '5', '200', 'Sibling') }])
   ]
   for (const c of children) {
     const r = await page.evaluate((input) => window.lh.students.admit(input as never), c)
@@ -80,7 +80,7 @@ test('dashboard: fees to follow up, longest due first', async () => {
   await expect(page.getByTestId('outstanding-earlier')).toContainText('2 students · oldest from August')
   const rows = page.getByTestId('follow-up').getByTestId('owed')
   await expect(rows.first()).toContainText('Aadhya Menon')
-  await expect(rows.first()).toContainText('Due for 64 days')
+  await expect(rows.first()).toContainText('Due for 83 days')
   await expect(page.getByTestId('collected-month')).toContainText('₹0')
 })
 
@@ -90,7 +90,7 @@ test('profile → Fees & payments: periods, charges, owed now', async () => {
   await expect(page.getByTestId('owed-now')).toHaveText('₹7,100') // ₹2,000 + 3 × ₹1,500 + Transport ₹600
   const lkg = page.getByTestId('fees-lk')
   await expect(lkg).toContainText('₹1,500 / month')
-  await expect(lkg.getByTestId('period')).toHaveText([/Nov 2026.*Not due yet/, /Oct 2026.*Due for 3 days/, /Sept 2026.*Due for 33 days/, /Aug 2026.*Due for 64 days/])
+  await expect(lkg.getByTestId('period')).toHaveText([/Nov 2026.*Not due yet/, /Oct 2026.*Due for 18 days/, /Sept 2026.*Due for 48 days/, /Aug 2026.*Due for 83 days/])
   await expect(page.getByTestId('fees-tr')).toContainText('Transport')
   await expect(page.getByTestId('charges')).toContainText('Admission fee')
 })
@@ -98,7 +98,7 @@ test('profile → Fees & payments: periods, charges, owed now', async () => {
 test('record a part payment from the profile, then the rest', async () => {
   await page.getByRole('button', { name: 'Pay LKG · Aug 2026' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Record a payment' })).toBeVisible()
-  await expect(page.getByRole('button', { name: /Aug 2026 · Due for 64 days/ })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: /Aug 2026 · Due for 83 days/ })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByLabel('Amount (₹)')).toHaveValue('1500')
   await page.getByRole('button', { name: /Half ₹750/ }).click()
   await page.getByLabel('Amount (₹)').fill('1000')
@@ -116,12 +116,16 @@ test('record a part payment from the profile, then the rest', async () => {
   // The same period is still the oldest owed: ₹500 left.
   await expect(page.getByRole('button', { name: /Aug 2026 · ₹500 left/ })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByLabel('Received by')).toHaveValue('Anu teacher') // remembered
+  // A little more than this month goes towards the next month (an advance)…
   await page.getByLabel('Amount (₹)').fill('600')
+  await expect(page.getByTestId('advance-note')).toHaveText('₹100 goes towards LKG · Sept 2026 (advance)')
+  // …but not more than this month and the next together.
+  await page.getByLabel('Amount (₹)').fill('2600')
   await expect(page.getByText("More than what's due – check the amount")).toBeVisible()
   await page.getByRole('button', { name: 'UPI' }).click()
   await page.getByLabel('UPI reference (UTR)').fill('412345678901')
   await page.getByRole('button', { name: 'Save payment' }).click()
-  await expect(snack()).toContainText("That is more than what's owed for LKG · Aug 2026 (₹500). Check the amount.")
+  await expect(snack()).toContainText("That is more than what's owed for LKG · Aug 2026 and LKG · Sept 2026 together (₹2,000). Check the amount.")
   await page.getByRole('button', { name: /Full balance ₹500/ }).click()
   await page.getByRole('button', { name: 'Save payment' }).click()
   await expect(snack()).toContainText('Payment PAY-0002 saved · ₹500')
@@ -152,7 +156,7 @@ test('payment history: a wrong amount is reversed, never edited', async () => {
   await expect(history.getByTestId('payment').filter({ hasText: 'PAY-0004' })).toContainText('−₹1,500')
   await expect(history.getByTestId('payment').filter({ hasText: 'PAY-0003' }).filter({ hasNotText: 'Reversal of' })).toContainText('Reversed')
   await expect(history.getByRole('button', { name: 'Reverse PAY-0003' })).toHaveCount(0)
-  await expect(page.getByTestId('fees-lk').getByTestId('period').filter({ hasText: /^Sept 2026/ })).toContainText('Due for 33 days')
+  await expect(page.getByTestId('fees-lk').getByTestId('period').filter({ hasText: /^Sept 2026/ })).toContainText('Due for 48 days')
 })
 
 test('extra charges: admission fee paid, a late fine added', async () => {
@@ -182,7 +186,7 @@ test("don't charge a period (e.g. away), then charge it again", async () => {
   await expect(sept).toContainText('Not charged')
   await expect(sept).toContainText('Away for the month')
   await page.getByRole('button', { name: 'Charge LKG · Sept 2026 again' }).click()
-  await expect(sept).toContainText('Due for 33 days')
+  await expect(sept).toContainText('Due for 48 days')
 })
 
 test('Fees screen: who owes and the monthly report', async () => {
@@ -206,7 +210,7 @@ test('the + button opens Record payment with a student search', async () => {
   await page.getByRole('navigation', { name: 'Main menu' }).getByRole('button', { name: 'Record a payment' }).click()
   await page.getByRole('searchbox', { name: 'Search students' }).fill('Dev')
   await page.getByRole('list', { name: 'Students' }).getByText('Dev Krishna').click()
-  await expect(page.getByRole('button', { name: /Aug 2026 · Due for 64 days/ })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: /Aug 2026 · Due for 83 days/ })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByLabel('Amount (₹)')).toHaveValue('1300') // ₹1,500 − ₹200 sibling concession
 })
 
@@ -221,7 +225,7 @@ test('admission form: extras have no days; the admission fee is optional', async
   await nav('Students').click()
   await page.getByRole('button', { name: 'New admission' }).click()
   await expect(page.getByRole('heading', { name: /Extras/ })).toBeVisible()
-  await page.getByRole('checkbox', { name: /Karate/ }).click()
+  await page.getByRole('checkbox', { name: /^Karate/ }).click()
   await expect(page.getByRole('group', { name: 'Karate days' })).toHaveCount(0)
   await expect(page.getByLabel('Karate standard fee (₹)')).toBeVisible()
   await expect(page.getByLabel('Admission fee (₹)')).toBeVisible()

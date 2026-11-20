@@ -7,12 +7,13 @@ import { admissionSchema, fieldErrors, type AdmissionInput } from '@shared/schem
 import type { GuardianLink } from '@shared/students'
 import { Avatar } from '../../components/Avatar'
 import { ConfirmDialog, Dialog } from '../../components/Dialog'
+import { Check } from './ProfileDialogs'
 import { AlertIcon, CameraIcon, CheckIcon, CloseIcon, PlusSmallIcon, SearchIcon } from '../../components/icons'
 import { useSnackbar } from '../../components/Snackbar'
 import { TextField } from '../../components/TextField'
 import { ThemeSwitch } from '../../components/ThemeSwitch'
 import { call, messageOf, useLoad } from '../../lib/api'
-import { plural, todayIso } from '../../lib/format'
+import { ageText, plural, todayIso } from '../../lib/format'
 import type { Navigate } from '../../shell/routes'
 import {
   ProgramFields,
@@ -32,7 +33,7 @@ interface Props {
   navigate: Navigate
 }
 
-type Person = { name: string; phone: string }
+type Person = { name: string; phone: string; occupation?: string }
 type Extra = Person & { relationship: string }
 interface Sibling {
   id: string
@@ -56,6 +57,11 @@ interface FormState {
   programs: Partial<Record<ProgramCode, { on: boolean; form: ProgramForm }>>
   /** One-time admission fee in rupees, as typed. */
   admissionFee: string
+  dateOfBirth: string
+  /** Studies at another school and comes here after school (then Tuition or Daycare). */
+  afterschool: boolean
+  otherSchool: string
+  otherSchoolClass: string
 }
 
 const blank = (): FormState => ({
@@ -64,14 +70,18 @@ const blank = (): FormState => ({
   notes: '',
   homeAddress: '',
   photo: null,
-  father: { name: '', phone: '' },
-  mother: { name: '', phone: '' },
+  father: { name: '', phone: '', occupation: '' },
+  mother: { name: '', phone: '', occupation: '' },
   emergency: { name: '', relationship: '', phone: '' },
   extra: [],
   feeContact: 'father',
   sibling: null,
   programs: {},
-  admissionFee: ''
+  admissionFee: '',
+  dateOfBirth: '',
+  afterschool: false,
+  otherSchool: '',
+  otherSchoolClass: ''
 })
 
 const tickedPrograms = (f: FormState) => PROGRAM_CODES.filter((c) => f.programs[c]?.on)
@@ -87,7 +97,11 @@ function toInput(f: FormState): AdmissionInput {
       ? { kind: 'sibling', siblingId: f.sibling.id }
       : { kind: 'new', father: f.father, mother: f.mother, emergency: f.emergency, extra: f.extra, feeContact: f.feeContact },
     programs: tickedPrograms(f).map((c) => enrollmentInput(c, f.programs[c]!.form)),
-    admissionFee: f.admissionFee
+    admissionFee: f.admissionFee,
+    dateOfBirth: f.dateOfBirth,
+    afterschool: f.afterschool,
+    otherSchool: f.otherSchool,
+    otherSchoolClass: f.otherSchoolClass
   }
 }
 
@@ -234,7 +248,17 @@ export function AdmissionForm({ theme, onToggleTheme, navigate }: Props) {
             <div className="grid">
               <TextField label="Joining date" required type="date" name="joiningDate" value={f.joiningDate} onChange={(v) => set('joiningDate', v)} error={err('joiningDate')} />
               <TextField label="Student ID" readOnly value={nextCode ?? ''} onChange={() => {}} help="Given automatically" />
+              <TextField label="Date of birth" type="date" name="dateOfBirth" value={f.dateOfBirth} onChange={(v) => set('dateOfBirth', v)} error={err('dateOfBirth')} help={ageText(f.dateOfBirth, f.joiningDate)} />
             </div>
+            <Check checked={f.afterschool} onChange={(v) => set('afterschool', v)}>
+              Studies at another school and comes here after school (Tuition or Daycare)
+            </Check>
+            {f.afterschool && (
+              <div className="grid pop">
+                <TextField label="Their school" name="otherSchool" value={f.otherSchool} onChange={(v) => set('otherSchool', v)} error={err('otherSchool')} placeholder="e.g. Bhavan's Balamandir" />
+                <TextField label="Class there" name="otherSchoolClass" value={f.otherSchoolClass} onChange={(v) => set('otherSchoolClass', v)} error={err('otherSchoolClass')} placeholder="e.g. UKG" />
+              </div>
+            )}
             <TextField
               label="Notes for staff"
               multiline
@@ -335,11 +359,13 @@ function NewFamily({ f, setF, set, err, feeOptions }: NewFamilyProps) {
 
   return (
     <>
-      <div className="grid2">
+      <div className="grid3">
         <TextField label="Father's name" name="father.name" value={f.father.name} onChange={(v) => set('father', { ...f.father, name: v })} error={err('family.father.name')} />
         <TextField label="Father's phone" type="tel" name="father.phone" placeholder="+91" value={f.father.phone} onChange={(v) => set('father', { ...f.father, phone: v })} error={err('family.father.phone')} />
+        <TextField label="Father's occupation" name="father.occupation" value={f.father.occupation ?? ''} onChange={(v) => set('father', { ...f.father, occupation: v })} error={err('family.father.occupation')} />
         <TextField label="Mother's name" name="mother.name" value={f.mother.name} onChange={(v) => set('mother', { ...f.mother, name: v })} error={err('family.mother.name')} />
         <TextField label="Mother's phone" type="tel" name="mother.phone" placeholder="+91" value={f.mother.phone} onChange={(v) => set('mother', { ...f.mother, phone: v })} error={err('family.mother.phone')} />
+        <TextField label="Mother's occupation" name="mother.occupation" value={f.mother.occupation ?? ''} onChange={(v) => set('mother', { ...f.mother, occupation: v })} error={err('family.mother.occupation')} />
       </div>
 
       <div role="group" aria-labelledby="mc-l" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }} data-error={err('family.feeContact') ? 'true' : undefined} tabIndex={-1}>

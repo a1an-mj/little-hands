@@ -1,4 +1,6 @@
 import type { EnrollmentsApi } from '@shared/ipc-contract'
+import { z } from 'zod'
+import { PROGRAM_CODES } from '@shared/enrollments'
 import { idSchema } from '@shared/schemas'
 import type { EnrollmentsRepo } from '../enrollments/repo'
 import type { LockSession } from '../lock/session'
@@ -12,7 +14,9 @@ export function registerEnrollmentsIpc(repo: EnrollmentsRepo, session: LockSessi
     edit: (id, input) => repo.edit(idSchema.parse(id), input as never),
     end: (id, input) => repo.end(idSchema.parse(id), input as never),
     resume: (id) => repo.resume(idSchema.parse(id)),
-    remove: (id) => repo.remove(idSchema.parse(id))
+    remove: (id) => repo.remove(idSchema.parse(id)),
+    moveUp: (id, input) => repo.moveUp(idSchema.parse(id), input as never),
+    moveUpClass: (code, input) => repo.moveUpClass(z.enum(PROGRAM_CODES).parse(code), input as never)
   }
   handleAll('enrollments', impl, session)
 }

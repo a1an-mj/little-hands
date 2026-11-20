@@ -36,14 +36,16 @@ interface Option {
   balancePaise: number
   /** Not due yet (paying in advance). */
   upcoming: boolean
+  /** A first month charged for the days left. */
+  partial?: boolean
 }
 
 const targetKey = (t: PaymentTarget) => (t.kind === 'period' ? `${t.enrollmentId}|${t.periodStart}` : t.chargeId)
 
 /** "Due for 3 days", "₹500 left", "Due 20 Nov" */
-function noteFor(p: { status: string; daysDue: number | null; balancePaise: number; start?: string; dueDate?: string }): string {
+function noteFor(p: { status: string; daysDue: number | null; balancePaise: number; due?: string; dueDate?: string }): string {
   if (p.status === 'partly') return `${formatRupees(p.balancePaise)} left`
-  if (p.status === 'upcoming') return `Due ${formatDate(p.start ?? p.dueDate!)}`
+  if (p.status === 'upcoming') return `Due ${formatDate(p.due ?? p.dueDate!)}`
   return dueText(p.daysDue ?? 0)
 }
 
@@ -52,11 +54,10 @@ function optionsOf(fees: StudentFees): { programs: { enrollmentId: string; label
   const programs = fees.programs
     .map((pr) => {
       const open = pr.periods.filter((p) => p.status === 'due' || p.status === 'partly' || p.status === 'upcoming').reverse()
-      const current = pr.periods.find((p) => p.start <= fees.today)
       return {
         enrollmentId: pr.enrollmentId,
         label: PROGRAM_NAME[pr.program],
-        sub: current ? feeWithPeriod(formatRupees(current.amountPaise), current.periodMonths) : '',
+        sub: pr.fee ? feeWithPeriod(formatRupees(pr.fee.agreedPaise), pr.fee.periodMonths) : '',
         periods: open.map(
           (p: PeriodView): Option => ({
             key: `${pr.enrollmentId}|${p.start}`,
@@ -66,7 +67,8 @@ function optionsOf(fees: StudentFees): { programs: { enrollmentId: string; label
             amountPaise: p.amountPaise,
             paidPaise: p.paidPaise,
             balancePaise: p.balancePaise,
-            upcoming: p.status === 'upcoming'
+            upcoming: p.status === 'upcoming',
+            partial: p.partial
           })
         )
       }
@@ -197,6 +199,9 @@ function PaymentForm(props: { studentId: string; initialTarget?: PaymentTarget; 
   const enrollmentOf = (o: Option | null) => (o?.target.kind === 'period' ? o.target.enrollmentId : null)
   const selectedProgram = opts?.programs.find((p) => p.enrollmentId === enrollmentOf(chosen))
   const chargeChosen = chosen?.target.kind === 'charge'
+  // An amount above this period's balance goes towards the next period (paid at joining, owner).
+  const nextOpt = selectedProgram ? selectedProgram.periods[selectedProgram.periods.findIndex((x) => x.key === pick) + 1] : undefined
+  const advancePaise = balanceAfter < 0 && nextOpt && -balanceAfter <= nextOpt.balancePaise ? -balanceAfter : 0
   const earlier = fees?.payments.filter((p) => p.kind === 'payment' && !p.reversed && p.forText === chosen?.title) ?? []
 
   const input: PaymentInput | null = chosen
@@ -207,7 +212,8 @@ function PaymentForm(props: { studentId: string; initialTarget?: PaymentTarget; 
     if (!input) return
     await submit(paymentInputSchema, input, async () => {
       const r = await call(window.lh.payments.record(input))
-      snack(`Payment ${r.no} saved · ${formatRupees(amountPaise)}`, {
+      const extra = r.advance ? ` (${formatRupees(r.advance.amountPaise)} of it towards ${r.advance.forText}, ${r.advance.no})` : ''
+      snack(`Payment ${r.no} saved · ${formatRupees(amountPaise)}${extra}`, {
         label: 'View',
         run: () => navigate({ name: 'student', id: studentId, tab: 'fees' })
       })
@@ -386,7 +392,7 @@ function PaymentForm(props: { studentId: string; initialTarget?: PaymentTarget; 
             {chosen.title}
           </h2>
           <div className="sumline">
-            <span>{chargeChosen ? 'Charge' : 'Agreed fee'}</span>
+            <span>{chargeChosen ? 'Charge' : chosen.partial ? 'For the days left this month' : 'Agreed fee'}</span>
             <span>{formatRupees(chosen.amountPaise)}</span>
           </div>
           <div className="sumline">
@@ -404,7 +410,12 @@ function PaymentForm(props: { studentId: string; initialTarget?: PaymentTarget; 
           <div>
             {balanceAfter === 0 && amountPaise > 0 && <span className="tag ok">{chargeChosen ? 'Will be fully paid' : 'Period will be fully paid'}</span>}
             {balanceAfter > 0 && amountPaise > 0 && <span className="tag part">Still partly paid</span>}
-            {balanceAfter < 0 && <span className="tag due">More than what's due – check the amount</span>}
+            {advancePaise > 0 && nextOpt && (
+              <span className="tag ok" data-testid="advance-note">
+                {formatRupees(advancePaise)} goes towards {nextOpt.title} (advance)
+              </span>
+            )}
+            {balanceAfter < 0 && advancePaise === 0 && <span className="tag due">More than what's due – check the amount</span>}
           </div>
           <div>
             <div className="small muted" style={{ marginBottom: 6 }}>Already paid for this</div>

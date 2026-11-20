@@ -6,7 +6,7 @@ import { migrationsFromFiles, runMigrations } from '../../src/main/db/migrate'
 import { Writer } from '../../src/main/db/writer'
 import { StudentsRepo, UserError } from '../../src/main/students/repo'
 import { admissionSchema, type AdmissionInput } from '@shared/schemas'
-import { newFamilyAdmission } from './fixtures'
+import { lkgEnrollment, newFamilyAdmission } from './fixtures'
 
 const dir = join(__dirname, '../../src/main/db/migrations')
 const migrations = migrationsFromFiles(
@@ -278,5 +278,47 @@ describe('change history', () => {
     admit()
     expect(() => db.prepare("UPDATE audit_log SET action = 'insert'").run()).toThrow(/append-only/)
     expect(() => db.prepare('DELETE FROM audit_log').run()).toThrow(/append-only/)
+  })
+})
+
+describe('from the paper admission form', () => {
+  it('date of birth, the other school of an afterschool child, and parents’ occupations', () => {
+    const id = admit({
+      dateOfBirth: '2021-04-01',
+      afterschool: true,
+      otherSchool: "Bhavan's Balamandir",
+      otherSchoolClass: 'UKG',
+      family: {
+        ...newFamilyAdmission().family,
+        father: { name: 'Sarath', phone: '90000 00051', occupation: 'Electrician' },
+        mother: { name: 'Remya', phone: '90000 00031', occupation: 'Accountant' }
+      } as never,
+      programs: [lkgEnrollment({ program: 'dc' })]
+    })
+    const p = repo.profile(id)!
+    expect(p).toMatchObject({ dateOfBirth: '2021-04-01', afterschool: true, otherSchool: "Bhavan's Balamandir", otherSchoolClass: 'UKG' })
+    expect(p.guardians.map((g) => [g.relationship, g.occupation])).toEqual(
+      expect.arrayContaining([
+        ['Father', 'Electrician'],
+        ['Mother', 'Accountant']
+      ])
+    )
+  })
+
+  it('an afterschool child must be in Tuition or Daycare, and needs the school name', () => {
+    const base = newFamilyAdmission({ afterschool: true, otherSchool: 'Bhavan’s', programs: [lkgEnrollment()] })
+    expect(() => admissionSchema.parse(base)).toThrow('must be in Tuition or Daycare')
+    expect(() => admissionSchema.parse({ ...base, otherSchool: '', programs: [lkgEnrollment({ program: 'tu' })] })).toThrow('Enter the school the child goes to')
+    expect(() => admissionSchema.parse({ ...base, programs: [lkgEnrollment({ program: 'tu' })] })).not.toThrow()
+  })
+
+  it('date of birth must be before joining; editing details keeps the rules', () => {
+    expect(() => admissionSchema.parse(newFamilyAdmission({ dateOfBirth: '2027-01-01' }))).toThrow('before the joining date')
+    const id = admit()
+    const p = repo.profile(id)!
+    const details = { fullName: p.fullName, joiningDate: p.joiningDate, status: 'active' as const, homeAddress: '' }
+    expect(() => repo.updateDetails(id, { ...details, afterschool: true, otherSchool: 'Bhavan’s' })).toThrow('must be in Tuition or Daycare')
+    repo.updateDetails(id, { ...details, dateOfBirth: '2021-04-01' })
+    expect(repo.profile(id)!.dateOfBirth).toBe('2021-04-01')
   })
 })

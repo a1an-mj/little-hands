@@ -28,12 +28,12 @@ export interface ProgramForm {
   remarks: string
 }
 
-const dayOf = (iso: string) => (/^\d{4}-\d{2}-\d{2}$/.test(iso) ? String(Number(iso.slice(8, 10))) : '')
+/** Fees are due by the 5th of every month (owner, printed on the admission form). */
+export const DEFAULT_DUE_DAY = '5'
 
-/** A new start date. The due day follows the start day, unless the owner has already changed it. */
+/** A new start date (the due day stays: it is the 5th whatever the joining day). */
 export function withStartDate(f: ProgramForm, startDate: string): ProgramForm {
-  const dueDay = f.dueDay === dayOf(f.startDate) ? dayOf(startDate) || f.dueDay : f.dueDay
-  return { ...f, startDate, dueDay }
+  return { ...f, startDate }
 }
 
 export function formFromDefaults(d: ProgramDefaults, startDate: string): ProgramForm {
@@ -41,7 +41,7 @@ export function formFromDefaults(d: ProgramDefaults, startDate: string): Program
     startDate,
     days: d.days,
     periodMonths: 1,
-    dueDay: dayOf(startDate),
+    dueDay: DEFAULT_DUE_DAY,
     standard: d.lastStandardPaise === null ? '' : rupeesInput(d.lastStandardPaise),
     concession: '',
     concessionReason: '',
@@ -112,7 +112,7 @@ interface Props {
 export function ProgramFields({ program, value: f, onChange: change, errors, startLabel = 'Starts on', showStart = true, showRemarks }: Props) {
   const name = PROGRAM_NAME[program]
   const onChange = (patch: Partial<ProgramForm>) =>
-    change(patch.startDate !== undefined ? { ...patch, dueDay: withStartDate(f, patch.startDate).dueDay } : patch)
+    change(patch)
   const day = Number(f.dueDay)
   const hasConcession = (parseRupees(f.concession) ?? 0) > 0 || f.concessionReason !== ''
   return (
@@ -165,7 +165,7 @@ export function ProgramFields({ program, value: f, onChange: change, errors, sta
           value={f.dueDay}
           onChange={(v) => onChange({ dueDay: v })}
           error={errors['fee.dueDay']}
-          help={day > 28 && day <= 31 ? 'Last day in shorter months' : 'Day of the month, e.g. 10'}
+          help={day > 28 && day <= 31 ? 'Last day in shorter months' : 'Usually the 5th. A first month that starts later is charged by the days left.'}
         />
         <TextField label={`${name} standard fee (₹)`} inputMode="decimal" value={f.standard} onChange={(v) => onChange({ standard: v })} error={errors['fee.standard']} />
         <TextField label={`${name} concession (₹)`} inputMode="decimal" value={f.concession} onChange={(v) => onChange({ concession: v })} error={errors['fee.concession']} placeholder="0" />

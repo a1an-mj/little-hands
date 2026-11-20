@@ -50,6 +50,7 @@ export interface GuardianLink {
   name: string | null
   phone: string | null
   relationship: string
+  occupation: string
   isFeeContact: boolean
   isEmergency: boolean
   /** Brothers/sisters who share this guardian (editing name/phone changes it for them too). */
@@ -70,6 +71,12 @@ export interface StudentProfile {
   joiningDate: string
   status: StudentStatus
   homeAddress: string
+  /** "YYYY-MM-DD", or null if not given. */
+  dateOfBirth: string | null
+  /** Studies at another school and comes here after school. */
+  afterschool: boolean
+  otherSchool: string
+  otherSchoolClass: string
   /** JPEG data URL, or null when there is no photo. */
   photo: string | null
   guardians: GuardianLink[]

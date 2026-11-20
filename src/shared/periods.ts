@@ -1,23 +1,31 @@
 // What a parent owes, worked out from a program's fee agreements (never stored).
 //
-// Owner's rules (Nov 2026):
-// - Fees are paid in advance. The first period starts on the program's start date and is due that day.
-// - After that a new period is due every N months on the due day (31 = last day in shorter months).
-//   Joining on 20 June, monthly → due 20 June, 20 July, 20 August… No part-month fees.
+// Owner's rules (paper admission form, 20 Nov 2026):
+// - Fees follow calendar months and are due by the 5th (the agreement's due day, 5 by default).
+// - Joining mid-month: the first month is charged only for the days left, by days in that month
+//   (₹2,000/month, joins 15 Nov → 16/30 × ₹2,000 = ₹1,066.67), due on the joining day.
+//   From the next month on, the full fee, due by the 5th.
+// - Paying every N months: blocks of N calendar months from the joining month (joins in June,
+//   every 3 months → June–Aug, Sept–Nov…), each due on the 5th of its first month. A first block
+//   that starts mid-month is charged for the days left in its first month plus the other months.
 // - The amount is the agreed fee in force on the period's first day.
 // - When the child leaves, no new periods start after the last day, and nothing is refunded.
-// - A one-time fee is a single period.
+// - A one-time fee is a single period, due on the start date.
 import { addDays } from './dates'
 import { versionOn } from './effective'
 import type { FeeVersion } from './enrollments'
 
 export interface Period {
-  /** First day, also the due date ("YYYY-MM-DD"). Identifies the period. */
+  /** First day ("YYYY-MM-DD"). Identifies the period (payments refer to it). */
   start: string
-  /** Last day (the day before the next period), or null for a one-time fee. */
+  /** Last day, or null for a one-time fee. */
   end: string | null
+  /** When it has to be paid by. */
+  due: string
   amountPaise: number
   periodMonths: number
+  /** A first period that starts mid-month and is charged for the days left. */
+  partial: boolean
 }
 
 const daysInMonth = (y: number, m: number) => new Date(Date.UTC(y, m, 0)).getUTCDate()
@@ -32,9 +40,16 @@ export function monthPlus(iso: string, months: number, day: number): string {
   return `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
 
+/** The share of a fee for the days left in the first month: 16 of 30 days of ₹2,000 → ₹1,066.67 (to the paisa). */
+export function partialAmount(agreedPaise: number, periodMonths: number, start: string): number {
+  const dim = daysInMonth(Number(start.slice(0, 4)), Number(start.slice(5, 7)))
+  const daysLeft = dim - Number(start.slice(8, 10)) + 1
+  return Math.round((agreedPaise * (daysLeft / dim + (periodMonths - 1))) / periodMonths)
+}
+
 /**
- * Periods of a program from its start date up to `until` (inclusive: a period starting that day is
- * included), stopping after the program's last day. `fees` sorted oldest first, never empty.
+ * Periods of a program from its start date up to `until` (a period starting that day is included),
+ * stopping after the program's last day. `fees` sorted oldest first, never empty.
  */
 export function periodsOf(startDate: string, endDate: string | null, fees: readonly FeeVersion[], until: string): Period[] {
   const out: Period[] = []
@@ -44,14 +59,21 @@ export function periodsOf(startDate: string, endDate: string | null, fees: reado
   for (let i = 0; i < 600 && cur <= last; i++) {
     const v = versionOn(fees, cur) ?? fees[0]!
     if (v.periodMonths === 0) {
-      out.push({ start: cur, end: null, amountPaise: v.agreedPaise, periodMonths: 0 })
+      out.push({ start: cur, end: null, due: cur, amountPaise: v.agreedPaise, periodMonths: 0, partial: false })
       break
     }
-    // The next due date: the due day, N months on. If the due day is earlier in the month than the
-    // start (e.g. started on the 20th, due on the 10th), that is still the next month, never sooner.
-    let next = monthPlus(cur, v.periodMonths, v.dueDay)
-    if (next <= cur) next = monthPlus(cur, v.periodMonths + 1, v.dueDay)
-    out.push({ start: cur, end: addDays(next, -1), amountPaise: v.agreedPaise, periodMonths: v.periodMonths })
+    const n = v.periodMonths
+    const next = monthPlus(cur, n, 1) // the 1st of the month after the block
+    const midMonth = Number(cur.slice(8, 10)) !== 1
+    out.push({
+      start: cur,
+      end: addDays(next, -1),
+      // The first period is paid on joining; every later one by the due day (the 5th) of its first month.
+      due: i === 0 ? cur : monthPlus(cur, 0, v.dueDay),
+      amountPaise: midMonth ? partialAmount(v.agreedPaise, n, cur) : v.agreedPaise,
+      periodMonths: n,
+      partial: midMonth
+    })
     cur = next
   }
   return out

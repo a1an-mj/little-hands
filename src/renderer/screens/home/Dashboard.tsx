@@ -38,7 +38,9 @@ const PROGRAM_BAR: Record<string, string> = {
   lk: 'var(--lks)',
   uk: 'var(--uks)',
   dc: 'var(--dcs)',
-  tu: 'var(--tus)'
+  tu: 'var(--tus)',
+  pc: 'var(--pcs)',
+  sm: 'var(--sms)'
 }
 
 const monthOf = (iso: string) => new Intl.DateTimeFormat('en-IN', { month: 'long', timeZone: 'UTC' }).format(new Date(`${iso}T00:00:00Z`))

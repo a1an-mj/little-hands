@@ -1,6 +1,7 @@
 import type Database from 'better-sqlite3'
 import { addDays, formatDate } from '@shared/dates'
 import {
+  NEXT_CLASS,
   PROGRAM_NAME,
   enrollmentState,
   isExtra,
@@ -14,6 +15,9 @@ import {
   endEnrollmentSchema,
   enrollmentEditSchema,
   enrollmentInputSchema,
+  moveUpSchema,
+  type MoveUp,
+  type MoveUpInput,
   type EndEnrollmentInput,
   type Enrollment,
   type EnrollmentEditInput,
@@ -357,6 +361,75 @@ export class EnrollmentsRepo {
     for (const s of this.schedules(enrollmentId)) this.w.softDelete('schedules', s.id)
     for (const f of this.fees(enrollmentId)) this.w.softDelete('fee_agreements', f.id)
     this.w.softDelete('enrollments', enrollmentId)
+  }
+
+  // ---------- Moving up a class ----------
+
+  /**
+   * The child moves up (e.g. LKG → UKG) from `from`: the current class ends the day before, and the
+   * next class starts with the same days, payment period, due day and concession, at the new fee.
+   */
+  moveUp(enrollmentId: string, input: MoveUpInput): string {
+    const m = moveUpSchema.parse(input)
+    return this.w.transaction(() => this.moveUpOne(this.require(enrollmentId), m))
+  }
+
+  /** Moves everyone currently in a class up together (June). Children who can't be moved are listed with the reason. */
+  moveUpClass(code: ProgramCode, input: MoveUpInput): { moved: number; skipped: { name: string; reason: string }[] } {
+    const m = moveUpSchema.parse(input)
+    if (!NEXT_CLASS[code]) throw new UserError(`${PROGRAM_NAME[code]} has no next class.`)
+    const rows = this.db
+      .prepare(
+        `SELECT e.id, e.student_id, p.code, p.sort_order, e.start_date, e.end_date, e.end_reason, s.full_name
+         FROM enrollments e JOIN programs p ON p.id = e.program_id JOIN students s ON s.id = e.student_id
+         WHERE p.code = ? AND e.deleted_at IS NULL AND s.deleted_at IS NULL AND s.status = 'active'
+           AND e.start_date < ? AND (e.end_date IS NULL OR e.end_date >= ?)
+         ORDER BY s.full_name COLLATE NOCASE`
+      )
+      .all(code, m.from, m.from) as (EnrollmentRow & { full_name: string })[]
+    let moved = 0
+    const skipped: { name: string; reason: string }[] = []
+    this.w.transaction(() => {
+      for (const r of rows) {
+        try {
+          // Each child on its own: one that can't be moved doesn't stop the others.
+          this.w.transaction(() => this.moveUpOne(r, m))
+          moved++
+        } catch (err) {
+          if (!(err instanceof UserError)) throw err
+          skipped.push({ name: r.full_name, reason: err.message })
+        }
+      }
+    })
+    return { moved, skipped }
+  }
+
+  private moveUpOne(row: EnrollmentRow, m: MoveUp): string {
+    const next = NEXT_CLASS[row.code]
+    if (!next) throw new UserError(`${PROGRAM_NAME[row.code]} is the last class. Mark the child Graduated instead.`)
+    if (m.from <= row.start_date) throw new UserError(`The move must be after ${PROGRAM_NAME[row.code]} started (${formatDate(row.start_date)}).`)
+    if (row.end_date !== null && row.end_date < m.from) throw new UserError(`${PROGRAM_NAME[row.code]} already ended on ${formatDate(row.end_date)}.`)
+    const fees = this.fees(row.id)
+    const fee = fees.filter((f) => f.effectiveFrom < m.from).at(-1) ?? fees[0]!
+    const days = this.schedules(row.id).filter((s) => s.effectiveFrom < m.from).at(-1)?.days ?? 31
+    if (fee.concessionPaise > m.standard) throw new UserError(`The new fee is less than the concession (${formatDate(m.from)}).`)
+    if (this.hasPayments(row.id, m.from)) {
+      throw new UserError(`A ${PROGRAM_NAME[row.code]} period from ${formatDate(m.from)} is already paid. Reverse that payment first.`)
+    }
+    this.w.update('enrollments', row.id, { end_date: addDays(m.from, -1), end_reason: `Moved up to ${PROGRAM_NAME[next]}` })
+    return this.insert(row.student_id, {
+      program: next,
+      startDate: m.from,
+      schedule: { days },
+      fee: {
+        periodMonths: fee.periodMonths,
+        dueDay: fee.dueDay,
+        standard: m.standard,
+        concession: fee.concessionPaise,
+        concessionReason: fee.concessionReason,
+        remarks: ''
+      }
+    })
   }
 
   // ---------- Used by the Students module (inside its transactions) ----------

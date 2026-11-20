@@ -28,9 +28,18 @@ type GuardianRow = {
   relationship: string
   is_fee_contact: number
   is_emergency: number
+  occupation: string
 }
 
 const bool = (b: boolean) => (b ? 1 : 0)
+
+/** Date of birth and, for an afterschool child, the other school (cleared when not afterschool). */
+const childColumns = (c: { dateOfBirth: string; afterschool: boolean; otherSchool: string; otherSchoolClass: string }) => ({
+  date_of_birth: c.dateOfBirth || null,
+  afterschool: bool(c.afterschool),
+  other_school: c.afterschool ? c.otherSchool : '',
+  other_school_class: c.afterschool ? c.otherSchoolClass : ''
+})
 const nullIfEmpty = (s: string) => (s === '' ? null : s)
 const likeEscape = (s: string) => s.replace(/[\\%_]/g, (c) => '\\' + c)
 
@@ -130,7 +139,18 @@ export class StudentsRepo {
     const s = this.db
       .prepare('SELECT * FROM students WHERE id = ? AND deleted_at IS NULL')
       .get(id) as
-      | { id: string; student_code: string; full_name: string; joining_date: string; status: StudentStatus; home_address: string }
+      | {
+          id: string
+          student_code: string
+          full_name: string
+          joining_date: string
+          status: StudentStatus
+          home_address: string
+          date_of_birth: string | null
+          afterschool: number
+          other_school: string
+          other_school_class: string
+        }
       | undefined
     if (!s) return null
 
@@ -153,6 +173,10 @@ export class StudentsRepo {
       joiningDate: s.joining_date,
       status: s.status,
       homeAddress: s.home_address,
+      dateOfBirth: s.date_of_birth,
+      afterschool: s.afterschool === 1,
+      otherSchool: s.other_school,
+      otherSchoolClass: s.other_school_class,
       photo: photo ? `data:image/jpeg;base64,${photo.toString('base64')}` : null,
       guardians: this.guardians(id),
       notes: notes.map((n) => ({ ...n, important: n.important === 1 })),
@@ -163,7 +187,7 @@ export class StudentsRepo {
   private guardians(studentId: string): GuardianLink[] {
     const rows = this.db
       .prepare(
-        `SELECT sg.id AS link_id, g.id AS guardian_id, g.name, g.phone, sg.relationship,
+        `SELECT sg.id AS link_id, g.id AS guardian_id, g.name, g.phone, g.occupation, sg.relationship,
                 sg.is_fee_contact, sg.is_emergency
          FROM student_guardians sg JOIN guardians g ON g.id = sg.guardian_id
          WHERE sg.student_id = ? AND sg.deleted_at IS NULL AND g.deleted_at IS NULL
@@ -181,6 +205,7 @@ export class StudentsRepo {
       name: r.name,
       phone: r.phone,
       relationship: r.relationship,
+      occupation: r.occupation,
       isFeeContact: r.is_fee_contact === 1,
       isEmergency: r.is_emergency === 1,
       sharedWith: siblings.all(r.guardian_id, studentId) as { id: string; fullName: string }[]
@@ -203,7 +228,8 @@ export class StudentsRepo {
         full_name: a.fullName,
         joining_date: a.joiningDate,
         status: 'active',
-        home_address: homeAddress
+        home_address: homeAddress,
+        ...childColumns(a)
       })
 
       if (a.family.kind === 'sibling') this.copyFamily(a.family.siblingId, studentId)
@@ -260,7 +286,7 @@ export class StudentsRepo {
   }
 
   private addNewFamily(studentId: string, f: Extract<Admission['family'], { kind: 'new' }>) {
-    type P = { key: string; name: string; phone: string | null; relationship: string; emergency: boolean }
+    type P = { key: string; name: string; phone: string | null; relationship: string; emergency: boolean; occupation?: string }
     const people: P[] = [
       { key: 'father', ...f.father, relationship: 'Father', emergency: false },
       { key: 'mother', ...f.mother, relationship: 'Mother', emergency: false }
@@ -283,7 +309,7 @@ export class StudentsRepo {
     let order = 0
     for (const p of people) {
       if (!p.name && !p.phone) continue
-      const guardianId = this.w.insert('guardians', { name: nullIfEmpty(p.name), phone: p.phone })
+      const guardianId = this.w.insert('guardians', { name: nullIfEmpty(p.name), phone: p.phone, occupation: p.occupation ?? '' })
       this.w.insert('student_guardians', {
         student_id: studentId,
         guardian_id: guardianId,
@@ -315,8 +341,18 @@ export class StudentsRepo {
         full_name: d.fullName,
         joining_date: d.joiningDate,
         status: d.status,
-        home_address: d.homeAddress
+        home_address: d.homeAddress,
+        ...childColumns(d)
       })
+      if (d.afterschool && d.status === 'active') {
+        const ok = this.db
+          .prepare(
+            `SELECT 1 FROM enrollments e JOIN programs p ON p.id = e.program_id
+             WHERE e.student_id = ? AND e.deleted_at IS NULL AND p.code IN ('tu', 'dc') AND (e.end_date IS NULL OR e.end_date >= ?)`
+          )
+          .get(id, this.w.today())
+        if (!ok) throw new UserError('A child who comes after school must be in Tuition or Daycare. Add one of them first.')
+      }
       // Leaving or graduating ends the programs the child is still in, from today.
       if (before.status === 'active' && d.status !== 'active') {
         this.enrollments.endAllForStudent(id, this.w.today(), `Marked ${STATUS_LABEL[d.status].toLowerCase()}`)
@@ -357,7 +393,7 @@ export class StudentsRepo {
     return this.w.transaction(() => {
       this.requireStudent(studentId)
       const existing = this.guardians(studentId)
-      const guardianId = this.w.insert('guardians', { name: nullIfEmpty(g.name), phone: g.phone })
+      const guardianId = this.w.insert('guardians', { name: nullIfEmpty(g.name), phone: g.phone, occupation: g.occupation })
       return this.w.insert('student_guardians', {
         student_id: studentId,
         guardian_id: guardianId,
@@ -375,7 +411,7 @@ export class StudentsRepo {
     const g = guardianSchema.parse(input)
     this.w.transaction(() => {
       const link = this.requireLink(linkId)
-      this.w.update('guardians', link.guardian_id, { name: nullIfEmpty(g.name), phone: g.phone })
+      this.w.update('guardians', link.guardian_id, { name: nullIfEmpty(g.name), phone: g.phone, occupation: g.occupation })
       this.w.update('student_guardians', linkId, { relationship: g.relationship, is_emergency: bool(g.isEmergency) })
     })
   }

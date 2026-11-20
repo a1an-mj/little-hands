@@ -260,7 +260,7 @@ describe('history and summary', () => {
     const s = repo.summary()
     expect(s.activeStudents).toBe(2)
     expect(s.kgAndTuition).toBe(1)
-    expect(s.byProgram).toEqual({ pg: 0, nu: 0, lk: 2, uk: 0, dc: 0, tu: 1, ka: 0, da: 0, tr: 0 })
+    expect(s.byProgram).toEqual({ pg: 0, nu: 0, lk: 2, uk: 0, dc: 0, tu: 1, pc: 0, sm: 0, ka: 0, da: 0, tr: 0 })
     expect(s.recentAdmissions.map((r) => [r.fullName, r.programs])).toEqual([
       ['Dev Krishna', ['lk']],
       ['Aadhya Menon', ['lk', 'tu']]

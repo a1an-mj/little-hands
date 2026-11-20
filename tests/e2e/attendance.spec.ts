@@ -209,12 +209,12 @@ test('a past day marked closed shows on the profile', async () => {
 test('admission offers Nursery and Daycare', async () => {
   await page.getByRole('navigation', { name: 'Main menu' }).getByRole('button', { name: 'Students' }).click()
   await page.getByRole('button', { name: 'New admission' }).click()
-  await page.getByRole('checkbox', { name: /Nursery/ }).click()
+  await page.getByRole('checkbox', { name: /^Nursery/ }).click()
   await expect(page.getByLabel('Nursery arrives')).toHaveCount(0) // no fixed times
   await expect(page.getByRole('group', { name: 'Nursery days' }).getByRole('button', { pressed: true })).toHaveText(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'])
-  await page.getByRole('checkbox', { name: /Daycare/ }).click()
-  await expect(page.getByRole('checkbox', { name: /Daycare/ })).toContainText('Not schooling')
+  await page.getByRole('checkbox', { name: /^Daycare/ }).click()
+  await expect(page.getByRole('checkbox', { name: /^Daycare/ })).toContainText('Not schooling')
   await expect(page.getByText(/usually in only one/)).toHaveCount(0) // Daycare is not a class
-  await page.getByRole('checkbox', { name: /LKG/ }).click()
+  await page.getByRole('checkbox', { name: /^LKG/ }).click()
   await expect(page.getByText('A child is usually in only one of Playgroup, Nursery, LKG or UKG. Please check.')).toBeVisible()
 })

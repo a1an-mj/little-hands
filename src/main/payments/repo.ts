@@ -124,7 +124,7 @@ export class PaymentsRepo {
       const list: PeriodView[] = own
         .map((p) => ({
           ...p.period,
-          ...balanceOf(p.period.amountPaise, p.paidPaise, p.period.start, today, p.waiver !== null),
+          ...balanceOf(p.period.amountPaise, p.paidPaise, p.period.due, today, p.waiver !== null),
           waiver: p.waiver
         }))
         .reverse()
@@ -133,7 +133,12 @@ export class PaymentsRepo {
         program: e.code,
         state: enrollmentState(e.start_date, e.end_date, today),
         periods: list,
-        next: nextPeriodAfter(e.start_date, e.end_date, fees.get(e.id)!, today)
+        next: nextPeriodAfter(e.start_date, e.end_date, fees.get(e.id)!, today),
+        fee: (() => {
+          const f = fees.get(e.id)!
+          const v = versionOn(f, today) ?? f[0]
+          return v ? { agreedPaise: v.agreedPaise, periodMonths: v.periodMonths, dueDay: v.dueDay } : null
+        })()
       })
     }
 
@@ -147,7 +152,7 @@ export class PaymentsRepo {
     }))
 
     const owedPaise =
-      periods.reduce((s, p) => s + (p.period.start <= today && !p.waiver ? Math.max(0, p.period.amountPaise - p.paidPaise) : 0), 0) +
+      periods.reduce((s, p) => s + (p.period.due <= today && !p.waiver ? Math.max(0, p.period.amountPaise - p.paidPaise) : 0), 0) +
       charges.reduce((s, c) => s + (c.charge.due_date <= today ? Math.max(0, c.charge.amount_paise - c.paidPaise) : 0), 0)
 
     const rows = this.paymentRows('student_id = ?', [studentId])
@@ -174,7 +179,7 @@ export class PaymentsRepo {
     const owed = this.owedItems(periods, charges, today)
 
     let dueThisMonthPaise = 0
-    for (const p of periods) if (!p.waiver && p.period.start >= monthStart && p.period.start <= monthEnd) dueThisMonthPaise += p.period.amountPaise
+    for (const p of periods) if (!p.waiver && p.period.due >= monthStart && p.period.due <= monthEnd) dueThisMonthPaise += p.period.amountPaise
     for (const c of charges) if (c.charge.due_date >= monthStart && c.charge.due_date <= monthEnd) dueThisMonthPaise += c.charge.amount_paise
 
     const earlier = owed.filter((o) => o.due < monthStart)
@@ -256,8 +261,13 @@ export class PaymentsRepo {
 
   // ---------- Writing ----------
 
-  /** Saves a payment. Refuses more than what is owed for that period or charge (parents pay the exact amount). */
-  record(input: PaymentInput): { id: string; no: string } {
+  /**
+   * Saves a payment. Parents pay the exact amount, so more than what's owed is refused, with one
+   * exception (owner): at joining the parent pays a full month although the first month is charged
+   * by days; the extra counts towards the next month. So an amount above a period's balance is saved
+   * as two entries (this period, then the next one), up to what the next period still needs.
+   */
+  record(input: PaymentInput): { id: string; no: string; advance: { no: string; forText: string; amountPaise: number } | null } {
     const p = paymentInputSchema.parse(input)
     return this.w.transaction(() => {
       this.requireStudent(p.studentId)
@@ -266,26 +276,61 @@ export class PaymentsRepo {
       const due = this.owedFor(p.studentId, p.target, today)
       if (due.waived) throw new UserError('This period is not charged (waived). Undo the waiver first.')
       if (due.balancePaise === 0) throw new UserError(`Nothing is owed for ${due.forText}.`)
+
+      let advance: { target: PaymentTarget; amount: number; forText: string } | null = null
       if (p.amount > due.balancePaise) {
-        throw new UserError(`That is more than what's owed for ${due.forText} (${formatRupees(due.balancePaise)}). Check the amount.`)
+        const next = p.target.kind === 'period' ? this.periodAfter(p.target.enrollmentId, p.target.periodStart, today) : null
+        const extra = p.amount - due.balancePaise
+        if (!next || next.waived || extra > next.balancePaise) {
+          const both = next && !next.waived ? ` and ${next.forText} together (${formatRupees(due.balancePaise + next.balancePaise)})` : ` (${formatRupees(due.balancePaise)})`
+          throw new UserError(`That is more than what's owed for ${due.forText}${both}. Check the amount.`)
+        }
+        advance = { target: next.target, amount: extra, forText: next.forText }
       }
-      const seq = this.nextSeq()
-      const id = this.w.append('payments', {
-        payment_seq: seq,
-        student_id: p.studentId,
-        ...targetColumns(p.target),
-        kind: 'payment',
-        amount_paise: p.amount,
-        method: p.method,
-        reference: p.method === 'cash' ? '' : p.reference,
-        paid_at: p.paidAt,
-        recorded_by: p.recordedBy,
-        remarks: p.remarks,
-        reverses_payment_id: null,
-        reason: ''
-      })
-      return { id, no: paymentNo(seq) }
+
+      const save = (target: PaymentTarget, amount: number, remarks: string) => {
+        const seq = this.nextSeq()
+        const id = this.w.append('payments', {
+          payment_seq: seq,
+          student_id: p.studentId,
+          ...targetColumns(target),
+          kind: 'payment',
+          amount_paise: amount,
+          method: p.method,
+          reference: p.method === 'cash' ? '' : p.reference,
+          paid_at: p.paidAt,
+          recorded_by: p.recordedBy,
+          remarks,
+          reverses_payment_id: null,
+          reason: ''
+        })
+        return { id, no: paymentNo(seq) }
+      }
+      const first = save(p.target, advance ? due.balancePaise : p.amount, p.remarks)
+      const second = advance ? save(advance.target, advance.amount, `Advance, paid with ${first.no}`) : null
+      return {
+        ...first,
+        advance: second && advance ? { no: second.no, forText: advance.forText, amountPaise: advance.amount } : null
+      }
     })
+  }
+
+  /** The period right after `periodStart` (for an advance), if it may be paid now, with what it still needs. */
+  private periodAfter(enrollmentId: string, periodStart: string, today: string) {
+    const e = this.enrollment(enrollmentId)
+    const f = this.feesFor([e.id]).get(e.id)!
+    const list = periodsOf(e.start_date, e.end_date, f, today)
+    const upcoming = nextPeriodAfter(e.start_date, e.end_date, f, today)
+    if (upcoming) list.push(upcoming)
+    const next = list[list.findIndex((x) => x.start === periodStart) + 1]
+    if (!next || list.findIndex((x) => x.start === periodStart) < 0) return null
+    const paid = this.paidTowards('enrollment_id = ? AND period_start = ?', [enrollmentId, next.start])
+    return {
+      target: { kind: 'period' as const, enrollmentId, periodStart: next.start },
+      forText: forProgramText(e.code, next),
+      balancePaise: Math.max(0, next.amountPaise - paid),
+      waived: this.waiverId(enrollmentId, next.start) !== undefined
+    }
   }
 
   /** Cancels a payment with a reversal entry (negative amount, with a reason). The original stays. */
@@ -438,8 +483,8 @@ export class PaymentsRepo {
   private owedItems(periods: PeriodItem[], charges: ChargeItem[], asOf: string): OwedItem[] {
     const out: OwedItem[] = []
     for (const p of periods) {
-      if (p.waiver || p.period.start > asOf) continue
-      const b = balanceOf(p.period.amountPaise, p.paidPaise, p.period.start, asOf)
+      if (p.waiver || p.period.due > asOf) continue
+      const b = balanceOf(p.period.amountPaise, p.paidPaise, p.period.due, asOf)
       if (b.balancePaise === 0) continue
       out.push({
         studentId: p.enrollment.student_id,
@@ -447,7 +492,7 @@ export class PaymentsRepo {
         studentCode: p.enrollment.student_code,
         forText: forProgramText(p.enrollment.code, p.period),
         program: p.enrollment.code,
-        due: p.period.start,
+        due: p.period.due,
         amountPaise: p.period.amountPaise,
         balancePaise: b.balancePaise,
         partly: b.status === 'partly',

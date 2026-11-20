@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { normalizePhone } from './phone'
-import { PROGRAM_CODES, isExtra, isKnownPeriod } from './enrollments'
+import { AFTERSCHOOL_CODES, PROGRAM_CODES, isExtra, isKnownPeriod } from './enrollments'
 import { parseRupees } from './money'
 import { STUDENT_STATUSES } from './students'
 
@@ -40,7 +40,7 @@ export const phoneSchema = z
     return p
   })
 
-const person = z.object({ name: text(100), phone: phoneSchema })
+const person = z.object({ name: text(100), phone: phoneSchema, occupation: text(60).default('') })
 const isEmpty = (p: { name: string; phone: string | null }) => !p.name && !p.phone
 
 export const FEE_CONTACT_KEYS = ['father', 'mother', 'emergency'] as const
@@ -168,6 +168,23 @@ export type EndEnrollmentInput = z.input<typeof endEnrollmentSchema>
 
 const siblingFamily = z.object({ kind: z.literal('sibling'), siblingId: idSchema })
 
+/** From the paper admission form: date of birth, and the other school of an "afterschool" child. */
+const childExtras = {
+  dateOfBirth: z.union([isoDateSchema, z.literal('')]).default(''),
+  /** Studies at another school and comes here after school (then in Tuition or Daycare). */
+  afterschool: z.boolean().default(false),
+  otherSchool: text(100).default(''),
+  otherSchoolClass: text(40).default('')
+}
+function checkChildExtras(c: { dateOfBirth: string; joiningDate: string; afterschool: boolean; otherSchool: string }, ctx: z.RefinementCtx) {
+  if (c.dateOfBirth && c.dateOfBirth >= c.joiningDate) {
+    ctx.addIssue({ code: 'custom', path: ['dateOfBirth'], message: 'The date of birth must be before the joining date' })
+  }
+  if (c.afterschool && !c.otherSchool) {
+    ctx.addIssue({ code: 'custom', path: ['otherSchool'], message: 'Enter the school the child goes to' })
+  }
+}
+
 export const admissionSchema = z.object({
   fullName: text(100).min(1, "Enter the child's full name"),
   joiningDate: isoDateSchema,
@@ -178,8 +195,13 @@ export const admissionSchema = z.object({
   family: z.discriminatedUnion('kind', [newFamily, siblingFamily]),
   programs: z.array(enrollmentInputSchema).min(1, 'Tick at least one program').max(PROGRAM_CODES.length),
   /** One-time admission fee in rupees, paid before joining (owner). Empty = none. */
-  admissionFee: rupees(false).optional()
+  admissionFee: rupees(false).optional(),
+  ...childExtras
 }).superRefine((a, ctx) => {
+  checkChildExtras(a, ctx)
+  if (a.afterschool && !a.programs.some((p) => AFTERSCHOOL_CODES.includes(p.program))) {
+    ctx.addIssue({ code: 'custom', path: ['programs'], message: 'A child who comes after school must be in Tuition or Daycare' })
+  }
   const seen = new Set<string>()
   a.programs.forEach((p, i) => {
     if (seen.has(p.program)) ctx.addIssue({ code: 'custom', path: ['programs', i, 'program'], message: 'This program is ticked twice' })
@@ -192,12 +214,15 @@ export const admissionSchema = z.object({
 export type AdmissionInput = z.input<typeof admissionSchema>
 export type Admission = z.output<typeof admissionSchema>
 
-export const studentDetailsSchema = z.object({
-  fullName: text(100).min(1, "Enter the child's full name"),
-  joiningDate: isoDateSchema,
-  status: z.enum(STUDENT_STATUSES),
-  homeAddress: text(500)
-})
+export const studentDetailsSchema = z
+  .object({
+    fullName: text(100).min(1, "Enter the child's full name"),
+    joiningDate: isoDateSchema,
+    status: z.enum(STUDENT_STATUSES),
+    homeAddress: text(500),
+    ...childExtras
+  })
+  .superRefine(checkChildExtras)
 export type StudentDetailsInput = z.input<typeof studentDetailsSchema>
 
 export const guardianSchema = z
@@ -205,7 +230,8 @@ export const guardianSchema = z
     name: text(100),
     phone: phoneSchema,
     relationship: text(40).min(1, 'Say how they are related (e.g. Father, Grandmother)'),
-    isEmergency: z.boolean()
+    isEmergency: z.boolean(),
+    occupation: text(60).default('')
   })
   .refine((g) => g.name || g.phone, { path: ['name'], message: 'Enter a name or a phone number' })
 export type GuardianInput = z.input<typeof guardianSchema>
@@ -324,3 +350,14 @@ export type ChargeInput = z.input<typeof chargeInputSchema>
 
 export const waiverSchema = z.object({ reason: text(200).min(1, 'Say why this period is not charged') })
 export type WaiverInput = z.input<typeof waiverSchema>
+
+// ---------- Moving up a class ----------
+
+/** "Move up to the next class" (one child or a whole class): from a date, at the next class's fee. */
+export const moveUpSchema = z.object({
+  from: isoDateSchema,
+  /** The new standard fee in rupees (any concession is kept). */
+  standard: rupees(true)
+})
+export type MoveUpInput = z.input<typeof moveUpSchema>
+export type MoveUp = z.output<typeof moveUpSchema>

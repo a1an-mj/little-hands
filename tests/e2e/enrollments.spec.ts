@@ -47,30 +47,29 @@ test('admission: LKG and Tuition, each with its own days and fee', async () => {
   await field("Father's phone").fill('90000 00014')
   await field('Emergency phone').fill('90000 00016')
 
-  await page.getByRole('checkbox', { name: /LKG/ }).click()
+  await page.getByRole('checkbox', { name: /^LKG/ }).click()
   await expect(field('LKG arrives')).toHaveCount(0) // no fixed times (owner)
   await expect(field('LKG leaves')).toHaveCount(0)
   await expect(field('LKG starts on')).toHaveValue(iso(joined))
   await expect(field('LKG pays every')).toHaveValue('1') // Monthly
-  await expect(field('LKG due on day')).toHaveValue('1') // follows the start date…
-  await field('LKG starts on').fill(iso(new Date(joined.getFullYear(), joined.getMonth(), 5)))
-  await expect(field('LKG due on day')).toHaveValue('5')
+  await expect(field('LKG due on day')).toHaveValue('5') // fees are due by the 5th (owner)
+  await field('LKG starts on').fill(iso(new Date(joined.getFullYear(), joined.getMonth(), 15)))
+  await expect(field('LKG due on day')).toHaveValue('5') // …whatever the joining day
   await field('LKG starts on').fill(iso(joined))
-  await expect(field('LKG due on day')).toHaveValue('1')
   await field('LKG standard fee (₹)').fill('1500')
 
-  await page.getByRole('checkbox', { name: /Tuition/ }).click()
+  await page.getByRole('checkbox', { name: /^Tuition/ }).click()
   await expect(page.getByRole('group', { name: 'Tuition days' }).getByRole('button', { pressed: true })).toHaveText(['Mon', 'Wed', 'Fri'])
   await field('Tuition standard fee (₹)').fill('1,000')
   await field('Tuition concession (₹)').fill('200')
-  await field('Tuition due on day').fill('10') // …until the owner sets it
+  await field('Tuition due on day').fill('10') // can still be changed per child
   await expect(page.getByTestId('agreed-tu')).toHaveText('₹800')
   await expect(page.getByTestId('monthly-total')).toContainText('₹2,300 across 2 programs')
 
   // Two kindergarten classes at once gets a warning, not a block.
-  await page.getByRole('checkbox', { name: /UKG/ }).click()
+  await page.getByRole('checkbox', { name: /^UKG/ }).click()
   await expect(page.getByText('A child is usually in only one of Playgroup, Nursery, LKG or UKG. Please check.')).toBeVisible()
-  await page.getByRole('checkbox', { name: /UKG/ }).click()
+  await page.getByRole('checkbox', { name: /^UKG/ }).click()
   await expect(page.getByText(/usually in only one/)).toHaveCount(0)
 
   await page.getByRole('button', { name: 'Save student' }).click()
@@ -82,7 +81,7 @@ test('admission: LKG and Tuition, each with its own days and fee', async () => {
   await expect(lkg()).toContainText('Mon–Fri')
   await expect(lkg()).toContainText('₹1,500 / month')
   await expect(lkg()).toContainText(`No concession · since ${show(joined)}`)
-  await expect(lkg()).toContainText('Due on the 1st')
+  await expect(lkg()).toContainText('Due on the 5th')
   await expect(tuition()).toContainText('Due on the 10th')
   await expect(tuition()).toContainText('Mon, Wed, Fri')
   await expect(tuition()).toContainText('₹800 / month')
@@ -93,10 +92,10 @@ test('paying every 3 months leaves the monthly total', async () => {
   // Checked on the admission form of a second child, then cancelled.
   await page.getByRole('button', { name: 'Back to all students' }).click()
   await page.getByRole('button', { name: 'New admission' }).click()
-  await page.getByRole('checkbox', { name: /UKG/ }).click()
+  await page.getByRole('checkbox', { name: /^UKG/ }).click()
   await field('UKG standard fee (₹)').fill('4500')
   await field('UKG pays every').selectOption({ label: 'Every 3 months' })
-  await expect(page.getByRole('checkbox', { name: /UKG/ })).toContainText('₹4,500 every 3 months')
+  await expect(page.getByRole('checkbox', { name: /^UKG/ })).toContainText('₹4,500 every 3 months')
   await expect(page.getByTestId('monthly-total')).toContainText('₹0 across 1 program · plus 1 other fee')
   await page.getByRole('button', { name: 'Cancel' }).click()
   await page.getByRole('dialog').getByRole('button', { name: 'Discard' }).click()

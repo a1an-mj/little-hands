@@ -7,9 +7,10 @@ import { BackIcon, CameraIcon, CopyIcon, EditIcon, FeesIcon } from '../../compon
 import { useSnackbar } from '../../components/Snackbar'
 import { ThemeSwitch } from '../../components/ThemeSwitch'
 import { call, messageOf, useLoad } from '../../lib/api'
-import { formatDateLong } from '../../lib/format'
+import { ageText, formatDateLong } from '../../lib/format'
 import type { Navigate, ProfileTab } from '../../shell/routes'
 import { FeesTab } from './FeesTab'
+import { MoveUpDialog } from './MoveUpDialogs'
 import { EditDetailsDialog, GuardianDialog, NoteDialog } from './ProfileDialogs'
 import { AddProgramDialog, EditProgramDialog, EndProgramDialog, ProgramsCard, type ProgramDialog } from './EnrollmentDialogs'
 import { ProgramTag } from './ProgramFields'
@@ -137,6 +138,12 @@ export function StudentProfile({ theme, onToggleTheme, id, navigate, tab: initia
           <div className="muted" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 20px' }}>
             <span>{p.code}</span>
             <span>Joined {formatDateLong(p.joiningDate)}</span>
+            {p.dateOfBirth && <span data-testid="age">{ageText(p.dateOfBirth)} old</span>}
+            {p.afterschool && (
+              <span data-testid="afterschool">
+                After school · {[p.otherSchool, p.otherSchoolClass].filter(Boolean).join(', ')}
+              </span>
+            )}
             {!p.photo && <span>No photo yet</span>}
           </div>
           {p.enrollments.some((e) => e.state !== 'ended') && (
@@ -234,6 +241,7 @@ export function StudentProfile({ theme, onToggleTheme, id, navigate, tab: initia
           onEnd={() => setOpen({ kind: 'end', enrollment: open.enrollment })}
         />
       )}
+      {open?.kind === 'moveUp' && <MoveUpDialog enrollment={open.enrollment} onClose={() => setOpen(null)} onDone={done} />}
       {open?.kind === 'day' && <DayDialog program={open.program} day={open.day} onClose={() => setOpen(null)} onDone={done} />}
       {open?.kind === 'end' && <EndProgramDialog enrollment={open.enrollment} onClose={() => setOpen(null)} onDone={done} />}
     </>
@@ -266,7 +274,7 @@ function Guardians(props: {
               {g.isEmergency && <span className="tag due">Emergency</span>}
             </div>
             <div className="small muted">
-              {[g.name ? g.relationship : null, formatPhone(g.phone) || 'No phone'].filter(Boolean).join(' · ')}
+              {[g.name ? g.relationship : null, formatPhone(g.phone) || 'No phone', g.occupation || null].filter(Boolean).join(' · ')}
             </div>
             {g.sharedWith.length > 0 && (
               <div className="small muted">Also for {g.sharedWith.map((s) => s.fullName).join(', ')}</div>

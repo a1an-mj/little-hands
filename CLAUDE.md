@@ -57,7 +57,7 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
 - School year: **June to March** (April–May break counts with the year that ended; label "2026–27").
 - **No expected times and no "late"**: the app only records when a child actually arrived and left.
 
-## Owner's answers from the paper admission form (20 Nov 2026) — not built yet, replaces earlier fee rules
+## Owner's answers from the paper admission form (20 Nov 2026) — built; replaces earlier fee rules
 - **Fees are due by the 5th of every month**, for every child and program (as printed on the form).
 - **Joining mid-month:** the first month is charged **only for the days left**, by days in that month,
   no rounding (to the paisa). Example: ₹2,000/month, joins 15 Nov → Nov = ₹2,000 × 16/30 = ₹1,066.67.
@@ -71,6 +71,11 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
   program of its own and no extra fee: such a child must be in **Tuition or Daycare**.
 - New admission fields: date of birth, the other school and class (afterschool children), and the
   father's and mother's occupation.
+- Built: `periods.ts` (calendar months, `due` separate from `start`, `partial` first period),
+  Record payment splits an amount above the month's balance into an advance on the next period
+  ("Advance, paid with PAY-…"), migration 009 (programs pc/sm, students.date_of_birth/afterschool/
+  other_school/other_school_class, guardians.occupation), "Move up to …" per child and "Move all
+  to …" on the Students list (NEXT_CLASS: Playgroup → Nursery → LKG → UKG).
 
 ## Still to confirm with the owner
 - How a Daycare month is waived during a long absence (default: the owner waives that month by hand).

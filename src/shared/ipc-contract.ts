@@ -3,7 +3,7 @@
 
 import type { DashboardSummary, DayView, ProgramHistory } from './attendance'
 import type { BackupPreview, BackupStatus } from './backup'
-import type { ProgramDefaults } from './enrollments'
+import type { ProgramCode, ProgramDefaults } from './enrollments'
 import type { FeesOverview, MonthReport, StudentFees } from './payments'
 import type {
   AdmissionInput,
@@ -17,6 +17,7 @@ import type {
   EndEnrollmentInput,
   EnrollmentEditInput,
   EnrollmentInput,
+  MoveUpInput,
   GuardianInput,
   NoteInput,
   StudentDetailsInput
@@ -61,9 +62,13 @@ export interface EnrollmentsApi {
   resume(enrollmentId: string): Promise<Result>
   /** "Added by mistake". */
   remove(enrollmentId: string): Promise<Result>
+  /** The child moves up to the next class from a date (e.g. LKG → UKG). */
+  moveUp(enrollmentId: string, input: MoveUpInput): Promise<Result<string>>
+  /** Everyone in a class moves up together (June). */
+  moveUpClass(code: ProgramCode, input: MoveUpInput): Promise<Result<{ moved: number; skipped: { name: string; reason: string }[] }>>
 }
 
-export const ENROLLMENTS_METHODS = ['defaults', 'add', 'edit', 'end', 'resume', 'remove'] as const satisfies readonly (keyof EnrollmentsApi)[]
+export const ENROLLMENTS_METHODS = ['defaults', 'add', 'edit', 'end', 'resume', 'remove', 'moveUp', 'moveUpClass'] as const satisfies readonly (keyof EnrollmentsApi)[]
 
 /** Attendance (append-only) and the dashboard figures. Same rules as StudentsApi. */
 export interface AttendanceApi {
@@ -96,7 +101,8 @@ export interface PaymentsApi {
   monthReport(month: string): Promise<Result<MonthReport>>
   /** Names that recorded payments before ("Recorded by"). */
   recorders(): Promise<Result<string[]>>
-  record(input: PaymentInput): Promise<Result<{ id: string; no: string }>>
+  /** Returns the payment; `advance` is a second entry when the amount covered the next period too. */
+  record(input: PaymentInput): Promise<Result<{ id: string; no: string; advance: { no: string; forText: string; amountPaise: number } | null }>>
   reverse(paymentId: string, input: ReversalInput): Promise<Result<{ id: string; no: string }>>
   addCharge(studentId: string, input: ChargeInput): Promise<Result<string>>
   cancelCharge(chargeId: string): Promise<Result>

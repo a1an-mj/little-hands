@@ -3,6 +3,7 @@ import { academicYearOf } from '@shared/academic-year'
 import { shownVersions } from '@shared/effective'
 import {
   PROGRAM_NAME,
+  NEXT_CLASS,
   isExtra,
   isKindergarten,
   ordinal,
@@ -37,6 +38,7 @@ export type ProgramDialog =
   | { kind: 'add' }
   | { kind: 'edit'; enrollment: EnrollmentView }
   | { kind: 'end'; enrollment: EnrollmentView }
+  | { kind: 'moveUp'; enrollment: EnrollmentView }
 
 const daysText = (s: ScheduleVersion) => formatDays(s.days)
 const feeText = (f: FeeVersion) => feeWithPeriod(formatRupees(f.agreedPaise), f.periodMonths)
@@ -85,6 +87,11 @@ export function ProgramsCard({ p, onOpen, onResume }: { p: StudentProfile; onOpe
               </span>
               {e.state === 'upcoming' && <span className="tag nt">Starts {formatDate(e.startDate)}</span>}
               {e.endDate && <span className="tag part">Last day {formatDate(e.endDate)}</span>}
+              {e.state === 'current' && !e.endDate && NEXT_CLASS[e.program] && (
+                <button type="button" className="btn textb" onClick={() => onOpen({ kind: 'moveUp', enrollment: e })}>
+                  Move up to {PROGRAM_NAME[NEXT_CLASS[e.program]!]}
+                </button>
+              )}
               <button type="button" className="iconb" aria-label={`Edit ${name}`} title="Edit" onClick={() => onOpen({ kind: 'edit', enrollment: e })}>
                 <EditIcon size={20} />
               </button>

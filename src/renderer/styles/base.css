@@ -239,7 +239,7 @@ button{font-family:inherit}
    ====================================================================== */
 
 /* Program colours (Playgroup coral, Nursery green, LKG yellow, UKG blue, Daycare rose, Tuition violet) */
-.pg{background:var(--pgc);color:var(--pgo)}.lk{background:var(--lkc);color:var(--lko)}.uk{background:var(--ukc);color:var(--uko)}.tu{background:var(--tuc);color:var(--tuo)}.nu{background:var(--nuc);color:var(--nuo)}.dc{background:var(--dcc);color:var(--dco)}.ka,.da,.tr{background:var(--c3);color:var(--os);box-shadow:inset 0 0 0 1px var(--olv)}
+.pg{background:var(--pgc);color:var(--pgo)}.lk{background:var(--lkc);color:var(--lko)}.uk{background:var(--ukc);color:var(--uko)}.tu{background:var(--tuc);color:var(--tuo)}.nu{background:var(--nuc);color:var(--nuo)}.dc{background:var(--dcc);color:var(--dco)}.pc{background:var(--pcc);color:var(--pco)}.sm{background:var(--smc);color:var(--smo)}.ka,.da,.tr{background:var(--c3);color:var(--os);box-shadow:inset 0 0 0 1px var(--olv)}
 
 /* Program cards on the admission form */
 .prog{border:1px solid var(--olv);border-radius:20px;overflow:hidden}
@@ -339,3 +339,4 @@ button{font-family:inherit}
 .backup-chip{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px;border-radius:18px;border:none;font:500 13px Roboto,sans-serif;cursor:pointer;background:var(--c3);color:var(--osv)}
 .backup-chip.warn{background:var(--ec);color:var(--oec)}
 .backup-chip:focus-visible{outline:3px solid var(--p);outline-offset:2px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px 16px}

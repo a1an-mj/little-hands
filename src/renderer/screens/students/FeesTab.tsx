@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { formatDate } from '@shared/dates'
-import { PROGRAM_NAME, feeWithPeriod } from '@shared/enrollments'
+import { PROGRAM_NAME, feeWithPeriod, ordinal } from '@shared/enrollments'
 import { formatRupees } from '@shared/money'
 import {
   CHARGE_KIND_LABEL,
@@ -99,7 +99,6 @@ export function FeesTab({ studentId, onPay }: { studentId: string; onPay: (targe
 
       <div className="fees-cols">
         {f.programs.map((p) => {
-          const current = p.periods.find((x) => x.start <= f.today) ?? p.periods[0]
           const list = showAll ? p.periods : p.periods.slice(0, PERIODS_SHOWN)
           return (
             <section key={p.enrollmentId} className="card in" aria-labelledby={`fees-${p.enrollmentId}`} data-testid={`fees-${p.program}`}>
@@ -107,7 +106,7 @@ export function FeesTab({ studentId, onPay }: { studentId: string; onPay: (targe
                 {PROGRAM_NAME[p.program]}
               </h2>
               <div className="small muted" style={{ marginBottom: 8 }}>
-                {current ? feeWithPeriod(formatRupees(current.amountPaise), current.periodMonths) : 'No periods yet'}
+                {p.fee ? `${feeWithPeriod(formatRupees(p.fee.agreedPaise), p.fee.periodMonths)} · due by the ${ordinal(p.fee.dueDay)}` : 'No fee yet'}
                 {p.state === 'ended' ? ' · ended' : ''}
               </div>
               {p.periods.length === 0 && <p className="muted">Starts {p.next ? formatDate(p.next.start) : 'later'}.</p>}
@@ -120,7 +119,7 @@ export function FeesTab({ studentId, onPay }: { studentId: string; onPay: (targe
                         <td>
                           <div className="t-lg">{periodLabel(x)}</div>
                           <div className="small muted">
-                            {x.periodMonths === 1 ? `${formatDate(x.start)} – ${formatDate(x.end!)}` : `Due ${formatDate(x.start)}`}
+                            {x.partial ? 'Days left in the month · ' : ''}due {formatDate(x.due)}
                             {x.waiver ? ` · ${x.waiver.reason}` : ''}
                           </div>
                         </td>

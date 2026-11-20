@@ -60,7 +60,7 @@ const edit = (id: string, patch: Partial<EnrollmentEditInput>): EnrollmentEditIn
 describe('programs', () => {
   it('has the programs and extras with fixed IDs and default days', () => {
     const d = repo.defaults()
-    expect(d.map((p) => p.name)).toEqual(['Playgroup', 'Nursery', 'LKG', 'UKG', 'Daycare', 'Tuition', 'Karate', 'Dance', 'Transport'])
+    expect(d.map((p) => p.name)).toEqual(['Playgroup', 'Nursery', 'LKG', 'UKG', 'Daycare', 'Tuition', 'Preparatory class', 'Summer camp', 'Karate', 'Dance', 'Transport'])
     expect(d.find((p) => p.code === 'tr')).toMatchObject({ days: 0 }) // extras: no days
     expect(d.find((p) => p.code === 'nu')).toMatchObject({ days: 31 })
     expect(d.find((p) => p.code === 'tu')).toMatchObject({ days: 21, lastStandardPaise: null })
@@ -310,5 +310,36 @@ describe('migration 004: fee periods and due day', () => {
       { effective_from: '2026-09-15', period_months: 3, due_day: 15, agreed_paise: 150000, remarks: '' },
       { effective_from: '2026-12-01', period_months: 3, due_day: 1, agreed_paise: 150000, remarks: 'Cash only (Was: Every 2 months)' }
     ])
+  })
+})
+
+describe('moving up a class (fees go up once a year, per class)', () => {
+  it('LKG → UKG from 1 June: same days, period, due day and concession, at the new fee', () => {
+    const id = admit({
+      programs: [lkgEnrollment({ schedule: { days: 21 }, fee: { periodMonths: 1, dueDay: '5', standard: '1500', concession: '200', concessionReason: 'Sibling', remarks: '' } })]
+    })
+    const lk = enrollments(id)[0]!.id
+    repo.moveUp(lk, { from: '2027-06-01', standard: '1800' })
+    const all = repo.forStudent(id)
+    const lkg = all.find((e) => e.program === 'lk')!
+    const ukg = all.find((e) => e.program === 'uk')!
+    expect([lkg.endDate, lkg.endReason]).toEqual(['2027-05-31', 'Moved up to UKG'])
+    expect(ukg.startDate).toBe('2027-06-01')
+    expect(ukg.schedules.at(-1)!.days).toBe(21)
+    expect(ukg.fees.at(-1)).toMatchObject({ periodMonths: 1, dueDay: 5, standardPaise: 180000, concessionPaise: 20000, agreedPaise: 160000, concessionReason: 'Sibling' })
+    expect(() => repo.moveUp(ukg.id, { from: '2028-06-01', standard: '2000' })).toThrow('Mark the child Graduated instead')
+  })
+
+  it('the whole class at once; a child who can’t be moved is listed, the others still move', () => {
+    const a = admit()
+    admit({ fullName: 'Dev Krishna', family: { ...newFamilyAdmission().family, father: { name: 'K', phone: '90000 00061' } } as never })
+    // A third child already has UKG from June, so moving them would clash.
+    const c = admit({ fullName: 'Neha', family: { ...newFamilyAdmission().family, father: { name: 'N', phone: '90000 00071' } } as never })
+    repo.add(c, lkgEnrollment({ program: 'uk', startDate: '2027-06-01' }))
+    const r = repo.moveUpClass('lk', { from: '2027-06-01', standard: '1800' })
+    expect(r.moved).toBe(2)
+    expect(r.skipped).toEqual([{ name: 'Neha', reason: expect.stringContaining('already in UKG') }])
+    expect(repo.forStudent(a).map((e) => e.program).sort()).toEqual(['lk', 'uk'])
+    expect(repo.forStudent(c).find((e) => e.program === 'lk')!.endDate).toBeNull() // untouched
   })
 })

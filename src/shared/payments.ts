@@ -14,10 +14,13 @@ export const CHARGE_KIND_LABEL: Record<ChargeKind, string> = { admission: 'Admis
 /** "PAY-0007" */
 export const paymentNo = (seq: number) => `PAY-${String(seq).padStart(4, '0')}`
 
-/** "Oct 2026" for monthly; "20 Oct 2026 – 19 Jan 2027" for longer periods; "One-time". */
+/** "Nov 2026"; a first month charged by days: "15–30 Nov 2026"; longer periods: "15 Jun 2026 – 31 Aug 2026"; "One-time". */
 export function periodLabel(p: Pick<Period, 'start' | 'end' | 'periodMonths'>): string {
   if (p.periodMonths === 0 || p.end === null) return 'One-time'
-  if (p.periodMonths === 1) return monthLabel(p.start)
+  if (p.periodMonths === 1) {
+    if (p.start.slice(8) === '01') return monthLabel(p.start)
+    return `${Number(p.start.slice(8))}–${formatDate(p.end)}`
+  }
   return `${formatDate(p.start)} – ${formatDate(p.end)}`
 }
 
@@ -33,6 +36,8 @@ export interface ProgramFees {
   periods: PeriodView[]
   /** The next period not started yet, if the program continues. */
   next: Period | null
+  /** The fee agreed now (the full monthly amount, even when the first month is charged by days). */
+  fee: { agreedPaise: number; periodMonths: number; dueDay: number } | null
 }
 
 export interface ChargeView extends Balance {

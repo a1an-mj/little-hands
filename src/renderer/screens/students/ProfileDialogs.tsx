@@ -35,7 +35,7 @@ export function useSubmit() {
   return { busy, errors, setErrors, submit, snack }
 }
 
-function Check({ checked, onChange, children }: { checked: boolean; onChange: (v: boolean) => void; children: React.ReactNode }) {
+export function Check({ checked, onChange, children }: { checked: boolean; onChange: (v: boolean) => void; children: React.ReactNode }) {
   return (
     <label className="check" style={{ padding: 0 }}>
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
@@ -59,7 +59,11 @@ export function EditDetailsDialog(props: {
     fullName: p.fullName,
     joiningDate: p.joiningDate,
     status: p.status,
-    homeAddress: p.homeAddress
+    homeAddress: p.homeAddress,
+    dateOfBirth: p.dateOfBirth ?? '',
+    afterschool: p.afterschool,
+    otherSchool: p.otherSchool,
+    otherSchoolClass: p.otherSchoolClass
   })
   const [confirm, setConfirm] = useState<'remove' | 'photo' | null>(null)
   const { busy, errors, submit, snack } = useSubmit()
@@ -146,6 +150,16 @@ export function EditDetailsDialog(props: {
             </span>
           </div>
         )}
+        <TextField label="Date of birth" type="date" value={d.dateOfBirth ?? ''} onChange={(v) => set({ dateOfBirth: v })} error={errors.dateOfBirth} />
+        <Check checked={!!d.afterschool} onChange={(v) => set({ afterschool: v })}>
+          Studies at another school and comes here after school (Tuition or Daycare)
+        </Check>
+        {d.afterschool && (
+          <div className="grid">
+            <TextField label="Their school" value={d.otherSchool ?? ''} onChange={(v) => set({ otherSchool: v })} error={errors.otherSchool} />
+            <TextField label="Class there" value={d.otherSchoolClass ?? ''} onChange={(v) => set({ otherSchoolClass: v })} error={errors.otherSchoolClass} />
+          </div>
+        )}
         <TextField label="Home address" multiline value={d.homeAddress} onChange={(v) => set({ homeAddress: v })} error={errors.homeAddress} />
         <div className="dlg-actions" style={{ justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -185,7 +199,8 @@ export function GuardianDialog(props: {
     name: link?.name ?? '',
     phone: link?.phone ? formatPhone(link.phone) : '',
     relationship: link?.relationship ?? '',
-    isEmergency: link?.isEmergency ?? false
+    isEmergency: link?.isEmergency ?? false,
+    occupation: link?.occupation ?? ''
   })
   const [confirmRemove, setConfirmRemove] = useState(false)
   const { busy, errors, submit, snack } = useSubmit()
@@ -241,6 +256,7 @@ export function GuardianDialog(props: {
         <div className="grid">
           <TextField label="Relationship" required placeholder="e.g. Father, Grandmother" value={g.relationship} onChange={(v) => set({ relationship: v })} error={errors.relationship} />
           <TextField label="Phone" type="tel" placeholder="+91" value={g.phone} onChange={(v) => set({ phone: v })} error={errors.phone} />
+          <TextField label="Occupation" value={g.occupation ?? ''} onChange={(v) => set({ occupation: v })} error={errors.occupation} placeholder="Optional" />
         </div>
         <Check checked={g.isEmergency} onChange={(v) => set({ isEmergency: v })}>
           Call in an emergency

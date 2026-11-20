@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { Theme } from '@shared/ipc-contract'
 import { formatPhone } from '@shared/phone'
-import { PROGRAM_CODES, PROGRAM_NAME } from '@shared/enrollments'
+import { NEXT_CLASS, PROGRAM_CODES, PROGRAM_NAME } from '@shared/enrollments'
+import { MoveClassDialog } from './MoveUpDialogs'
 import { PAGE_SIZE, STATUS_LABEL, STUDENT_STATUSES, type StudentListRow } from '@shared/students'
 import { Avatar } from '../../components/Avatar'
 import { AddPersonIcon, AttendanceIcon, CheckIcon, SearchIcon } from '../../components/icons'
@@ -28,7 +29,8 @@ export function StudentsList({ theme, onToggleTheme, state, setState, navigate }
     return () => clearTimeout(t)
   }, [typed, state, setState])
 
-  const { data, error } = useLoad(
+  const [moving, setMoving] = useState(false)
+  const { data, error, reload } = useLoad(
     () => window.lh.students.list({ search: state.search, status: state.status, program: state.program, page: state.page }),
     [state.search, state.status, state.program, state.page]
   )
@@ -94,6 +96,11 @@ export function StudentsList({ theme, onToggleTheme, state, setState, navigate }
           ))}
         </div>
         <div style={{ flex: 1 }} />
+        {state.program !== 'all' && NEXT_CLASS[state.program] && state.status === 'active' && total > 0 && !state.search && (
+          <button type="button" className="btn outlined" onClick={() => setMoving(true)}>
+            Move all to {PROGRAM_NAME[NEXT_CLASS[state.program]!]}…
+          </button>
+        )}
         <button type="button" className="btn tonal" onClick={() => navigate({ name: 'attendance' })}>
           <AttendanceIcon />
           Mark attendance
@@ -138,6 +145,17 @@ export function StudentsList({ theme, onToggleTheme, state, setState, navigate }
             </button>
           </div>
         </div>
+      )}
+      {moving && state.program !== 'all' && (
+        <MoveClassDialog
+          code={state.program}
+          count={total}
+          onClose={() => setMoving(false)}
+          onDone={() => {
+            setMoving(false)
+            void reload()
+          }}
+        />
       )}
     </>
   )
