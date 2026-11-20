@@ -10,10 +10,12 @@ interface Props {
   /** Called with the confirmed PIN. */
   onChosen: (pin: string) => Promise<void>
   onCancel?: () => void
+  /** Extra content under the keypad (first run: "Restore from a backup"). */
+  footer?: React.ReactNode
 }
 
 /** Choose a 4-digit PIN, then type it again to confirm. Used on first run and after recovery. */
-export function ChoosePinScreen({ theme, onToggleTheme, title, onChosen, onCancel }: Props) {
+export function ChoosePinScreen({ theme, onToggleTheme, title, onChosen, onCancel, footer }: Props) {
   const [first, setFirst] = useState<string | null>(null)
   const [pin, setPin] = useState('')
   const [error, setError] = useState('')
@@ -71,6 +73,7 @@ export function ChoosePinScreen({ theme, onToggleTheme, title, onChosen, onCance
           </button>
         </div>
       )}
+      {!confirming && footer}
     </LockLayout>
   )
 }

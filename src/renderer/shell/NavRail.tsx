@@ -11,7 +11,7 @@ import {
   StudentsIcon
 } from '../components/icons'
 
-export type Page = 'home' | 'students' | 'fees' | 'attendance'
+export type Page = 'home' | 'students' | 'fees' | 'attendance' | 'settings'
 
 const DESTINATIONS: { id: Page; label: string; icon: ReactNode }[] = [
   { id: 'home', label: 'Home', icon: <HomeIcon /> },
@@ -20,10 +20,7 @@ const DESTINATIONS: { id: Page; label: string; icon: ReactNode }[] = [
   { id: 'attendance', label: 'Attendance', icon: <AttendanceIcon /> }
 ]
 
-const LATER = [
-  { label: 'Reports', icon: <ReportsIcon /> },
-  { label: 'Settings', icon: <SettingsIcon /> }
-]
+const LATER = [{ label: 'Reports', icon: <ReportsIcon /> }]
 
 interface Props {
   page: Page
@@ -59,6 +56,12 @@ export function NavRail({ page, onNavigate, onRecordPayment, onLock }: Props) {
           {d.label}
         </span>
       ))}
+      <button type="button" className="dest" aria-current={page === 'settings' ? 'page' : undefined} onClick={() => onNavigate('settings')}>
+        <span className="pill">
+          <SettingsIcon />
+        </span>
+        Settings
+      </button>
       <button type="button" className="dest rail-end" onClick={onLock}>
         <span className="pill">
           <LockIcon />

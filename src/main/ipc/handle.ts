@@ -9,11 +9,12 @@ export type Impl<Api> = { [K in keyof Api]: (...args: unknown[]) => Promise<unkn
 /**
  * Registers `<prefix>:<method>` handlers. Every call checks the app is unlocked; owner-fixable
  * problems become `{ ok: false, message }`, anything else is a real error.
+ * `beforeSetup` methods also work on a fresh install before a PIN is chosen (restoring a backup).
  */
-export function handleAll<Api>(prefix: string, impl: Impl<Api>, session: LockSession): void {
+export function handleAll<Api>(prefix: string, impl: Impl<Api>, session: LockSession, beforeSetup: readonly string[] = []): void {
   for (const [name, fn] of Object.entries(impl) as [string, (...args: unknown[]) => unknown][]) {
     ipcMain.handle(`${prefix}:${name}`, async (_e, ...args: unknown[]): Promise<Result<unknown>> => {
-      session.requireUnlocked()
+      if (!(beforeSetup.includes(name) && session.status().state === 'needs-setup')) session.requireUnlocked()
       session.activity()
       try {
         const value = await fn(...args)

@@ -1,0 +1,28 @@
+# Windows installer for Little Hands. Built on GitHub Actions (windows-latest): see .github/workflows/windows.yml.
+appId: app.littlehands.manager
+productName: Little Hands
+copyright: Little Hands
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**/*
+  - package.json
+# better-sqlite3's native binary must sit outside the app archive to be loaded.
+asarUnpack:
+  - node_modules/better-sqlite3/**/*.node
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.png
+nsis:
+  # Simple for a non-technical owner: one click, installs for this Windows user, no admin rights.
+  oneClick: true
+  perMachine: false
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Little Hands
+  # Uninstalling or updating never deletes the data (it lives in %APPDATA%\little-hands).
+  deleteAppDataOnUninstall: false
+  artifactName: Little Hands Setup ${version}.${ext}

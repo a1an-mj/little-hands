@@ -1,11 +1,13 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import {
   ATTENDANCE_METHODS,
+  BACKUP_METHODS,
   ENROLLMENTS_METHODS,
   PAYMENTS_METHODS,
   IPC,
   STUDENTS_METHODS,
   type AttendanceApi,
+  type BackupApi,
   type EnrollmentsApi,
   type PaymentsApi,
   type LhApi,
@@ -24,6 +26,7 @@ const students = invokers<StudentsApi>('students', STUDENTS_METHODS)
 const enrollments = invokers<EnrollmentsApi>('enrollments', ENROLLMENTS_METHODS)
 const attendance = invokers<AttendanceApi>('attendance', ATTENDANCE_METHODS)
 const payments = invokers<PaymentsApi>('payments', PAYMENTS_METHODS)
+const backup = invokers<BackupApi>('backup', BACKUP_METHODS)
 
 const api: LhApi = {
   lock: {
@@ -53,7 +56,8 @@ const api: LhApi = {
   students,
   enrollments,
   attendance,
-  payments
+  payments,
+  backup
 }
 
 contextBridge.exposeInMainWorld('lh', api)

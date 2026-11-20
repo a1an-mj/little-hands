@@ -6,7 +6,7 @@ import { formatTime } from '@shared/schedule'
 import { formatRupees } from '@shared/money'
 import { METHOD_LABEL } from '@shared/payments'
 import { Avatar } from '../../components/Avatar'
-import { AddPersonIcon, CheckIcon, FeesIcon, SearchIcon } from '../../components/icons'
+import { AddPersonIcon, AlertIcon, CheckIcon, FeesIcon, SearchIcon } from '../../components/icons'
 import { useSnackbar } from '../../components/Snackbar'
 import { ThemeSwitch } from '../../components/ThemeSwitch'
 import { call, messageOf, useLoad } from '../../lib/api'
@@ -15,6 +15,7 @@ import type { Navigate } from '../../shell/routes'
 import { ProgramTag } from '../students/ProgramFields'
 import { CloseDayDialog, ClosedBanner, statusTag } from '../attendance/parts'
 import { OwedRow } from '../fees/FeesScreen'
+import { backupLine } from '../settings/SettingsScreen'
 
 interface Props {
   theme: Theme
@@ -51,6 +52,8 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
   const { data: day, error, reload } = useLoad(() => window.lh.attendance.day(), [])
   const { data: summary } = useLoad(() => window.lh.attendance.summary(), [])
   const { data: fees } = useLoad(() => window.lh.payments.overview(), [])
+  const { data: backup } = useLoad(() => window.lh.backup.status(), [])
+  const bk = backup ? backupLine(backup) : null
 
   // Keep the "late" notes up to date while the dashboard is open.
   useEffect(() => {
@@ -130,6 +133,13 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
           <AddPersonIcon />
           New admission
         </button>
+        <div style={{ flex: 1 }} />
+        {bk && (
+          <button type="button" className={bk.warn ? 'backup-chip warn' : 'backup-chip'} data-testid="backup-chip" onClick={() => navigate({ name: 'settings' })}>
+            {bk.warn ? <AlertIcon /> : <CheckIcon />}
+            {bk.text}
+          </button>
+        )}
       </div>
 
       <section aria-label="Today at a glance" className="glance">

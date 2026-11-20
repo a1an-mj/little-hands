@@ -64,7 +64,7 @@ test('first run: choose a PIN, see the recovery code once, then the app opens', 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Good (morning|afternoon|evening)/)
 })
 
-test('navigation rail: modules open, Reports and Settings are greyed out', async () => {
+test('navigation rail: modules open, Reports is greyed out', async () => {
   await mainMenu().getByRole('button', { name: 'Students' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Students' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'New admission' })).toBeVisible()
@@ -74,11 +74,11 @@ test('navigation rail: modules open, Reports and Settings are greyed out', async
   await mainMenu().getByRole('button', { name: 'Fees' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Fees' })).toBeVisible()
 
-  for (const name of ['Reports', 'Settings']) {
-    const item = mainMenu().getByText(name, { exact: true })
-    await expect(item).toHaveAttribute('aria-disabled', 'true')
-    await expect(item).toHaveAttribute('title', 'Coming in a later version')
-  }
+  const reports = mainMenu().getByText('Reports', { exact: true })
+  await expect(reports).toHaveAttribute('aria-disabled', 'true')
+  await expect(reports).toHaveAttribute('title', 'Coming in a later version')
+  await mainMenu().getByRole('button', { name: 'Settings' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible()
 })
 
 test('theme switch changes the theme and is remembered after a restart', async () => {

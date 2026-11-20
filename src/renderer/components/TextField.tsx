@@ -6,7 +6,7 @@ interface Props {
   onChange: (value: string) => void
   error?: string
   help?: ReactNode
-  type?: 'text' | 'tel' | 'date' | 'time' | 'datetime-local' | 'month'
+  type?: 'text' | 'tel' | 'date' | 'time' | 'datetime-local' | 'month' | 'password'
   /** Shows a number keypad on touch screens, e.g. 'decimal' for money. */
   inputMode?: 'decimal' | 'numeric'
   multiline?: boolean

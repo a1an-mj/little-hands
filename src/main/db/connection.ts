@@ -7,6 +7,9 @@ const migrationFiles = import.meta.glob('./migrations/*.sql', {
   eager: true
 }) as Record<string, string>
 
+/** The highest migration this app knows (a backup from a newer app can't be restored). */
+export const latestSchemaVersion = () => migrationsFromFiles(migrationFiles).at(-1)?.version ?? 0
+
 export function openDatabase(file: string): Database.Database {
   const db = new Database(file)
   db.pragma('journal_mode = WAL')

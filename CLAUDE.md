@@ -78,7 +78,8 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
 ## Design
 - Material 3 look, light + dark theme. The theme follows Windows' light/dark setting until the
   owner uses the switch; the switch choice is remembered. Smooth transitions; respect "reduce motion".
-- Reports and Settings appear in the menu but are greyed out ("Coming in a later version").
+- Reports appears in the menu but is greyed out ("Coming in a later version"). Settings holds only
+  "Backup & restore" for now.
 - Logo: the hand from the school's logo (littlehandsekm.in), blue #20ADE4 on a white tile
   (`LogoIcon`, `build/icon.svg` → `build/icon.png`).
 - Colours match the logo: Material 3 "fidelity" scheme from #20ADE4, in `src/renderer/styles/tokens.css`
@@ -123,6 +124,15 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
   (that tool uploads it to the cloud) or a USB drive. Keep the last 30 backups, delete older ones.
 - "Restore from backup" (pick a file, enter password, confirm) to set up a new laptop.
 - Show "Last backup: <date, time>" in the app; warn if older than 2 days.
+- Built (step 6): `src/main/backup/` (crypto.ts: "LHBK" file, gzip + AES-256-GCM, header as AAD;
+  service.ts). The scrypt-derived key is kept in app_settings locked with Electron safeStorage
+  (Windows DPAPI), so daily backups don't ask for the password; restore always needs it.
+  Files: "Little Hands YYYY-MM-DD HH.MM.SS.lhbackup", written as .partial then renamed.
+  Restore keeps the current DB aside (little-hands.before-restore-*.db), gives the restored data a
+  new device_id, clears the backup settings, and restarts. Restore also works on the first-run screen.
+- Installer: `electron-builder.yml` (NSIS one-click, per user, data in %APPDATA%\little-hands kept on
+  uninstall) built by `.github/workflows/windows.yml` (typecheck, unit + e2e tests on Windows, then
+  the installer as an artifact). Manual checklist: `docs/windows-test.md`.
 
 ## Way of working
 Work in small, reviewable steps, committed and pushed straight to `main` (no feature branches or PRs). Before writing code, propose the

@@ -5,6 +5,7 @@ import { AttendanceScreen } from '../screens/attendance/AttendanceScreen'
 import { Dashboard } from '../screens/home/Dashboard'
 import { FeesScreen } from '../screens/fees/FeesScreen'
 import { RecordPayment } from '../screens/fees/RecordPayment'
+import { SettingsScreen } from '../screens/settings/SettingsScreen'
 import { AdmissionForm } from '../screens/students/AdmissionForm'
 import { StudentProfile } from '../screens/students/StudentProfile'
 import { StudentsList } from '../screens/students/StudentsList'
@@ -55,6 +56,7 @@ export function Shell({ theme, onToggleTheme, onLock }: Props) {
           )}
           {route.name === 'attendance' && <AttendanceScreen {...common} navigate={setRoute} />}
           {route.name === 'fees' && <FeesScreen {...common} navigate={setRoute} />}
+          {route.name === 'settings' && <SettingsScreen {...common} />}
         </main>
       </div>
     </SnackbarProvider>

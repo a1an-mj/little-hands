@@ -330,3 +330,12 @@ button{font-family:inherit}
 .owe-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px 0}
 .owe-row.compact{cursor:pointer}
 .fees-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:16px;align-items:start}
+
+/* ---------------------------------------------------------------
+   Step 6: backups.
+   --------------------------------------------------------------- */
+.setrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 0}
+.okline{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:12px;background:var(--pc);color:var(--opc)}
+.backup-chip{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px;border-radius:18px;border:none;font:500 13px Roboto,sans-serif;cursor:pointer;background:var(--c3);color:var(--osv)}
+.backup-chip.warn{background:var(--ec);color:var(--oec)}
+.backup-chip:focus-visible{outline:3px solid var(--p);outline-offset:2px}

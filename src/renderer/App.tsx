@@ -7,6 +7,7 @@ import { LockScreen } from './screens/LockScreen'
 import { RecoverScreen } from './screens/RecoverScreen'
 import { RecoveryCodeScreen } from './screens/RecoveryCodeScreen'
 import { Shell } from './shell/Shell'
+import { useRestorePicker } from './screens/settings/RestoreDialog'
 
 export function App() {
   const [theme, toggleTheme] = useTheme()
@@ -23,6 +24,7 @@ export function App() {
     })
   }, [])
 
+  const restore = useRestorePicker()
   const unlocked = status?.state === 'unlocked'
   useActivityPing(unlocked)
 
@@ -40,6 +42,16 @@ export function App() {
           setPendingCode({ code: recoveryCode, isNew: false })
           setStatus({ state: 'unlocked' })
         }}
+        footer={
+          <div className="lock-foot" style={{ flexDirection: 'column', gap: 4 }}>
+            <span className="small muted">Setting up a new laptop?</span>
+            <button type="button" className="btn textb" onClick={() => void restore.choose()}>
+              Restore from a backup
+            </button>
+            {restore.error && <span className="field-error">{restore.error}</span>}
+            {restore.dialog}
+          </div>
+        }
       />
     )
   }

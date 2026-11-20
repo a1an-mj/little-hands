@@ -2,6 +2,7 @@
 // All data access lives in the main process; the UI only talks through this.
 
 import type { DashboardSummary, DayView, ProgramHistory } from './attendance'
+import type { BackupPreview, BackupStatus } from './backup'
 import type { ProgramDefaults } from './enrollments'
 import type { FeesOverview, MonthReport, StudentFees } from './payments'
 import type {
@@ -107,6 +108,30 @@ export const PAYMENTS_METHODS = [
   'forStudent', 'overview', 'monthReport', 'recorders', 'record', 'reverse', 'addCharge', 'cancelCharge', 'waive', 'unwaive'
 ] as const satisfies readonly (keyof PaymentsApi)[]
 
+/** Encrypted backups and restore. Same rules as StudentsApi; the restore methods also work before a PIN is set. */
+export interface BackupApi {
+  status(): Promise<Result<BackupStatus>>
+  /** Opens the folder picker; null if cancelled. */
+  pickFolder(): Promise<Result<string | null>>
+  /** Folder + backup password; makes the first backup. Returns its path. */
+  setUp(folder: string, password: string): Promise<Result<string>>
+  changeFolder(folder: string): Promise<Result<string>>
+  changePassword(password: string): Promise<Result<string>>
+  backupNow(): Promise<Result<string>>
+  /** Shows the backup folder in Explorer. */
+  openFolder(): Promise<Result>
+  /** Opens the file picker for a backup; null if cancelled. */
+  pickFile(): Promise<Result<string | null>>
+  /** What's inside a backup (needs its password). Changes nothing. */
+  inspect(path: string, password: string): Promise<Result<BackupPreview>>
+  /** Replaces this laptop's data with the backup, then the app restarts. */
+  restore(path: string, password: string): Promise<Result>
+}
+
+export const BACKUP_METHODS = [
+  'status', 'pickFolder', 'setUp', 'changeFolder', 'changePassword', 'backupNow', 'openFolder', 'pickFile', 'inspect', 'restore'
+] as const satisfies readonly (keyof BackupApi)[]
+
 export type LockStatus =
   | { state: 'needs-setup' }
   | { state: 'locked'; triesLeft: number; waitUntil: number | null }
@@ -146,6 +171,7 @@ export interface LhApi {
   enrollments: EnrollmentsApi
   attendance: AttendanceApi
   payments: PaymentsApi
+  backup: BackupApi
 }
 
 export const IPC = {

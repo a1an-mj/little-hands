@@ -1,8 +1,10 @@
 import { join } from 'node:path'
-import { app, BrowserWindow, nativeTheme, powerMonitor, shell } from 'electron'
+import { app, BrowserWindow, nativeTheme, powerMonitor, safeStorage, shell } from 'electron'
 import { IPC, type LockStatus } from '@shared/ipc-contract'
 import { themeSchema } from '@shared/schemas'
-import { openDatabase } from './db/connection'
+import { latestSchemaVersion, openDatabase } from './db/connection'
+import { BackupService, type KeyProtector } from './backup/service'
+import { registerBackupIpc } from './ipc/backup'
 import { SettingsStore } from './db/settings-store'
 import { IDLE_LOCK_MS } from './lock/idle-timer'
 import { PinAuth } from './lock/pin-auth'
@@ -31,6 +33,21 @@ app.commandLine.appendSwitch('lang', 'en-IN')
 if (!app.requestSingleInstanceLock()) app.quit()
 
 let mainWindow: BrowserWindow | null = null
+
+/**
+ * The backup key is kept locked by the operating system (Windows DPAPI via safeStorage), so daily
+ * backups run without asking for the password, and the key can't be used on another laptop.
+ * Where no system keyring exists (some Linux test machines) it falls back to plain storage.
+ */
+const protector: KeyProtector = {
+  protect: (secret) =>
+    safeStorage.isEncryptionAvailable() ? 'os:' + safeStorage.encryptString(secret).toString('base64') : 'plain:' + secret,
+  unprotect: (stored) => {
+    if (stored.startsWith('plain:')) return stored.slice('plain:'.length)
+    if (!safeStorage.isEncryptionAvailable()) throw new Error('This laptop cannot unlock the saved backup key')
+    return safeStorage.decryptString(Buffer.from(stored.slice('os:'.length), 'base64'))
+  }
+}
 
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
@@ -68,7 +85,8 @@ function createWindow(): BrowserWindow {
 }
 
 app.whenReady().then(() => {
-  const db = openDatabase(join(app.getPath('userData'), 'little-hands.db'))
+  const dbFile = join(app.getPath('userData'), 'little-hands.db')
+  const db = openDatabase(dbFile)
   const settings = new SettingsStore(db)
 
   const savedTheme = themeSchema.safeParse(settings.get('theme'))
@@ -95,6 +113,36 @@ app.whenReady().then(() => {
   registerAttendanceIpc(new AttendanceRepo(writer), session)
   registerPaymentsIpc(new PaymentsRepo(writer), session)
 
+  const backup = new BackupService({ dbFile, db: () => db, settings, protector, appVersion: app.getVersion(), latestSchema: latestSchemaVersion(), clock })
+  let restored = false
+  registerBackupIpc(
+    backup,
+    session,
+    () => {
+      // Test runs restart the app themselves.
+      if (!(!app.isPackaged && process.env.LH_USER_DATA)) app.relaunch()
+      app.exit(0)
+    },
+    () => {
+      restored = true
+      session.dispose()
+      if (db.open) db.close()
+    }
+  )
+  // First launch of the day: a backup a few seconds after start (if backups are set up).
+  setTimeout(() => void backup.daily(), 5_000)
+  // And one when the app is closed.
+  let closingBackupDone = false
+  app.on('before-quit', (e) => {
+    if (closingBackupDone || restored || !backup.status().configured) return
+    e.preventDefault()
+    closingBackupDone = true
+    void backup
+      .backupNow()
+      .catch(() => undefined) // recorded as last_backup_error; shown next time
+      .finally(() => app.quit())
+  })
+
   // Lock when the laptop sleeps or Windows locks the screen.
   powerMonitor.on('suspend', () => session.lock())
   powerMonitor.on('lock-screen', () => session.lock())
@@ -110,6 +158,6 @@ app.whenReady().then(() => {
   app.on('window-all-closed', () => app.quit())
   app.on('will-quit', () => {
     session.dispose()
-    db.close()
+    if (db.open) db.close()
   })
 })
