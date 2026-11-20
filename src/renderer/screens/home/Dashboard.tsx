@@ -6,6 +6,7 @@ import { formatTime } from '@shared/schedule'
 import { formatRupees } from '@shared/money'
 import { METHOD_LABEL } from '@shared/payments'
 import { Avatar } from '../../components/Avatar'
+import { CountUp } from '../../components/CountUp'
 import { AddPersonIcon, AlertIcon, CheckIcon, FeesIcon, SearchIcon } from '../../components/icons'
 import { useSnackbar } from '../../components/Snackbar'
 import { ThemeSwitch } from '../../components/ThemeSwitch'
@@ -160,7 +161,7 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
           ) : (
             <>
               <div>
-                <span className="num">{counts.arrived}</span> <span className="t-lg">of {counts.expected}</span>
+                <span className="num"><CountUp value={counts.arrived} /></span> <span className="t-lg">of {counts.expected}</span>
               </div>
               <div className="bar">
                 <i style={{ width: `${pct}%` }} />
@@ -173,14 +174,14 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
         </div>
         <div className="card in stat" style={{ animationDelay: '120ms' }}>
           <div className="muted" style={{ fontWeight: 500 }}>Active students</div>
-          <div className="num">{summary?.activeStudents ?? '—'}</div>
+          <div className="num">{summary ? <CountUp value={summary.activeStudents} /> : '—'}</div>
           <div className="small muted">
             {summary ? `${summary.kgAndTuition} attend kindergarten + Tuition` : ' '}
           </div>
         </div>
         <div className="card in stat" style={{ animationDelay: '180ms' }} data-testid="collected-month">
           <div className="muted" style={{ fontWeight: 500 }}>Collected in {monthName}</div>
-          <div className="num">{fees ? formatRupees(fees.collectedThisMonthPaise) : '—'}</div>
+          <div className="num">{fees ? <CountUp value={fees.collectedThisMonthPaise} format={formatRupees} step={100} /> : '—'}</div>
           <div className="bar">
             <i style={{ width: `${fees && fees.dueThisMonthPaise ? Math.min(100, Math.round((fees.collectedThisMonthPaise / fees.dueThisMonthPaise) * 100)) : 0}%` }} />
           </div>
@@ -188,7 +189,7 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
         </div>
         <div className="card in stat stat-owe" style={{ animationDelay: '240ms' }} data-testid="outstanding-earlier">
           <div style={{ fontWeight: 500 }}>Outstanding from earlier</div>
-          <div className="num">{fees ? formatRupees(fees.outstandingEarlierPaise) : '—'}</div>
+          <div className="num">{fees ? <CountUp value={fees.outstandingEarlierPaise} format={formatRupees} step={100} /> : '—'}</div>
           <div className="small">
             {fees && fees.outstandingStudents > 0
               ? `${fees.outstandingStudents} ${fees.outstandingStudents === 1 ? 'student' : 'students'} · oldest from ${monthOf(fees.oldestDue!)}`

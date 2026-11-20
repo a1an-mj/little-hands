@@ -131,6 +131,11 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
   filled buttons, selected pills and links are Peacock ink. Greys tinted toward the accent; no glow, no
   extra colour blocks; must pass the blur test (three flat zones). Tokens: palette layer at the end of
   `base.css` (ground tokens on `.lh`, surface tokens on `.card,.rail,.dlg,…`). Rounded pills, big bold numbers.
+- **Motion** (`src/renderer/lib/motion.ts` + the Motion layer in `base.css`): screen changes are view
+  transitions (old screen sinks, new rises, menu/tab pill glides), the theme switch spreads the new theme in
+  a circle from the switch, cards/rows stagger in, dashboard figures count up (`CountUp`), spring easing.
+  All off under prefers-reduced-motion. Tests: after a click that changes screen, wait for the new screen
+  (the old DOM stays for one frame during a view transition).
 - Program colours: Playgroup coral, Nursery green, LKG yellow, UKG blue, Daycare rose, Tuition violet
   (tokens pg/nu/lk/uk/dc/tu).
 - The design files are prototypes made in a design tool: the markup inside `<x-dc>` plus the

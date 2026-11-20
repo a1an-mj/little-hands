@@ -512,3 +512,148 @@ body{background:var(--s)}
 /* Light theme: more space between ground and surface so the zones read when blurred. */
 .lh:not([data-theme="dark"]){--s:#E7F2F6}
 .lh:not([data-theme="dark"]) :is(.card,.rail,.dlg,.search,.chip,.seg,.tab,.backup-chip,.lock-card,.bar-bottom,.sw .track){--c1:#9CD0E2;--c2:#AAD7E7;--c3:#B9DEEB;--c4:#C8E5F0}
+
+/* ======================================================================
+   Motion (Nov 2026): smooth, springy, never in the way.
+   - Screens morph (view transitions): the old one sinks back, the new rises in,
+     the menu pill and the profile tab pill glide to their new place.
+   - The theme switch spreads the new theme in a circle from the switch.
+   - Cards and list rows arrive in a quick stagger; numbers count up.
+   - Everything is off when Windows asks for less motion (bottom of file).
+   ====================================================================== */
+.lh{
+  /* Gentle spring: a touch of overshoot, settles fast. */
+  --spring:linear(0,.006,.025 2.8%,.101 6.1%,.539 18.9%,.721 25.3%,.849 31.5%,.937 38.1%,.968 41.8%,.991 45.7%,1.006 50.1%,1.015 55%,1.017 63.9%,1.001 85.9%,1);
+  --out:cubic-bezier(.16,1,.3,1)
+}
+/* Only what needs it transitions (faster than before, so hovers feel instant). */
+.lh,.lh *{transition:background-color .22s var(--ease),color .22s var(--ease),border-color .22s var(--ease),box-shadow .3s var(--out),transform .35s var(--out),opacity .25s var(--ease)}
+
+/* ---- Screen changes ---- */
+.main{view-transition-name:page}
+.rail{view-transition-name:rail}
+.dest[aria-current="page"] .pill{view-transition-name:rail-pill;animation:none}
+::view-transition-group(*){animation-duration:.42s;animation-timing-function:var(--out)}
+::view-transition-group(rail-pill){animation-duration:.5s;animation-timing-function:var(--spring)}
+::view-transition-old(page){animation:vt-sink .22s var(--ease) both}
+::view-transition-new(page){animation:vt-rise .5s var(--out) .06s both}
+::view-transition-old(root),::view-transition-new(root){animation:none}
+@keyframes vt-sink{to{opacity:0;transform:scale(.985) translateY(-6px);filter:blur(3px)}}
+@keyframes vt-rise{from{opacity:0;transform:translateY(18px) scale(.995);filter:blur(4px)}}
+/* Inside a profile, only the tab pill glides and the content cross-fades. */
+.tab[aria-selected="true"]{view-transition-name:tab-pill}
+.vt-tab::view-transition-group(tab-pill){animation-duration:.45s;animation-timing-function:var(--spring)}
+.vt-tab::view-transition-old(page){animation:vt-fade-out .15s var(--ease) both}
+.vt-tab::view-transition-new(page){animation:vt-fade-in .3s var(--out) both}
+@keyframes vt-fade-out{to{opacity:0}}
+@keyframes vt-fade-in{from{opacity:0;transform:translateY(8px)}}
+
+/* ---- Theme switch: a circle of the new theme grows from the switch ---- */
+.vt-theme,.vt-theme *{transition:none!important}
+.vt-theme::view-transition-group(*){animation:none}
+.vt-theme::view-transition-old(*),.vt-theme::view-transition-new(*){animation:none}
+.vt-theme::view-transition-new(root){animation:vt-reveal .7s var(--out) both}
+@keyframes vt-reveal{from{clip-path:circle(0 at var(--vt-x) var(--vt-y))}to{clip-path:circle(var(--vt-r) at var(--vt-x) var(--vt-y))}}
+/* With the theme circle, the page and rail are part of the root picture (no separate morph). */
+.vt-theme .main,.vt-theme .rail,.vt-theme .dest .pill,.vt-theme .tab{view-transition-name:none}
+
+/* ---- Arrivals: cards rise in a stagger; list rows follow ---- */
+.in{animation:lh-in .7s var(--out) both}
+@keyframes lh-in{from{opacity:0;transform:translateY(22px) scale(.985)}to{opacity:1;transform:none}}
+.lrow,.todo,.arrival,.owe-row,.day-item,.arow,.import-row,[data-testid="import-row"]{animation:lh-row .5s var(--out) both}
+@keyframes lh-row{from{opacity:0;transform:translateX(-10px)}}
+:is(.lrow,.todo,.arrival,.owe-row,.day-item,.arow):nth-child(2){animation-delay:30ms}
+:is(.lrow,.todo,.arrival,.owe-row,.day-item,.arow):nth-child(3){animation-delay:60ms}
+:is(.lrow,.todo,.arrival,.owe-row,.day-item,.arow):nth-child(4){animation-delay:90ms}
+:is(.lrow,.todo,.arrival,.owe-row,.day-item,.arow):nth-child(5){animation-delay:120ms}
+:is(.lrow,.todo,.arrival,.owe-row,.day-item,.arow):nth-child(6){animation-delay:150ms}
+:is(.lrow,.todo,.arrival,.owe-row,.day-item,.arow):nth-child(7){animation-delay:180ms}
+:is(.lrow,.todo,.arrival,.owe-row,.day-item,.arow):nth-child(8){animation-delay:210ms}
+:is(.lrow,.todo,.arrival,.owe-row,.day-item,.arow):nth-child(n+9){animation-delay:240ms}
+.glance>.card:nth-child(1){animation-delay:40ms}.glance>.card:nth-child(2){animation-delay:100ms}
+.glance>.card:nth-child(3){animation-delay:160ms}.glance>.card:nth-child(4){animation-delay:220ms}
+.num{display:inline-block;animation:num-pop .8s var(--spring) .2s both}
+@keyframes num-pop{from{opacity:0;transform:translateY(10px) scale(.92)}}
+.bar>i{animation:lh-grow 1.2s var(--out) .35s both}
+
+/* ---- Buttons: lift on hover, squish on press, a light sweep across the one action ---- */
+.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 18px -8px rgba(4,30,45,.55)}
+.btn:active:not(:disabled){transform:translateY(0) scale(.96);box-shadow:none;transition-duration:.08s}
+.btn.cta{isolation:isolate}
+.btn.cta::before,.dlg .dlg-actions .btn.filled::before{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.55) 48%,transparent 66%);transform:translateX(-120%);pointer-events:none;z-index:-1}
+.btn.cta:hover:not(:disabled)::before,.dlg .dlg-actions .btn.filled:hover:not(:disabled)::before{animation:sweep .9s var(--out)}
+@keyframes sweep{to{transform:translateX(120%)}}
+.btn.cta:hover:not(:disabled){box-shadow:0 8px 22px -8px color-mix(in srgb,var(--acc) 70%,transparent)}
+.iconb:active,.chip:active,.segb:active,.tab:active,.tick:active{transform:scale(.92)}
+.chip,.segb,.tab{transition:background-color .25s var(--out),color .25s var(--out),box-shadow .35s var(--spring),transform .3s var(--spring)}
+
+/* ---- Menu: icons nudge up on hover, the current page's icon bounces in ---- */
+.dest .pill svg{transition:transform .35s var(--spring)}
+.dest:hover .pill svg{transform:translateY(-2px) scale(1.08)}
+.dest[aria-current="page"] .pill svg{animation:icon-bounce .55s var(--spring)}
+@keyframes icon-bounce{from{transform:scale(.6)}}
+.fab:hover{transform:rotate(90deg) scale(1.04)}
+.fab{transition:transform .5s var(--spring),background-color .2s}
+
+/* ---- Cards you can click lift; stat cards breathe on hover ---- */
+.glance>.card{transition:transform .45s var(--spring),box-shadow .35s var(--out)}
+.glance>.card:hover{transform:translateY(-4px)}
+.lrow{transition:background-color .2s,transform .35s var(--spring)}
+.lrow:hover{transform:translateX(4px)}
+
+/* ---- Dialogs: backdrop blurs in, the sheet springs up ---- */
+.dlg[open]{animation:dlg-in .5s var(--spring) both}
+.dlg::backdrop{background:rgba(2,22,34,.35);backdrop-filter:blur(6px);animation:backdrop-in .35s var(--out) both}
+@keyframes dlg-in{from{opacity:0;transform:translateY(24px) scale(.94)}}
+@keyframes backdrop-in{from{opacity:0;backdrop-filter:blur(0)}}
+.dlg .dlg-body>*{animation:lh-row .45s var(--out) both}
+.dlg .dlg-body>*:nth-child(2){animation-delay:40ms}.dlg .dlg-body>*:nth-child(3){animation-delay:80ms}.dlg .dlg-body>*:nth-child(n+4){animation-delay:110ms}
+
+/* ---- Snackbar springs up ---- */
+.snack{animation:snack-in .55s var(--spring) both}
+@keyframes snack-in{from{opacity:0;transform:translate(-50%,40px) scale(.9)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* ---- Fields: label lifts colour, focus ring grows ---- */
+.tf input,.tf textarea,.tf select{transition:border-color .2s,box-shadow .3s var(--out)}
+.tf input:focus,.tf textarea:focus,.tf select:focus{box-shadow:0 0 0 4px color-mix(in srgb,var(--p) 18%,transparent)}
+.search{transition:background-color .25s,box-shadow .35s var(--out),transform .35s var(--spring)}
+.search:focus-within{transform:scale(1.01);box-shadow:0 0 0 4px color-mix(in srgb,var(--c1) 45%,transparent)}
+
+/* ---- To-do tick: the circle fills, the check draws, the title is struck through ---- */
+.tick{transition:background-color .25s var(--out),border-color .25s,transform .4s var(--spring)}
+.tick[aria-checked="true"]{animation:tick-pop .45s var(--spring)}
+@keyframes tick-pop{0%{transform:scale(.7)}60%{transform:scale(1.12)}100%{transform:none}}
+.tick svg path,.tick svg polyline{stroke-dasharray:24;stroke-dashoffset:0;animation:draw .35s var(--out) .08s both}
+@keyframes draw{from{stroke-dashoffset:24}}
+.todo-title{background:linear-gradient(currentColor,currentColor) 0 58%/0 1.5px no-repeat;transition:background-size .45s var(--out),color .3s}
+.todo.done .todo-title{text-decoration:none;background-size:100% 1.5px}
+
+/* ---- Calendar: months slide, days pop, today pulses once ---- */
+.cal-grid.slide-next{animation:cal-next .45s var(--out) both}
+.cal-grid.slide-prev{animation:cal-prev .45s var(--out) both}
+@keyframes cal-next{from{opacity:0;transform:translateX(40px)}}
+@keyframes cal-prev{from{opacity:0;transform:translateX(-40px)}}
+.cal-title-in{animation:vt-fade-in .4s var(--out) both}
+.cal-day{transition:background-color .2s,transform .35s var(--spring),box-shadow .3s var(--out)}
+.cal-day:hover{transform:translateY(-2px)}
+.cal-day.sel{transform:scale(1.03)}
+.cal-day.today .cal-num{animation:today-pulse 1.6s var(--out) .4s 1}
+@keyframes today-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--p) 55%,transparent)}100%{box-shadow:0 0 0 12px transparent}}
+.cal-chip{animation:lh-in .45s var(--out) both}
+
+/* ---- Attendance taps: a quick confirm bounce ---- */
+.segb[aria-pressed="true"]{animation:icon-bounce .4s var(--spring)}
+.tag{transition:background-color .3s,color .3s,transform .35s var(--spring)}
+
+/* ---- Lock screen: keys press in, dots fill with a pop ---- */
+.key{transition:transform .3s var(--spring),background-color .15s}
+.key:active:not(:disabled){transform:scale(.88)}
+.dot.filled{animation:lh-pop .35s var(--spring)}
+.lock-card{animation:dlg-in .7s var(--spring) both}
+
+/* ---- Less motion: everything still works, nothing moves ---- */
+@media (prefers-reduced-motion:reduce){
+  .lh,.lh *,.lh *::before,.lh *::after{animation:none!important;transition:none!important}
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
+  .dlg::backdrop{animation:none}
+}

@@ -18,6 +18,7 @@ import { PROGRAM_NAME, type EnrollmentView } from '@shared/enrollments'
 import type { HistoryDay, ProgramHistory } from '@shared/attendance'
 import { AttendanceHistory, DayDialog, TodayCard } from './AttendanceParts'
 import { ChildTodos } from '../todos/parts'
+import { transition } from '../../lib/motion'
 
 interface Props {
   theme: Theme
@@ -169,7 +170,7 @@ export function StudentProfile({ theme, onToggleTheme, id, navigate, tab: initia
 
       <div className="tabs in" role="tablist" aria-label="Profile sections" style={{ animationDelay: '120ms' }}>
         {TABS.map(([key, label]) => (
-          <button key={key} type="button" role="tab" className="tab" aria-selected={tab === key} onClick={() => setTab(key)}>
+          <button key={key} type="button" role="tab" className="tab" aria-selected={tab === key} onClick={() => transition(() => setTab(key), 'vt-tab')}>
             {label}
             {key === 'notes' && p.notes.length > 0 ? ` · ${p.notes.length}` : ''}
             {tab === key && <span className="ind" />}

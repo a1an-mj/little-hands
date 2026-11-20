@@ -32,6 +32,8 @@ const KIND_LABEL: Record<CalendarItem['kind'], string> = { ...EVENT_KIND_LABEL, 
 export function CalendarScreen({ theme, onToggleTheme, navigate }: Props) {
   const snack = useSnackbar()
   const [month, setMonth] = useState(todayIso().slice(0, 7))
+  /** Which way the grid slides when the month changes. */
+  const [dir, setDir] = useState<'next' | 'prev' | null>(null)
   const [selected, setSelected] = useState(todayIso())
   const [dialog, setDialog] = useState<{ kind: 'event'; item?: EventItem } | { kind: 'todo' } | { kind: 'edit-todo'; todo: TodoView } | null>(null)
   const { data, error, reload } = useLoad(() => window.lh.planner.month(month), [month])
@@ -53,6 +55,7 @@ export function CalendarScreen({ theme, onToggleTheme, navigate }: Props) {
 
   function go(n: number) {
     const m = addMonths(month, n)
+    setDir(n > 0 ? 'next' : 'prev')
     setMonth(m)
     setSelected(today.startsWith(m) ? today : `${m}-01`)
   }
@@ -80,7 +83,7 @@ export function CalendarScreen({ theme, onToggleTheme, navigate }: Props) {
       <div className="cal-layout">
         <section className="card in cal-card" aria-labelledby="cal-h">
           <div className="cal-bar">
-            <h2 id="cal-h" className="h-md" data-testid="cal-month">{monthTitle(month)}</h2>
+            <h2 key={month} id="cal-h" className={`h-md${dir ? ' cal-title-in' : ''}`} data-testid="cal-month">{monthTitle(month)}</h2>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <button type="button" className="iconb" aria-label="Previous month" onClick={() => go(-1)}>
                 <BackIcon />
@@ -89,7 +92,9 @@ export function CalendarScreen({ theme, onToggleTheme, navigate }: Props) {
                 type="button"
                 className="chip"
                 onClick={() => {
-                  setMonth(today.slice(0, 7))
+                  const m = today.slice(0, 7)
+                  if (m !== month) setDir(m > month ? 'next' : 'prev')
+                  setMonth(m)
                   setSelected(today)
                 }}
               >
@@ -101,7 +106,7 @@ export function CalendarScreen({ theme, onToggleTheme, navigate }: Props) {
             </div>
           </div>
           {error && <div className="alert" role="alert">{error}</div>}
-          <div className="cal-grid" role="grid" aria-label={monthTitle(month)}>
+          <div key={month} className={`cal-grid${dir ? ` slide-${dir}` : ''}`} role="grid" aria-label={monthTitle(month)}>
             {WEEKDAYS.map((d) => (
               <div key={d} className="cal-wd small muted" role="columnheader">
                 {d}

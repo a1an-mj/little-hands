@@ -1,7 +1,7 @@
 import type { Theme } from '@shared/ipc-contract'
 import { MoonIcon, SunIcon } from './icons'
 
-export function ThemeSwitch({ theme, onToggle }: { theme: Theme; onToggle: () => void }) {
+export function ThemeSwitch({ theme, onToggle }: { theme: Theme; onToggle: (from?: { x: number; y: number }) => void }) {
   const dark = theme === 'dark'
   return (
     <button
@@ -9,7 +9,10 @@ export function ThemeSwitch({ theme, onToggle }: { theme: Theme; onToggle: () =>
       role="switch"
       className="sw"
       aria-checked={dark}
-      onClick={onToggle}
+      onClick={(e) => {
+        const r = e.currentTarget.querySelector('.thumb')?.getBoundingClientRect()
+        onToggle(r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : undefined)
+      }}
       title="Switch between light and dark"
     >
       Dark theme

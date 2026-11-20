@@ -11,6 +11,7 @@ import { SettingsScreen } from '../screens/settings/SettingsScreen'
 import { AdmissionForm } from '../screens/students/AdmissionForm'
 import { StudentProfile } from '../screens/students/StudentProfile'
 import { StudentsList } from '../screens/students/StudentsList'
+import { transition } from '../lib/motion'
 import { NavRail } from './NavRail'
 import { pageOf, type ListState, type Route } from './routes'
 
@@ -21,7 +22,9 @@ interface Props {
 }
 
 export function Shell({ theme, onToggleTheme, onLock }: Props) {
-  const [route, setRoute] = useState<Route>({ name: 'home' })
+  const [route, setRouteNow] = useState<Route>({ name: 'home' })
+  // Every screen change morphs: the old screen fades back, the new one rises in, the rail pill slides.
+  const setRoute = (r: Route) => transition(() => setRouteNow(r))
   const [listState, setListState] = useState<ListState>({ search: '', status: 'active', program: 'all', page: 0 })
   const common = { theme, onToggleTheme }
 

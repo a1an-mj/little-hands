@@ -161,6 +161,7 @@ test('payment history: a wrong amount is reversed, never edited', async () => {
 
 test('extra charges: admission fee paid, a late fine added', async () => {
   await page.getByRole('button', { name: 'Pay Admission fee' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Record a payment' })).toBeVisible()
   await expect(page.getByRole('button', { name: /Admission fee/ })).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('button', { name: 'Bank transfer' }).click()
   await page.getByRole('button', { name: 'Save payment' }).click()
