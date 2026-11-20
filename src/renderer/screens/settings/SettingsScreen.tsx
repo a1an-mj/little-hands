@@ -9,6 +9,7 @@ import { useSnackbar } from '../../components/Snackbar'
 import { TextField } from '../../components/TextField'
 import { ThemeSwitch } from '../../components/ThemeSwitch'
 import { call, messageOf, useLoad } from '../../lib/api'
+import { ImportStudents } from './ImportStudents'
 import { useRestorePicker } from './RestoreDialog'
 
 interface Props {
@@ -40,7 +41,7 @@ export function backupLine(s: BackupStatus): { text: string; warn: boolean } {
 
 type Open = { kind: 'setup' } | { kind: 'password' } | null
 
-/** Settings: for now only "Backup & restore". */
+/** Settings: backup & restore, and importing students from the admission-form spreadsheet. */
 export function SettingsScreen({ theme, onToggleTheme }: Props) {
   const snack = useSnackbar()
   const { data: s, reload } = useLoad(() => window.lh.backup.status(), [])
@@ -72,7 +73,7 @@ export function SettingsScreen({ theme, onToggleTheme }: Props) {
       <header className="topbar in">
         <div style={{ flex: '1 1 240px', minWidth: 0 }}>
           <h1 className="h-lg">Settings</h1>
-          <div className="muted">Backup &amp; restore</div>
+          <div className="muted">Backup, restore &amp; import</div>
         </div>
         <ThemeSwitch theme={theme} onToggle={onToggleTheme} />
       </header>
@@ -165,6 +166,8 @@ export function SettingsScreen({ theme, onToggleTheme }: Props) {
         </div>
         {restore.error && <div className="field-error">{restore.error}</div>}
       </section>
+
+      <ImportStudents />
 
       {open?.kind === 'setup' && (
         <SetUpDialog

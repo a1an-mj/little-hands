@@ -130,6 +130,11 @@ export class StudentsRepo {
   }
 
   /** The ID the next student joining in that year would get (shown on the admission form). */
+  /** Names of the children in the app (lower case), so an import adds no one twice. */
+  existingNames(): Set<string> {
+    return new Set(this.db.prepare('SELECT lower(full_name) FROM students WHERE deleted_at IS NULL').pluck().all() as string[])
+  }
+
   nextCode(joiningDate: string): string {
     const year = yearOf(joiningDate)
     return formatStudentCode(year, this.nextSeq(year))

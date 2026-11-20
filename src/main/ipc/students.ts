@@ -1,6 +1,11 @@
-import { BrowserWindow } from 'electron'
+import { readFileSync } from 'node:fs'
+import { basename } from 'node:path'
+import { BrowserWindow, dialog } from 'electron'
 import { z } from 'zod'
 import type { StudentsApi } from '@shared/ipc-contract'
+import { parseCsv, planImport, type ImportPlanItem } from '@shared/import'
+import { UserError } from '../errors'
+import { runImport } from '../students/import'
 import { admissionSchema, idSchema, isoDateSchema, studentListQuerySchema } from '@shared/schemas'
 import type { LockSession } from '../lock/session'
 import { jpegFromDataUrl, pickPhoto, toDataUrl } from '../students/photo'
@@ -11,6 +16,7 @@ import { handleAll, type Impl } from './handle'
 
 /** Registers `students:<method>` handlers (unlocked only; arguments validated). */
 export function registerStudentsIpc(repo: StudentsRepo, session: LockSession): void {
+  let plan: ImportPlanItem[] | null = null
   const impl: Impl<StudentsApi> = {
     list: (q) => repo.list(studentListQuerySchema.parse(q)),
     nextCode: (date) => repo.nextCode(isoDateSchema.parse(date)),
@@ -35,7 +41,29 @@ export function registerStudentsIpc(repo: StudentsRepo, session: LockSession): v
     removeGuardian: (linkId) => repo.removeGuardian(idSchema.parse(linkId)),
     addNote: (studentId, input) => repo.addNote(idSchema.parse(studentId), input as never),
     updateNote: (noteId, input) => repo.updateNote(idSchema.parse(noteId), input as never),
-    removeNote: (noteId) => repo.removeNote(idSchema.parse(noteId))
+    removeNote: (noteId) => repo.removeNote(idSchema.parse(noteId)),
+    importPreview: async () => {
+      const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0]!
+      const r = await dialog.showOpenDialog(win, {
+        title: 'Choose the students spreadsheet',
+        filters: [{ name: 'Spreadsheet (CSV)', extensions: ['csv'] }],
+        properties: ['openFile']
+      })
+      const path = r.canceled ? undefined : r.filePaths[0]
+      if (!path) return null
+      try {
+        plan = planImport(parseCsv(readFileSync(path, 'utf8')), repo.existingNames())
+      } catch (e) {
+        throw new UserError(e instanceof Error ? e.message : String(e))
+      }
+      return { fileName: basename(path), rows: plan.map(({ line, name, programs, siblingOf, skip }) => ({ line, name, programs, siblingOf, skip })) }
+    },
+    importRun: () => {
+      if (!plan) throw new UserError('Choose the spreadsheet first.')
+      const result = runImport(repo, plan)
+      plan = null
+      return result
+    }
   }
 
   handleAll('students', impl, session)

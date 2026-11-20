@@ -77,6 +77,16 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
   other_school/other_school_class, guardians.occupation), "Move up to …" per child and "Move all
   to …" on the Students list (NEXT_CLASS: Playgroup → Nursery → LKG → UKG).
 
+## Import students (Settings) — built
+- Reads a CSV of the paper admission forms (columns as in `~/Documents/LH/students.csv`, also a Google
+  Sheet "Little Hands – students from the paper forms"): preview, then "Add N children" (`src/shared/import.ts`,
+  `src/main/students/import.ts`). The school's own enrolment numbers (LHL-03…) are ignored (user).
+- Every program at ₹0/month, due by the 5th, Mon–Fri, from the joining date; the owner sets real fees.
+  Class from the form heading, else the ticked box; "Afterschool care" → Tuition (Daycare if ticked).
+  Summer camp / Preparatory class go in the note, not the programs (that summer is over).
+- Same parent phone = same family (siblings). Unclear readings, the "Check" text and the form's own
+  values go into the child's admission note. Children already in the app (same name) are skipped.
+
 ## Still to confirm with the owner
 - How a Daycare month is waived during a long absence (default: the owner waives that month by hand).
 
@@ -98,8 +108,8 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
 ## Design
 - Material 3 look, light + dark theme. The theme follows Windows' light/dark setting until the
   owner uses the switch; the switch choice is remembered. Smooth transitions; respect "reduce motion".
-- Reports appears in the menu but is greyed out ("Coming in a later version"). Settings holds only
-  "Backup & restore" for now.
+- Reports appears in the menu but is greyed out ("Coming in a later version"). Settings holds
+  "Backup & restore" and "Import students".
 - Logo: the hand from the school's logo (littlehandsekm.in), blue #20ADE4 on a white tile
   (`LogoIcon`, `build/icon.svg` → `build/icon.png`).
 - Colours match the logo: Material 3 "fidelity" scheme from #20ADE4, in `src/renderer/styles/tokens.css`

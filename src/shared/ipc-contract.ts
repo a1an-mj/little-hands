@@ -22,6 +22,7 @@ import type {
   NoteInput,
   StudentDetailsInput
 } from './schemas'
+import type { ImportPreview, ImportResult } from './import'
 import type { Result, StudentListQuery, StudentListResult, StudentProfile } from './students'
 
 export type Theme = 'light' | 'dark'
@@ -44,11 +45,15 @@ export interface StudentsApi {
   addNote(studentId: string, input: NoteInput): Promise<Result<string>>
   updateNote(noteId: string, input: NoteInput): Promise<Result>
   removeNote(noteId: string): Promise<Result>
+  /** Opens the file picker for a spreadsheet (CSV) of admission forms and shows what would be added; null if cancelled. */
+  importPreview(): Promise<Result<ImportPreview | null>>
+  /** Adds the children from the last preview. */
+  importRun(): Promise<Result<ImportResult>>
 }
 
 export const STUDENTS_METHODS = [
   'list', 'nextCode', 'profile', 'admit', 'updateDetails', 'remove', 'pickPhoto', 'setPhoto',
-  'addGuardian', 'updateGuardian', 'setFeeContact', 'removeGuardian', 'addNote', 'updateNote', 'removeNote'
+  'addGuardian', 'updateGuardian', 'setFeeContact', 'removeGuardian', 'addNote', 'updateNote', 'removeNote', 'importPreview', 'importRun'
 ] as const satisfies readonly (keyof StudentsApi)[]
 
 /** Programs a child attends, with timings and fees. Same rules as StudentsApi. */
