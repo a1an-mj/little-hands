@@ -29,6 +29,8 @@ export const IMPORT_COLUMNS = {
 } as const
 type Col = keyof typeof IMPORT_COLUMNS
 
+export const ALREADY_IN_APP = 'Already in the app'
+
 /** Mon–Fri. */
 const WEEKDAYS = 31
 /** Used when a form has no joining date: the start of the 2026–27 school year. */
@@ -44,10 +46,14 @@ export interface ImportRow {
   siblingOf: string | null
   /** Why this row won't be imported; null = it will be. */
   skip: string | null
+  /** Whether a to-do comes with it ("Check …'s admission form"). */
+  hasTodo: boolean
 }
 
 export interface ImportPlanItem extends ImportRow {
   admission: AdmissionInput | null
+  /** A to-do from the form's "Check" column, linked to the child (also for children already in the app). */
+  todo: { title: string; notes: string } | null
   /** Index into the plan of the sibling whose family to share. */
   familyOf: number | null
 }
@@ -59,6 +65,8 @@ export interface ImportPreview {
 
 export interface ImportResult {
   added: number
+  /** To-dos made from the forms' "Check" notes. */
+  todos: number
   skipped: { name: string; reason: string }[]
 }
 
@@ -173,9 +181,11 @@ export function planImport(table: string[][], existing: ReadonlySet<string>): Im
   body.forEach((r, i) => {
     const line = i + 2
     const name = clean(col(r, 'name'))
-    const base = { line, name: name || `(row ${line})`, programs: '', siblingOf: null, admission: null, familyOf: null }
+    const checkText = col(r, 'check').trim()
+    const todo = name && checkText ? { title: `Check ${name}'s admission form`, notes: checkText.slice(0, 2000) } : null
+    const base = { line, name: name || `(row ${line})`, programs: '', siblingOf: null, admission: null, familyOf: null, todo, hasTodo: todo !== null }
     if (!name) return items.push({ ...base, skip: 'No name' })
-    if (existing.has(name.toLowerCase())) return items.push({ ...base, skip: 'Already in the app' })
+    if (existing.has(name.toLowerCase())) return items.push({ ...base, skip: ALREADY_IN_APP })
     if (seen.has(name.toLowerCase())) return items.push({ ...base, skip: 'Twice in the file' })
     seen.add(name.toLowerCase())
 

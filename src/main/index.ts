@@ -10,7 +10,9 @@ import { IDLE_LOCK_MS } from './lock/idle-timer'
 import { PinAuth } from './lock/pin-auth'
 import { LockSession } from './lock/session'
 import { registerIpc } from './ipc/register'
+import { registerPlannerIpc } from './ipc/planner'
 import { registerStudentsIpc } from './ipc/students'
+import { PlannerRepo } from './planner/repo'
 import { registerEnrollmentsIpc } from './ipc/enrollments'
 import { registerAttendanceIpc } from './ipc/attendance'
 import { AttendanceRepo } from './attendance/repo'
@@ -108,10 +110,12 @@ app.whenReady().then(() => {
 
   const writer = new Writer(db, settings.deviceId, clock)
   const students = new StudentsRepo(writer)
-  registerStudentsIpc(students, session)
+  const planner = new PlannerRepo(writer)
+  registerStudentsIpc(students, planner, session)
   registerEnrollmentsIpc(students.enrollments, session)
   registerAttendanceIpc(new AttendanceRepo(writer), session)
   registerPaymentsIpc(new PaymentsRepo(writer), session)
+  registerPlannerIpc(planner, session)
 
   const backup = new BackupService({ dbFile, db: () => db, settings, protector, appVersion: app.getVersion(), latestSchema: latestSchemaVersion(), clock })
   let restored = false

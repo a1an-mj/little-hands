@@ -135,6 +135,12 @@ export class StudentsRepo {
     return new Set(this.db.prepare('SELECT lower(full_name) FROM students WHERE deleted_at IS NULL').pluck().all() as string[])
   }
 
+  /** The child with this name (any case), if exactly one. */
+  idByName(name: string): string | null {
+    const ids = this.db.prepare('SELECT id FROM students WHERE deleted_at IS NULL AND lower(full_name) = lower(?)').pluck().all(name) as string[]
+    return ids.length === 1 ? ids[0]! : null
+  }
+
   nextCode(joiningDate: string): string {
     const year = yearOf(joiningDate)
     return formatStudentCode(year, this.nextSeq(year))

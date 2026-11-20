@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import {
   AttendanceIcon,
+  CalendarIcon,
   FeesIcon,
   HomeIcon,
   LockIcon,
@@ -8,16 +9,19 @@ import {
   PlusIcon,
   ReportsIcon,
   SettingsIcon,
-  StudentsIcon
+  StudentsIcon,
+  TodoIcon
 } from '../components/icons'
 
-export type Page = 'home' | 'students' | 'fees' | 'attendance' | 'settings'
+export type Page = 'home' | 'students' | 'fees' | 'attendance' | 'calendar' | 'todos' | 'settings'
 
 const DESTINATIONS: { id: Page; label: string; icon: ReactNode }[] = [
   { id: 'home', label: 'Home', icon: <HomeIcon /> },
   { id: 'students', label: 'Students', icon: <StudentsIcon /> },
   { id: 'fees', label: 'Fees', icon: <FeesIcon /> },
-  { id: 'attendance', label: 'Attendance', icon: <AttendanceIcon /> }
+  { id: 'attendance', label: 'Attendance', icon: <AttendanceIcon /> },
+  { id: 'calendar', label: 'Calendar', icon: <CalendarIcon /> },
+  { id: 'todos', label: 'To-do', icon: <TodoIcon /> }
 ]
 
 const LATER = [{ label: 'Reports', icon: <ReportsIcon /> }]

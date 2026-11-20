@@ -18,11 +18,14 @@ import type {
   EnrollmentEditInput,
   EnrollmentInput,
   MoveUpInput,
+  EventInput,
+  TodoInput,
   GuardianInput,
   NoteInput,
   StudentDetailsInput
 } from './schemas'
 import type { ImportPreview, ImportResult } from './import'
+import type { MonthView, TodoList, TodoView } from './planner'
 import type { Result, StudentListQuery, StudentListResult, StudentProfile } from './students'
 
 export type Theme = 'light' | 'dark'
@@ -143,6 +146,26 @@ export const BACKUP_METHODS = [
   'status', 'pickFolder', 'setUp', 'changeFolder', 'changePassword', 'backupNow', 'openFolder', 'pickFile', 'inspect', 'restore'
 ] as const satisfies readonly (keyof BackupApi)[]
 
+/** Calendar events and the shared to-do list. Same rules as StudentsApi. */
+export interface PlannerApi {
+  /** Everything on the calendar in a month ("YYYY-MM"): events, closed days, birthdays, to-dos. */
+  month(month: string): Promise<Result<MonthView>>
+  /** A holiday also marks the school closed that day. */
+  addEvent(input: EventInput): Promise<Result<string>>
+  updateEvent(id: string, input: EventInput): Promise<Result>
+  removeEvent(id: string): Promise<Result>
+  todos(): Promise<Result<TodoList>>
+  todosFor(studentId: string): Promise<Result<TodoView[]>>
+  addTodo(input: TodoInput): Promise<Result<string>>
+  updateTodo(id: string, input: TodoInput): Promise<Result>
+  setDone(id: string, done: boolean): Promise<Result>
+  removeTodo(id: string): Promise<Result>
+}
+
+export const PLANNER_METHODS = [
+  'month', 'addEvent', 'updateEvent', 'removeEvent', 'todos', 'todosFor', 'addTodo', 'updateTodo', 'setDone', 'removeTodo'
+] as const satisfies readonly (keyof PlannerApi)[]
+
 export type LockStatus =
   | { state: 'needs-setup' }
   | { state: 'locked'; triesLeft: number; waitUntil: number | null }
@@ -183,6 +206,7 @@ export interface LhApi {
   attendance: AttendanceApi
   payments: PaymentsApi
   backup: BackupApi
+  planner: PlannerApi
 }
 
 export const IPC = {

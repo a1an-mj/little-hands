@@ -4,12 +4,14 @@ import {
   BACKUP_METHODS,
   ENROLLMENTS_METHODS,
   PAYMENTS_METHODS,
+  PLANNER_METHODS,
   IPC,
   STUDENTS_METHODS,
   type AttendanceApi,
   type BackupApi,
   type EnrollmentsApi,
   type PaymentsApi,
+  type PlannerApi,
   type LhApi,
   type LockStatus,
   type StudentsApi,
@@ -27,6 +29,7 @@ const enrollments = invokers<EnrollmentsApi>('enrollments', ENROLLMENTS_METHODS)
 const attendance = invokers<AttendanceApi>('attendance', ATTENDANCE_METHODS)
 const payments = invokers<PaymentsApi>('payments', PAYMENTS_METHODS)
 const backup = invokers<BackupApi>('backup', BACKUP_METHODS)
+const planner = invokers<PlannerApi>('planner', PLANNER_METHODS)
 
 const api: LhApi = {
   lock: {
@@ -57,7 +60,8 @@ const api: LhApi = {
   enrollments,
   attendance,
   payments,
-  backup
+  backup,
+  planner
 }
 
 contextBridge.exposeInMainWorld('lh', api)

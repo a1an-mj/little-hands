@@ -87,6 +87,16 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
 - Same parent phone = same family (siblings). Unclear readings, the "Check" text and the form's own
   values go into the child's admission note. Children already in the app (same name) are skipped.
 
+## Calendar and To-do (Nov 2026) — built
+- Menu: Home, Students, Fees, Attendance, **Calendar**, **To-do**, Reports, Settings.
+- Migration 010: `events` (title, date, optional time, kind event|holiday|meeting, notes) and `todos`
+  (title, notes, optional due_date, optional student_id, done_at). `src/main/planner/repo.ts`, `planner:*` IPC.
+- Calendar month view reads events, `closed_days`, birthdays (students.date_of_birth) and dated to-dos.
+  A holiday also closes the school (a closed_days row); moving/removing it opens the day again.
+- To-do: one shared list (owner + teachers, no "for whom"), grouped Overdue / Today / Upcoming / No date,
+  Done hidden. Dashboard "To-do today" card; a child's to-dos on their profile (Notes tab).
+- Import students also turns each form's "Check" notes into a to-do linked to the child (once).
+
 ## Still to confirm with the owner
 - How a Daycare month is waived during a long absence (default: the owner waives that month by hand).
 

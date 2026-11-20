@@ -52,8 +52,10 @@ test('preview, then add the children', async () => {
   await expect(d.getByTestId('import-row').filter({ hasText: 'Tanvi An Bipin' })).toContainText('LKG · same family as Janvi An Bipin')
   await expect(d.getByTestId('import-row').filter({ hasText: 'Mayukh Adiyodi' })).toContainText('Tuition')
   await expect(d.getByTestId('import-row').filter({ hasText: 'Thannira H Kumar' })).toContainText('No program on the form')
+  await expect(d.getByTestId('import-todos')).toHaveText(`3 to-dos will be made from the forms' "Check" notes, one per child.`)
   await d.getByRole('button', { name: 'Add 3 children' }).click()
   await expect(page.getByTestId('import-result')).toHaveText("3 children added. Set their fees on each child's profile.")
+  await expect(page.getByTestId('import-result-todos')).toHaveText('3 to-dos added to the To-do list.')
   await page.getByRole('dialog').getByRole('button', { name: 'Done' }).click()
 })
 
@@ -63,6 +65,7 @@ test('the children are in the app, with the form notes and ₹0 fees', async () 
   await expect(page.getByTestId('afterschool')).toHaveText('After school · Bhavans, Girinagar, II')
   await expect(page.getByTestId('program-tu')).toContainText('₹0 / month')
   await page.getByRole('tab', { name: 'Notes · 1' }).click()
+  await expect(page.getByTestId('child-todos')).toContainText("Check Mayukh Adiyodi's admission form")
   await expect(page.getByText(/To check: Afterschool: Tuition or Daycare\?/)).toBeVisible()
 })
 

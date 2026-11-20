@@ -16,6 +16,8 @@ import { ProgramTag } from '../students/ProgramFields'
 import { CloseDayDialog, ClosedBanner, statusTag } from '../attendance/parts'
 import { OwedRow } from '../fees/FeesScreen'
 import { backupLine } from '../settings/SettingsScreen'
+import { TodoDialog, TodoRow, toggleTodo } from '../todos/parts'
+import type { TodoView } from '@shared/planner'
 
 interface Props {
   theme: Theme
@@ -55,6 +57,9 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
   const { data: summary } = useLoad(() => window.lh.attendance.summary(), [])
   const { data: fees } = useLoad(() => window.lh.payments.overview(), [])
   const { data: backup } = useLoad(() => window.lh.backup.status(), [])
+  const { data: todos, reload: reloadTodos } = useLoad(() => window.lh.planner.todos(), [])
+  const [editTodo, setEditTodo] = useState<TodoView | null>(null)
+  const dueTodos = todos ? todos.open.filter((t) => t.dueDate !== null && t.dueDate <= todos.today) : []
   const bk = backup ? backupLine(backup) : null
 
   // Keep the "late" notes up to date while the dashboard is open.
@@ -286,6 +291,49 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
           </div>
         </section>
       </div>
+
+      <section aria-labelledby="todo-h" className="card in" style={{ animationDelay: '320ms' }} data-testid="todo-today">
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
+          <h2 id="todo-h" className="h-md">To-do today</h2>
+          <span className="muted">{todos ? `${todos.open.length} open` : ''}</span>
+        </div>
+        {todos && dueTodos.length === 0 && (
+          <p className="muted" style={{ margin: '8px 0 0' }}>
+            Nothing due today.{todos.open.length > 0 ? ` ${todos.open.length} other ${todos.open.length === 1 ? 'to-do is' : 'to-dos are'} on the list.` : ''}
+          </p>
+        )}
+        <ul className="plain">
+          {dueTodos.slice(0, 5).map((t) => (
+            <TodoRow
+              key={t.id}
+              t={t}
+              today={todos!.today}
+              onToggle={(done) => void toggleTodo(t, done, reloadTodos, snack)}
+              onOpen={() => setEditTodo(t)}
+              onChild={(id) => navigate({ name: 'student', id, tab: 'notes' })}
+            />
+          ))}
+        </ul>
+        <div className="row" style={{ paddingTop: 12, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+          <button type="button" className="btn textb" onClick={() => navigate({ name: 'todos' })}>
+            {dueTodos.length > 5 ? `See all ${dueTodos.length} due` : 'Open the to-do list'}
+          </button>
+          <button type="button" className="btn textb" onClick={() => navigate({ name: 'calendar' })}>
+            Calendar
+          </button>
+        </div>
+        {editTodo && (
+          <TodoDialog
+            todo={editTodo}
+            onClose={() => setEditTodo(null)}
+            onDone={(msg) => {
+              setEditTodo(null)
+              snack(msg)
+              void reloadTodos()
+            }}
+          />
+        )}
+      </section>
 
       <section aria-labelledby="pay-h" className="card in" style={{ animationDelay: '330ms' }} data-testid="recent-payments">
         <h2 id="pay-h" className="h-md" style={{ marginBottom: 12 }}>Recent payments</h2>

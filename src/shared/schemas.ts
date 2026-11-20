@@ -3,6 +3,7 @@ import { normalizePhone } from './phone'
 import { AFTERSCHOOL_CODES, PROGRAM_CODES, isExtra, isKnownPeriod } from './enrollments'
 import { parseRupees } from './money'
 import { STUDENT_STATUSES } from './students'
+import { EVENT_KINDS } from './planner'
 
 export const pinSchema = z.string().regex(/^\d{4}$/, 'PIN must be exactly 4 digits')
 
@@ -361,3 +362,26 @@ export const moveUpSchema = z.object({
 })
 export type MoveUpInput = z.input<typeof moveUpSchema>
 export type MoveUp = z.output<typeof moveUpSchema>
+
+// ---------- Calendar & to-do ----------
+
+export const eventInputSchema = z.object({
+  title: text(100).min(1, 'Enter a title'),
+  date: isoDateSchema,
+  /** Empty = all day. */
+  time: z.union([timeSchema, z.literal('')]).default(''),
+  kind: z.enum(EVENT_KINDS),
+  notes: text(1000).default('')
+})
+export type EventInput = z.input<typeof eventInputSchema>
+
+export const todoInputSchema = z.object({
+  title: text(200).min(1, 'Enter what needs doing'),
+  notes: text(2000).default(''),
+  /** Empty = no date. */
+  dueDate: z.union([isoDateSchema, z.literal('')]).default(''),
+  studentId: idSchema.nullable().default(null)
+})
+export type TodoInput = z.input<typeof todoInputSchema>
+
+export const monthSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Choose a month')

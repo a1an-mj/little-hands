@@ -17,6 +17,7 @@ import { ProgramTag } from './ProgramFields'
 import { PROGRAM_NAME, type EnrollmentView } from '@shared/enrollments'
 import type { HistoryDay, ProgramHistory } from '@shared/attendance'
 import { AttendanceHistory, DayDialog, TodayCard } from './AttendanceParts'
+import { ChildTodos } from '../todos/parts'
 
 interface Props {
   theme: Theme
@@ -195,6 +196,7 @@ export function StudentProfile({ theme, onToggleTheme, id, navigate, tab: initia
         <AttendanceHistory history={history} onEdit={(program, day) => setOpen({ kind: 'day', program, day })} />
       )}
 
+      {tab === 'notes' && <ChildTodos studentId={p.id} name={p.fullName} />}
       {tab === 'notes' && (
         <section aria-labelledby="nt-h" className="card in" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <h2 id="nt-h" className="h-md">Notes for staff</h2>

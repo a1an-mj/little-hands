@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { migrationsFromFiles, runMigrations } from '../../src/main/db/migrate'
 import { Writer } from '../../src/main/db/writer'
+import { PlannerRepo } from '../../src/main/planner/repo'
 import { runImport } from '../../src/main/students/import'
 import { StudentsRepo } from '../../src/main/students/repo'
 import { clean, firstPhone, parseCsv, planImport, programsOf } from '@shared/import'
@@ -105,12 +106,15 @@ describe('the import plan', () => {
 describe('running the import', () => {
   let db: Database.Database
   let repo: StudentsRepo
+  let planner: PlannerRepo
   beforeEach(() => {
     const dir = join(__dirname, '../../src/main/db/migrations')
     db = new Database(':memory:')
     db.pragma('foreign_keys = ON')
     runMigrations(db, migrationsFromFiles(Object.fromEntries(readdirSync(dir).map((f) => [`./migrations/${f}`, readFileSync(join(dir, f), 'utf8')]))))
-    repo = new StudentsRepo(new Writer(db, 'device-1'))
+    const w = new Writer(db, 'device-1')
+    repo = new StudentsRepo(w)
+    planner = new PlannerRepo(w)
   })
 
   it('adds the children, siblings share guardians, and a second import adds no one', () => {
@@ -119,15 +123,32 @@ describe('running the import', () => {
       { name: 'Tanvi An Bipin', heading: 'LKG 2026-27', mPhone: '8281738110' },
       { name: 'Mayukh', courses: 'Afterschool care', school: 'Bhavans', joining: '2026-08-10' }
     )
-    expect(runImport(repo, plan(text, [...repo.existingNames()]))).toEqual({ added: 3, skipped: [] })
+    expect(runImport(repo, planner, plan(text, [...repo.existingNames()]))).toEqual({ added: 3, todos: 0, skipped: [] })
     const guardians = db.prepare('SELECT count(*) FROM guardians WHERE deleted_at IS NULL').pluck().get()
     expect(guardians).toBe(6) // two families of father, mother and emergency contact
     const fees = db.prepare('SELECT DISTINCT standard_paise FROM fee_agreements').pluck().all()
     expect(fees).toEqual([0])
     expect(repo.list({ search: 'Mayukh', status: 'active', page: 0 }).total).toBe(1)
 
-    const again = runImport(repo, plan(text, [...repo.existingNames()]))
+    const again = runImport(repo, planner, plan(text, [...repo.existingNames()]))
     expect(again.added).toBe(0)
     expect(again.skipped.map((s) => s.reason)).toEqual(['Already in the app', 'Already in the app', 'Already in the app'])
+  })
+
+  it("turns each form's Check notes into a to-do for the child, also for children already in the app, once", () => {
+    const first = csv({ name: 'Mayukh', courses: 'Afterschool care', school: 'Bhavans', check: 'Afterschool: Tuition or Daycare?' })
+    expect(runImport(repo, planner, plan(first)).todos).toBe(1)
+    const both = csv(
+      { name: 'Mayukh', courses: 'Afterschool care', school: 'Bhavans', check: 'Afterschool: Tuition or Daycare?' },
+      { name: 'Shristi Sethi', heading: 'UKG 2026-27', check: "Mother's phone has only 9 digits." }
+    )
+    const r = runImport(repo, planner, plan(both, [...repo.existingNames()]))
+    expect(r).toEqual(expect.objectContaining({ added: 1, todos: 1 }))
+    const todos = planner.todos().open
+    expect(todos.map((t) => [t.title, t.notes, t.studentName])).toEqual([
+      ["Check Mayukh's admission form", 'Afterschool: Tuition or Daycare?', 'Mayukh'],
+      ["Check Shristi Sethi's admission form", "Mother's phone has only 9 digits.", 'Shristi Sethi']
+    ])
+    expect(runImport(repo, planner, plan(both, [...repo.existingNames()])).todos).toBe(0)
   })
 })

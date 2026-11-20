@@ -41,6 +41,20 @@ export const AttendanceIcon = () => (
     <path d="M8 3v4M16 3v4M4 10h16M9 15l2 2 4-4" />
   </Rail>
 )
+export const CalendarIcon = () => (
+  <Rail>
+    <rect x="4" y="5" width="16" height="15" rx="2" />
+    <path d="M8 3v4M16 3v4M4 10h16" />
+    <circle cx="9" cy="14.5" r=".6" fill="currentColor" />
+    <circle cx="12" cy="14.5" r=".6" fill="currentColor" />
+    <circle cx="15" cy="14.5" r=".6" fill="currentColor" />
+  </Rail>
+)
+export const TodoIcon = () => (
+  <Rail>
+    <path d="M4 6.5l1.6 1.6L8.5 5M4 12.5l1.6 1.6 2.9-3.1M4 18.5l1.6 1.6 2.9-3.1M11.5 7h8.5M11.5 13h8.5M11.5 19h8.5" />
+  </Rail>
+)
 export const ReportsIcon = () => <Rail><path d="M5 20V10M12 20V4M19 20v-7" /></Rail>
 export const SettingsIcon = () => (
   <Rail>

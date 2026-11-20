@@ -4,7 +4,7 @@ import type { StudentStatus } from '@shared/students'
 import type { Page } from './NavRail'
 
 export type Route =
-  | { name: 'home' | 'fees' | 'attendance' | 'settings' }
+  | { name: 'home' | 'fees' | 'attendance' | 'calendar' | 'todos' | 'settings' }
   | { name: 'students' }
   | { name: 'admit' }
   | { name: 'student'; id: string; tab?: ProfileTab }

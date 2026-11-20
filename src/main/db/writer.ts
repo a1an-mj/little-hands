@@ -17,6 +17,8 @@ export type SyncedTable =
   | 'charges'
   | 'fee_waivers'
   | 'payments'
+  | 'events'
+  | 'todos'
 
 type Row = Record<string, unknown>
 

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import type { Theme } from '@shared/ipc-contract'
 import { SnackbarProvider } from '../components/Snackbar'
 import { AttendanceScreen } from '../screens/attendance/AttendanceScreen'
+import { CalendarScreen } from '../screens/calendar/CalendarScreen'
+import { TodoScreen } from '../screens/todos/TodoScreen'
 import { Dashboard } from '../screens/home/Dashboard'
 import { FeesScreen } from '../screens/fees/FeesScreen'
 import { RecordPayment } from '../screens/fees/RecordPayment'
@@ -56,6 +58,8 @@ export function Shell({ theme, onToggleTheme, onLock }: Props) {
           )}
           {route.name === 'attendance' && <AttendanceScreen {...common} navigate={setRoute} />}
           {route.name === 'fees' && <FeesScreen {...common} navigate={setRoute} />}
+          {route.name === 'calendar' && <CalendarScreen {...common} navigate={setRoute} />}
+          {route.name === 'todos' && <TodoScreen {...common} navigate={setRoute} />}
           {route.name === 'settings' && <SettingsScreen {...common} />}
         </main>
       </div>

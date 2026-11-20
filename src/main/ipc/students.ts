@@ -5,7 +5,8 @@ import { z } from 'zod'
 import type { StudentsApi } from '@shared/ipc-contract'
 import { parseCsv, planImport, type ImportPlanItem } from '@shared/import'
 import { UserError } from '../errors'
-import { runImport } from '../students/import'
+import type { PlannerRepo } from '../planner/repo'
+import { makesTodo, runImport } from '../students/import'
 import { admissionSchema, idSchema, isoDateSchema, studentListQuerySchema } from '@shared/schemas'
 import type { LockSession } from '../lock/session'
 import { jpegFromDataUrl, pickPhoto, toDataUrl } from '../students/photo'
@@ -15,7 +16,7 @@ import { handleAll, type Impl } from './handle'
 // Guardian, note and detail inputs are validated inside the repository (it parses them itself).
 
 /** Registers `students:<method>` handlers (unlocked only; arguments validated). */
-export function registerStudentsIpc(repo: StudentsRepo, session: LockSession): void {
+export function registerStudentsIpc(repo: StudentsRepo, planner: PlannerRepo, session: LockSession): void {
   let plan: ImportPlanItem[] | null = null
   const impl: Impl<StudentsApi> = {
     list: (q) => repo.list(studentListQuerySchema.parse(q)),
@@ -56,11 +57,11 @@ export function registerStudentsIpc(repo: StudentsRepo, session: LockSession): v
       } catch (e) {
         throw new UserError(e instanceof Error ? e.message : String(e))
       }
-      return { fileName: basename(path), rows: plan.map(({ line, name, programs, siblingOf, skip }) => ({ line, name, programs, siblingOf, skip })) }
+      return { fileName: basename(path), rows: plan.map((r) => ({ line: r.line, name: r.name, programs: r.programs, siblingOf: r.siblingOf, skip: r.skip, hasTodo: makesTodo(r, repo, planner) })) }
     },
     importRun: () => {
       if (!plan) throw new UserError('Choose the spreadsheet first.')
-      const result = runImport(repo, plan)
+      const result = runImport(repo, planner, plan)
       plan = null
       return result
     }
