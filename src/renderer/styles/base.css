@@ -340,3 +340,45 @@ button{font-family:inherit}
 .backup-chip.warn{background:var(--ec);color:var(--oec)}
 .backup-chip:focus-visible{outline:3px solid var(--p);outline-offset:2px}
 .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px 16px}
+
+/* ---------------------------------------------------------------
+   Nov 2026 look: deep ground with a soft light-blue glow, near-black
+   rounded cards, pill filters/tabs, big bold numbers, light-blue accent.
+   Program colours are unchanged (Nursery stays green).
+   --------------------------------------------------------------- */
+.lh{background:
+  radial-gradient(1100px 620px at 12% -12%,color-mix(in srgb,var(--pc) 20%,transparent),transparent 62%),
+  radial-gradient(900px 520px at 105% -5%,color-mix(in srgb,var(--pc) 10%,transparent),transparent 60%),
+  var(--s);background-attachment:fixed}
+body{background:var(--s)}
+.card{border-radius:28px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--os) 6%,transparent)}
+.h-lg{font-size:44px;line-height:52px;font-weight:600;letter-spacing:-.8px}
+.h-md{font-weight:500;letter-spacing:-.2px}
+.num{font-size:46px;line-height:54px;font-weight:600;letter-spacing:-1px;font-variant-numeric:tabular-nums}
+.big{font-weight:600;letter-spacing:-1px}
+.agreed{font-weight:600}
+
+/* Navigation: a floating capsule, the current page a light pill */
+.rail{margin:12px 0 12px 12px;height:calc(100vh - 24px);top:12px;border-radius:32px;background:var(--c1);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--os) 6%,transparent)}
+.main{padding-left:20px}
+
+/* Filters, segmented buttons and tabs as pills */
+.chip{border-radius:22px;border-color:transparent;background:var(--c3);color:var(--os)}
+.chip[aria-pressed="true"]{background:var(--sc);color:var(--osc);border-color:var(--sc)}
+.seg{border:none;background:var(--c3);padding:4px;gap:4px;border-radius:26px}
+.segb{border:none;border-radius:20px;background:transparent}
+.segb[aria-pressed="true"]{background:var(--sc);color:var(--osc)}
+.tabs{border-bottom:none;gap:6px}
+.tab{border-radius:22px;min-height:44px;background:var(--c3)}
+.tab[aria-selected="true"]{background:var(--sc);color:var(--osc)}
+.tab .ind{display:none}
+
+/* Inner panels and fields sit lighter on the dark cards */
+.enr,.note,.who{border-radius:20px}
+.dlg{border-radius:32px}
+.search{background:var(--c1);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--os) 8%,transparent)}
+.search:focus-within{background:var(--c2)}
+.backup-chip{background:var(--c1)}
+.okline{background:color-mix(in srgb,var(--pc) 22%,transparent);color:var(--os)}
+.okline svg{color:var(--p)}
+@media (max-width:720px){.rail{margin:0;height:auto;border-radius:24px 24px 0 0;top:auto}.main{padding:16px}}

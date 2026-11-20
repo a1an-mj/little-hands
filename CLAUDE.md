@@ -115,6 +115,10 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
 - Colours match the logo: Material 3 "fidelity" scheme from #20ADE4, in `src/renderer/styles/tokens.css`
   (this replaced the designs' teal seed #9AE8EB). Token names are the same as the CSS variables in
   `design/` (`.lh{...}` = light, `.lh[data-theme="dark"]{...}` = dark); use the app's tokens.css values.
+- Nov 2026 look (user's reference screenshot, its lime green → light blue): deep navy ground with a soft
+  light-blue glow, near-black rounded cards, a floating nav capsule, pill filters/segments/tabs, big bold
+  headings and numbers, light-blue accent (dark: --p #8FD9FF). Layer at the end of `base.css`.
+  Program colours are unchanged (user: Nursery stays green).
 - Program colours: Playgroup coral, Nursery green, LKG yellow, UKG blue, Daycare rose, Tuition violet
   (tokens pg/nu/lk/uk/dc/tu).
 - The design files are prototypes made in a design tool: the markup inside `<x-dc>` plus the
