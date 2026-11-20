@@ -51,7 +51,7 @@ export function FeesScreen({ theme, onToggleTheme, navigate }: Props) {
       </header>
 
       <div className="in" style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-        <button type="button" className="btn filled" onClick={() => navigate({ name: 'pay' })}>
+        <button type="button" className="btn filled cta" onClick={() => navigate({ name: 'pay' })}>
           <FeesIcon />
           Record payment
         </button>

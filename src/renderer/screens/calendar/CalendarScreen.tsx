@@ -142,7 +142,7 @@ export function CalendarScreen({ theme, onToggleTheme, navigate }: Props) {
           </h2>
           {selected === today && <div className="muted" style={{ marginTop: -8 }}>{formatDayLong(selected)}</div>}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            <button type="button" className="btn filled" onClick={() => setDialog({ kind: 'event' })}>
+            <button type="button" className="btn filled cta" onClick={() => setDialog({ kind: 'event' })}>
               <PlusSmallIcon />
               Add event
             </button>

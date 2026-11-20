@@ -125,10 +125,12 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
 - Colours match the logo: Material 3 "fidelity" scheme from #20ADE4, in `src/renderer/styles/tokens.css`
   (this replaced the designs' teal seed #9AE8EB). Token names are the same as the CSS variables in
   `design/` (`.lh{...}` = light, `.lh[data-theme="dark"]{...}` = dark); use the app's tokens.css values.
-- Nov 2026 look (user's reference screenshot, its lime green → light blue): deep navy ground with a soft
-  light-blue glow, near-black rounded cards, a floating nav capsule, pill filters/segments/tabs, big bold
-  headings and numbers, light-blue accent (dark: --p #8FD9FF). Layer at the end of `base.css`.
-  Program colours are unchanged (user: Nursery stays green).
+- **Palette (Nov 2026, user): 60 / 30 / 10.** 60% ground Peacock #084463 (light theme: pale Icy #E7F2F6);
+  30% surfaces Icy Sky #6BB9D4 (cards, sidebar, dialogs, search, pills) with Peacock text; 10% accent
+  Saffron #FFC64F only on the ONE main action per screen (`btn filled cta`) and a dialog's Save. Other
+  filled buttons, selected pills and links are Peacock ink. Greys tinted toward the accent; no glow, no
+  extra colour blocks; must pass the blur test (three flat zones). Tokens: palette layer at the end of
+  `base.css` (ground tokens on `.lh`, surface tokens on `.card,.rail,.dlg,…`). Rounded pills, big bold numbers.
 - Program colours: Playgroup coral, Nursery green, LKG yellow, UKG blue, Daycare rose, Tuition violet
   (tokens pg/nu/lk/uk/dc/tu).
 - The design files are prototypes made in a design tool: the markup inside `<x-dc>` plus the

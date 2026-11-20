@@ -431,3 +431,84 @@ body{background:var(--s)}
 .quick-date{height:44px;border:none;border-radius:22px;padding:0 14px;background:var(--c3);color:var(--os);font:400 14px Roboto,sans-serif}
 .quick-add:focus-within{box-shadow:inset 0 0 0 2px var(--p)}
 .lh[data-theme="dark"] .quick-date::-webkit-calendar-picker-indicator{filter:invert(1)}
+
+/* ======================================================================
+   Palette (Nov 2026, owner's choice): 60 / 30 / 10.
+     60  ground   Peacock #084463 (dark theme) / pale Icy (light theme)
+     30  surfaces Icy Sky #6BB9D4: cards, sidebar, dialogs, search, pills
+     10  accent   Saffron #FFC64F: only the ONE main action per screen
+         (class "cta"), and a dialog's own Save. Everything else that
+         needs weight uses Peacock ink.
+   Greys carry ~4% of the accent hue. Blur the screen: three flat zones.
+   Program colours (tags) are unchanged, as agreed.
+   ====================================================================== */
+.lh,.lh[data-theme="dark"]{
+  --acc:#FFC64F;--oacc:#084463;
+  /* Ground (60): what sits directly on the page — titles, the switch. */
+  --s:#084463;--os:#FBF8F0;--osv:#BCD3DB;--ol:#6E95A5;--olv:#1E5A77;
+  --c1:#0C4C6D;--c2:#105373;--c3:#155B7C;--c4:#1A6384;
+  --p:#A6D7E8;--op:#062A3D;--sc:#6BB9D4;--osc:#062A3D;--pc:#6BB9D4;--opc:#062A3D;
+  --e:#FFB4AB;--ec:#F7D6D2;--oec:#4A0B07;--tc:#F6E7C4;--otc:#3D2C00;
+  --is:#04283B;--ios:#FBF8F0;--ip:#6BB9D4;
+  background:var(--s)
+}
+.lh:not([data-theme="dark"]){
+  --s:#D6EAF1;--os:#062A3D;--osv:#2F566A;--ol:#6E91A1;--olv:#B3D2DD;
+  --c1:#CBE3EC;--c2:#C1DEE8;--c3:#B7D8E4;--c4:#ADD2E0;
+  --p:#084463;--op:#FBF8F0;--sc:#084463;--osc:#FBF8F0;--pc:#6BB9D4;--opc:#062A3D;
+  --e:#A3261E
+}
+/* Surfaces (30): Icy Sky with Peacock text. Inner panels step lighter. */
+.card,.rail,.dlg,.search,.chip,.seg,.tab,.backup-chip,.lock-card,.bar-bottom,.sw .track{
+  --c1:#6BB9D4;--c2:#7AC1D9;--c3:#8BC9DF;--c4:#9DD2E5;
+  --os:#05283A;--osv:#163F53;--ol:#2C6680;--olv:#56A5C1;
+  --p:#084463;--op:#FBF8F0;--sc:#084463;--osc:#FBF8F0;--pc:#C4E5F0;--opc:#05283A;
+  --e:#8C1D18;--ec:#F7D6D2;--oec:#4A0B07;--tc:#F1E2BE;--otc:#3D2C00
+}
+.lh:not([data-theme="dark"]) :is(.card,.rail,.dlg,.search,.chip,.seg,.tab,.backup-chip,.lock-card,.bar-bottom,.sw .track){
+  --c1:#A8D6E6;--c2:#B4DCEA;--c3:#C1E2EE;--c4:#CEE8F2;--olv:#86C1D5;--pc:#DDF0F6
+}
+.lh{background:var(--s)}
+.card,.rail{background:var(--c1);box-shadow:none}
+.search,.backup-chip{background:var(--c1);color:var(--osv);box-shadow:none}
+.search input{color:var(--os)}.search input::placeholder{color:var(--osv)}
+.chip,.seg,.tab{background:var(--c1);color:var(--os)}
+.dlg{background:var(--c1)}.dlg .tf .lb{background:var(--c1)}
+.tf .lb{background:var(--c1)}
+.lock-card{background:var(--c1);color:var(--os)}
+.lock-card .key{background:var(--c3);color:var(--os)}
+.bar-bottom{background:var(--c1);color:var(--os)}
+.rail .fab{background:var(--p);color:var(--op);box-shadow:none}
+.sw .track{background:var(--c1);border-color:var(--c1)}
+.sw .thumb{background:var(--p);color:var(--op)}
+.sw[aria-checked="true"] .track{background:var(--c1);border-color:var(--c1)}
+.sw[aria-checked="true"] .thumb{background:var(--p);color:var(--op)}
+
+/* Ink: ordinary filled buttons are Peacock, not the accent. */
+.filled{background:var(--p);color:var(--op)}
+.tonal{background:var(--c3);color:var(--os)}
+/* The one action (10%). */
+.btn.cta,.dlg .dlg-actions .btn.filled{background:var(--acc);color:var(--oacc)}
+.btn.cta:disabled,.dlg .dlg-actions .btn.filled:disabled{background:color-mix(in srgb,var(--os) 12%,transparent);color:color-mix(in srgb,var(--os) 40%,transparent)}
+
+/* No extra colour blocks: big status cards become ordinary cards. */
+.stat-owe{background:var(--c1);color:var(--os)}
+.stat-owe .num{color:var(--e)}
+.okline{background:var(--c3);color:var(--os)}
+.okline svg{color:var(--p)}
+.attbar{background:var(--c1);color:var(--os)}
+.attbar .btn.on-pc{background:var(--p);color:var(--op)}
+.cal-day.today .cal-num{background:var(--p);color:var(--op)}
+.cal-day.closed{background:var(--tc)}
+.k-event{background:var(--c4);color:var(--os)}
+.dot.k-event{background:var(--p)}
+/* Surfaces carry their own text colour (not the ground's). */
+.card,.rail,.dlg,.search,.chip,.seg,.tab,.backup-chip,.lock-card,.bar-bottom{color:var(--os)}
+/* Selected pills: Peacock ink, ringed so they read against the Peacock ground too. */
+.chip[aria-pressed="true"],.tab[aria-selected="true"]{background:var(--p);color:var(--op);box-shadow:inset 0 0 0 2px var(--c1),0 0 0 2px var(--c1)}
+.bar{background:var(--c3)}.bar>i{background:var(--p)}
+/* Program tags: the soft (light) versions on every surface, in both themes. */
+.card,.dlg,.rail{--pgc:#FFDAD3;--pgo:#5C1A10;--lkc:#FFE08D;--lko:#3A2E00;--ukc:#D3E4FF;--uko:#0B305A;--tuc:#EADDFF;--tuo:#3B2271;--nuc:#AAF5A3;--nuo:#002204;--dcc:#FFD9DE;--dco:#3F0016;--pcc:#74F8E4;--pco:#00201C;--smc:#FFDCC6;--smo:#311300}
+/* Light theme: more space between ground and surface so the zones read when blurred. */
+.lh:not([data-theme="dark"]){--s:#E7F2F6}
+.lh:not([data-theme="dark"]) :is(.card,.rail,.dlg,.search,.chip,.seg,.tab,.backup-chip,.lock-card,.bar-bottom,.sw .track){--c1:#9CD0E2;--c2:#AAD7E7;--c3:#B9DEEB;--c4:#C8E5F0}

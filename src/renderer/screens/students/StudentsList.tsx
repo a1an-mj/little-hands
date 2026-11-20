@@ -105,7 +105,7 @@ export function StudentsList({ theme, onToggleTheme, state, setState, navigate }
           <AttendanceIcon />
           Mark attendance
         </button>
-        <button type="button" className="btn filled" onClick={() => navigate({ name: 'admit' })}>
+        <button type="button" className="btn filled cta" onClick={() => navigate({ name: 'admit' })}>
           <AddPersonIcon />
           New admission
         </button>

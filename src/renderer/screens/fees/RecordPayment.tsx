@@ -374,7 +374,7 @@ function PaymentForm(props: { studentId: string; initialTarget?: PaymentTarget; 
             <TextField label="Remarks (optional)" value={remarks} onChange={setRemarks} error={errors.remarks} />
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-              <button type="submit" className="btn filled lg" disabled={busy || !chosen}>
+              <button type="submit" className="btn filled lg cta" disabled={busy || !chosen}>
                 <CheckIcon />
                 Save payment
               </button>

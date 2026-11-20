@@ -160,7 +160,7 @@ export function StudentProfile({ theme, onToggleTheme, id, navigate, tab: initia
             <EditIcon />
             Edit
           </button>
-          <button type="button" className="btn filled" onClick={() => navigate({ name: 'pay', studentId: id })}>
+          <button type="button" className="btn filled cta" onClick={() => navigate({ name: 'pay', studentId: id })}>
             <FeesIcon />
             Record payment
           </button>

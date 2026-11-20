@@ -132,7 +132,7 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
       </header>
 
       <div className="in" style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-        <button type="button" className="btn filled" onClick={() => navigate({ name: 'fees' })}>
+        <button type="button" className="btn filled cta" onClick={() => navigate({ name: 'fees' })}>
           <FeesIcon />
           Record payment
         </button>
@@ -150,7 +150,7 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
       </div>
 
       <section aria-label="Today at a glance" className="glance">
-        <div className="card in stat" style={{ animationDelay: '60ms', background: 'var(--pc)', color: 'var(--opc)' }} data-testid="arrived-today">
+        <div className="card in stat" style={{ animationDelay: '60ms' }} data-testid="arrived-today">
           <div style={{ fontWeight: 500 }}>Arrived today</div>
           {day?.closed ? (
             <>
@@ -162,8 +162,8 @@ export function Dashboard({ theme, onToggleTheme, navigate, onSearch }: Props) {
               <div>
                 <span className="num">{counts.arrived}</span> <span className="t-lg">of {counts.expected}</span>
               </div>
-              <div className="bar" style={{ background: 'color-mix(in srgb, var(--opc) 14%, transparent)' }}>
-                <i style={{ width: `${pct}%`, background: 'var(--opc)' }} />
+              <div className="bar">
+                <i style={{ width: `${pct}%` }} />
               </div>
               <div className="small">
                 {counts.notYet} yet to arrive · {counts.absent} absent

@@ -74,7 +74,7 @@ export function TodoScreen({ theme, onToggleTheme, navigate }: Props) {
         <input id="quick-todo" className="quick-input" placeholder="Add a to-do, e.g. Call Nyla's mother about the emergency numbers" value={quick} onChange={(e) => setQuick(e.target.value)} maxLength={200} />
         <label className="sr" htmlFor="quick-due">Due date</label>
         <input id="quick-due" className="quick-date" type="date" value={quickDue} onChange={(e) => setQuickDue(e.target.value)} />
-        <button type="submit" className="btn filled" disabled={!quick.trim()}>
+        <button type="submit" className="btn filled cta" disabled={!quick.trim()}>
           <PlusSmallIcon />
           Add
         </button>

@@ -174,7 +174,7 @@ export function AttendanceScreen({ theme, onToggleTheme, navigate }: Props) {
             >
               {dirty ? 'Cancel' : 'Close'}
             </button>
-            <button type="button" className="btn filled" onClick={() => void save()} disabled={!dirty || busy}>
+            <button type="button" className="btn filled cta" onClick={() => void save()} disabled={!dirty || busy}>
               <CheckIcon />
               Save
             </button>

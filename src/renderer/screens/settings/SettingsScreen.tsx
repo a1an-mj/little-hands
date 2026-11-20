@@ -94,7 +94,7 @@ export function SettingsScreen({ theme, onToggleTheme }: Props) {
               OneDrive or Google Drive folder (it goes to the cloud), or a USB drive. The last 30 are kept.
             </p>
             <div>
-              <button type="button" className="btn filled" onClick={() => setOpen({ kind: 'setup' })}>
+              <button type="button" className="btn filled cta" onClick={() => setOpen({ kind: 'setup' })}>
                 Set up backups
               </button>
             </div>
@@ -125,7 +125,7 @@ export function SettingsScreen({ theme, onToggleTheme }: Props) {
               </button>
             </div>
             <div>
-              <button type="button" className="btn filled" disabled={busy} onClick={() => void run('Backup saved', () => call(window.lh.backup.backupNow()))}>
+              <button type="button" className="btn filled cta" disabled={busy} onClick={() => void run('Backup saved', () => call(window.lh.backup.backupNow()))}>
                 {busy ? 'Backing up…' : 'Back up now'}
               </button>
             </div>

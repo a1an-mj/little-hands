@@ -305,7 +305,7 @@ export function AdmissionForm({ theme, onToggleTheme, navigate }: Props) {
           <button type="button" className="btn textb" onClick={leave}>
             Cancel
           </button>
-          <button type="submit" className="btn filled" disabled={busy}>
+          <button type="submit" className="btn filled cta" disabled={busy}>
             {busy ? 'Saving…' : 'Save student'}
           </button>
         </div>
