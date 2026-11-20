@@ -57,6 +57,21 @@ Full requirements: `docs/requirements.md`. Approved screen designs: `design/*.ht
 - School year: **June to March** (April–May break counts with the year that ended; label "2026–27").
 - **No expected times and no "late"**: the app only records when a child actually arrived and left.
 
+## Owner's answers from the paper admission form (20 Nov 2026) — not built yet, replaces earlier fee rules
+- **Fees are due by the 5th of every month**, for every child and program (as printed on the form).
+- **Joining mid-month:** the first month is charged **only for the days left**, by days in that month,
+  no rounding (to the paisa). Example: ₹2,000/month, joins 15 Nov → Nov = ₹2,000 × 16/30 = ₹1,066.67.
+  At joining the parent pays the full ₹2,000; the extra (₹933.33) counts towards December, and the
+  rest of December (₹1,066.67) is due by 5 Dec. From January: ₹2,000 by the 5th.
+- Paying every 3 months: due on the 5th of the first month of each block (5 June, 5 Sept, 5 Dec…).
+- Fees go up once a year per class, when the child moves up to the next class.
+- **Preparatory class** = tuition during the summer vacation (own program, own days); **Summer camp**
+  is another program. Both paid in advance, one-time or monthly (chosen per child).
+- **Afterschool** = a child who studies at another school and comes here after school. Not a
+  program of its own and no extra fee: such a child must be in **Tuition or Daycare**.
+- New admission fields: date of birth, the other school and class (afterschool children), and the
+  father's and mother's occupation.
+
 ## Still to confirm with the owner
 - How a Daycare month is waived during a long absence (default: the owner waives that month by hand).
 
