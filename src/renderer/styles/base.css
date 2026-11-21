@@ -657,3 +657,24 @@ body{background:var(--s)}
   ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
   .dlg::backdrop{animation:none}
 }
+
+/* ---- Menu on shorter screens (many laptops are 768px tall): everything, including Lock, fits ---- */
+.rail{overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+@media (max-height:880px){
+  .rail{gap:4px;padding:14px 0}
+  .logo{width:42px;height:42px;border-radius:14px}
+  .fab{width:50px;height:50px;margin:4px 0 8px}
+  .dest{min-height:50px;gap:2px}
+  .pill{height:30px}
+}
+@media (max-height:720px){
+  .rail .logo{display:none}
+  .dest{min-height:42px}
+  .pill{height:28px}
+  .fab{width:46px;height:46px;margin:2px 0 4px}
+}
+/* Very short windows: icons only (the names stay for screen readers and tooltips). */
+@media (max-height:600px){
+  .dest{min-height:40px;font-size:0;letter-spacing:0}
+}

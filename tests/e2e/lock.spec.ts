@@ -103,6 +103,10 @@ test('wrong PIN is refused; the right PIN unlocks; Lock locks again', async () =
   await page.getByRole('button', { name: 'Unlock' }).click()
   await expect(mainMenu()).toBeVisible()
 
+  // On a short laptop screen (Windows CI, 768px displays) the whole menu, Lock included, still fits.
+  await page.setViewportSize({ width: 1024, height: 620 })
+  const box = await mainMenu().getByRole('button', { name: 'Lock' }).boundingBox()
+  expect(box!.y + box!.height).toBeLessThanOrEqual(620)
   await mainMenu().getByRole('button', { name: 'Lock' }).click()
   await expect(lockScreen()).toBeVisible()
 })
@@ -130,6 +134,10 @@ test('Forgot PIN: the recovery code sets a new PIN and gives a new code', async 
   await page.getByRole('button', { name: 'Continue' }).click()
   await expect(mainMenu()).toBeVisible()
 
+  // On a short laptop screen (Windows CI, 768px displays) the whole menu, Lock included, still fits.
+  await page.setViewportSize({ width: 1024, height: 620 })
+  const box = await mainMenu().getByRole('button', { name: 'Lock' }).boundingBox()
+  expect(box!.y + box!.height).toBeLessThanOrEqual(620)
   await mainMenu().getByRole('button', { name: 'Lock' }).click()
   await expect(lockScreen()).toBeVisible()
   await typePin('2468')

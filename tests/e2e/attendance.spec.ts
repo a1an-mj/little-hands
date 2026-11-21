@@ -170,6 +170,8 @@ test('the rail and the students list open the attendance screen', async () => {
 
 test('home search opens the students list', async () => {
   await page.getByRole('navigation', { name: 'Main menu' }).getByRole('button', { name: 'Home' }).click()
+  // Wait for Home itself: during the screen change the previous screen (with its own search) is still there.
+  await expect(page.getByRole('heading', { level: 2, name: "Today's arrivals" })).toBeVisible()
   await page.getByRole('searchbox', { name: 'Search students' }).fill('Dev')
   await page.keyboard.press('Enter')
   await expect(page.getByRole('heading', { level: 1, name: 'Students' })).toBeVisible()
